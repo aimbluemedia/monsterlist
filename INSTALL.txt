@@ -1,0 +1,101 @@
+=====================================================================
+ MonsterList — upload & install guide (cPanel / shared hosting)
+ Requirements: PHP 8.0+ (with pdo_mysql, gd, curl, fileinfo), MySQL 5.7+/MariaDB 10.3+
+=====================================================================
+
+STEP 1 — UPLOAD THE FILES
+-------------------------
+Upload everything in this package to your hosting account.
+
+  BEST SETUP (recommended):
+    • Put the whole package one level ABOVE your web root, e.g. /home/youruser/monsterlist/
+    • Point the domain's document root at:  /home/youruser/monsterlist/public
+      (cPanel → Domains → Document Root)
+
+  IF YOU CANNOT CHANGE THE DOCUMENT ROOT:
+    • Upload the CONTENTS of public/ into public_html/
+      (index.php, .htaccess, robots.txt, assets/, uploads/)
+    • Upload app/, database/, scripts/ into your home directory,
+      NEXT TO public_html (not inside it)
+    • Edit the first code line of public_html/index.php:
+        require dirname(__DIR__) . '/app/bootstrap.php';
+      change to:
+        require dirname(__DIR__) . '/monsterlist-app-path/app/bootstrap.php';
+      …matching wherever you placed the app/ folder.
+
+Make sure the uploads/ folder inside the web root is writable (755 is
+usually fine on cPanel; use 775 only if your host requires it).
+
+STEP 2 — CREATE THE DATABASE
+----------------------------
+cPanel → MySQL Databases:
+  1. Create a database (e.g. youruser_monsterlist)
+  2. Create a database user with a strong password
+  3. Add the user to the database with ALL PRIVILEGES
+
+STEP 3 — IMPORT THE SQL FILES (phpMyAdmin → Import), IN THIS ORDER
+------------------------------------------------------------------
+  1. database/schema.sql             (tables — required)
+  2. database/seed.sql               (countries, states, cities, categories — required)
+  3. database/create-superadmin.sql  (your admin login — required;
+                                      edit the email in the file first!)
+  4. database/demo-data.sql          (OPTIONAL: 695 demo listings so pages
+                                      aren't empty; fresh installs only)
+
+STEP 4 — CONFIGURE
+------------------
+  1. Copy  app/config.example.php  →  app/config.php
+  2. Edit app/config.php:
+       site_url  → https://monsterlist.org   (no trailing slash)
+       db        → host (usually 'localhost'), database name, user, password
+       mail.from → no-reply@monsterlist.org (create this mailbox in cPanel
+                   so mail passes SPF checks)
+
+STEP 5 — FIRST LOGIN
+--------------------
+  1. Visit https://monsterlist.org/login
+  2. Log in with the email from create-superadmin.sql
+     and password:  ChangeMe-2026!
+  3. IMMEDIATELY change the password (top-right → My account → Settings)
+  4. Check Admin → Settings: site name, tagline, plan pricing
+
+STEP 6 — STRIPE (monthly memberships)
+-------------------------------------
+  1. dashboard.stripe.com → create a Product with TWO recurring monthly
+     Prices (Pro and Featured)
+  2. Put your API keys (sk_..., pk_...) in app/config.php → 'stripe'
+  3. Paste the two price IDs (price_...) in Admin → Settings
+  4. Stripe → Developers → Webhooks → Add endpoint:
+        https://monsterlist.org/stripe/webhook
+     Events:  checkout.session.completed
+              customer.subscription.updated
+              customer.subscription.deleted
+     Copy its signing secret (whsec_...) into app/config.php
+  5. Test with a Stripe test card (4242 4242 4242 4242) using test keys
+     before switching to live keys.
+
+STEP 7 — GO-LIVE CHECKLIST
+--------------------------
+  [ ] https:// works (the .htaccess already forces HTTPS)
+  [ ] /robots.txt loads and shows your sitemap line
+  [ ] /sitemap.xml loads (then submit it in Google Search Console
+      and Bing Webmaster Tools)
+  [ ] /llms.txt loads
+  [ ] Sign up a test member, create a listing, approve it in /admin
+  [ ] The approval email arrived (check spam; if unreliable, ask about
+      SMTP — see README)
+  [ ] Demo data decision: keep it, or clean it out with this SQL:
+        DELETE FROM businesses WHERE owner_id IS NULL AND email LIKE '%@demo.invalid';
+        UPDATE cities SET listing_count = (SELECT COUNT(*) FROM businesses
+          WHERE city_id = cities.id AND status = 'live');
+
+TROUBLESHOOTING
+---------------
+  • "Missing app/config.php"      → Step 4 not done, or app/ path wrong
+  • 500 error                     → set 'debug' => true in app/config.php
+                                    temporarily to see the real error
+  • Pretty URLs 404               → .htaccess didn't upload (it's a hidden
+                                    file — enable "show hidden files" in
+                                    your file manager)
+  • Images won't upload           → uploads/ folder missing or not writable
+=====================================================================
