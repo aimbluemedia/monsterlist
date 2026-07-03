@@ -209,7 +209,7 @@ if ($sub === 'dashboard') {
     require_superadmin();
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         csrf_check();
-        foreach (['site_name','site_tagline','price_pro_monthly','price_featured_monthly','stripe_price_pro','stripe_price_featured'] as $k) {
+        foreach (['site_name','site_tagline','price_pro_monthly','price_featured_monthly','stripe_price_pro','stripe_price_featured','anthropic_api_key'] as $k) {
             if (isset($_POST[$k])) setting_save($k, trim((string)$_POST[$k]));
         }
         flash_set('success', 'Settings saved.');

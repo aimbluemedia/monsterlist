@@ -13,6 +13,14 @@
     <div><label>Featured price</label><input type="number" name="price_featured_monthly" value="<?= e(setting('price_featured_monthly')) ?>" min="1"></div>
   </div>
 
+  <h3 style="margin-top:24px">AI fill (Anthropic API)</h3>
+  <p class="mute" style="font-size:.85rem">Lets members auto-fill the New Listing form from their website.
+  Get an API key at <a href="https://platform.claude.com" target="_blank" rel="noopener" style="color:var(--accent)">platform.claude.com</a> → API keys.
+  Each fill costs a few cents; members are limited to 10 per hour.</p>
+  <label>Anthropic API key <?= setting('anthropic_api_key') !== '' ? '<span class="badge badge-live">configured</span>' : '<span class="badge badge-pending">not set</span>' ?></label>
+  <input type="password" name="anthropic_api_key" value="<?= e(setting('anthropic_api_key')) ?>" placeholder="sk-ant-..." autocomplete="off">
+  <p class="form-note">Leave empty to hide the AI fill feature from members.</p>
+
   <h3 style="margin-top:24px">Stripe price IDs</h3>
   <p class="mute" style="font-size:.85rem">Create two recurring monthly Prices in your Stripe dashboard and paste their IDs (price_…). API keys live in <code>app/config.php</code>.</p>
   <div class="form-grid">

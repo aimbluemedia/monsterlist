@@ -3,9 +3,16 @@
 // Raw cURL against the Anthropic Messages API (no Composer needed on shared
 // hosting). Structured outputs guarantee the response matches our schema.
 
+/** API key from app/config.php, or (easier) Admin → Settings. */
+function ai_api_key(): string
+{
+    $key = $GLOBALS['config']['anthropic']['api_key'] ?? '';
+    return $key !== '' ? $key : setting('anthropic_api_key');
+}
+
 function ai_configured(): bool
 {
-    return !empty($GLOBALS['config']['anthropic']['api_key']);
+    return ai_api_key() !== '';
 }
 
 /**
@@ -182,7 +189,7 @@ function ai_extract_listing(string $url, ?string &$error = null): ?array
         CURLOPT_TIMEOUT        => 120,
         CURLOPT_HTTPHEADER     => [
             'Content-Type: application/json',
-            'x-api-key: ' . $GLOBALS['config']['anthropic']['api_key'],
+            'x-api-key: ' . ai_api_key(),
             'anthropic-version: 2023-06-01',
         ],
     ]);

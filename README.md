@@ -45,8 +45,9 @@ no build step.
 - Powered by the Anthropic Claude API (`claude-opus-4-8`) with structured outputs —
   the extraction is schema-validated, then re-validated server-side against the
   directory's own categories/countries/states before it touches the form.
-- Setup: put your Anthropic API key in `app/config.php` → `'anthropic'`. Get one at
-  https://platform.claude.com. No key = the feature quietly hides; everything else works.
+- Setup: paste your Anthropic API key in **Admin → Settings** (or in `app/config.php`
+  → `'anthropic'`). Get one at https://platform.claude.com. No key = the feature
+  quietly hides; everything else works.
 - Safety: SSRF-guarded fetcher (public hosts only, redirect re-validation, 1 MB cap),
   10 fills/hour per member, the AI is instructed never to invent contact details.
 
