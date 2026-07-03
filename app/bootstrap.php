@@ -15,6 +15,7 @@ if (PHP_VERSION_ID < 70400) {
 
 define('APP_ROOT', __DIR__);
 define('BASE_ROOT', dirname(__DIR__));
+if (!defined('WEB_ROOT')) define('WEB_ROOT', BASE_ROOT); // CLI scripts: webroot = repo root
 
 $configFile = APP_ROOT . '/config.php';
 if (!is_file($configFile)) {

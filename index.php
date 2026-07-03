@@ -29,6 +29,7 @@ if ($bootstrap === null) {
        . 'or run <code>/install-check.php</code> for a full diagnosis.</p>' . str_repeat(' ', 600);
     exit;
 }
+define('WEB_ROOT', __DIR__);
 require $bootstrap;
 
 $uri  = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';

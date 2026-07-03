@@ -1,6 +1,6 @@
 app/config.php
 *.log
 .DS_Store
-public/uploads/*
-!public/uploads/.htaccess
-!public/uploads/.gitkeep
+uploads/*
+!uploads/.htaccess
+!uploads/.gitkeep

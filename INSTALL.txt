@@ -5,26 +5,15 @@
 
 STEP 1 — UPLOAD THE FILES
 -------------------------
-Upload everything in this package to your hosting account.
+Upload EVERYTHING in this package straight into public_html.
+The package root is the web root: index.php, .htaccess, assets/, uploads/
+plus app/, database/ and scripts/ (those three are protected from web
+access by their own .htaccess files).
 
-  BEST SETUP (recommended):
-    • Put the whole package one level ABOVE your web root, e.g. /home/youruser/monsterlist/
-    • Point the domain's document root at:  /home/youruser/monsterlist/public
-      (cPanel → Domains → Document Root)
+Make sure the uploads/ folder is writable (755 usually; 775 if required).
 
-  IF YOU CANNOT CHANGE THE DOCUMENT ROOT:
-    • Upload the CONTENTS of public/ into public_html/
-      (index.php, .htaccess, robots.txt, assets/, uploads/)
-    • Upload app/, database/, scripts/ into your home directory,
-      NEXT TO public_html (not inside it)
-    • Edit the first code line of public_html/index.php:
-        require dirname(__DIR__) . '/app/bootstrap.php';
-      change to:
-        require dirname(__DIR__) . '/monsterlist-app-path/app/bootstrap.php';
-      …matching wherever you placed the app/ folder.
-
-Make sure the uploads/ folder inside the web root is writable (755 is
-usually fine on cPanel; use 775 only if your host requires it).
+AUTOMATIC UPDATES (optional, recommended): see DEPLOYMENT section at the
+bottom — pushes to the GitHub repo can auto-update your site.
 
 STEP 2 — CREATE THE DATABASE
 ----------------------------
@@ -126,3 +115,38 @@ OTHER ISSUES
   • Blank white page              → same as 500: run /install-check.php
   • Images won't upload           → uploads/ folder missing or not writable
 =====================================================================
+
+=====================================================================
+ DEPLOYMENT — automatic updates from GitHub
+=====================================================================
+
+OPTION A — GitHub Actions FTP deploy (works on every Hostinger plan)
+--------------------------------------------------------------------
+The repo ships .github/workflows/deploy.yml. One-time setup:
+  1. Hostinger hPanel → Files → FTP Accounts: note the FTP host,
+     username, and password (create an account if needed).
+  2. GitHub repo → Settings → Secrets and variables → Actions →
+     add three secrets: FTP_SERVER, FTP_USERNAME, FTP_PASSWORD.
+  3. Done. Every push to the repo now uploads the changed files to
+     public_html automatically (your app/config.php and uploads/ are
+     never touched). You can also trigger it manually from the
+     GitHub Actions tab ("Run workflow").
+
+OPTION B — Hostinger's built-in Git deployment
+----------------------------------------------
+hPanel → Advanced → GIT:
+  1. "Create a New Repository": paste the repo's clone URL and branch.
+     For a private repo, hPanel shows an SSH key — add it on GitHub
+     under repo → Settings → Deploy keys.
+  2. Directory: public_html. NOTE: Hostinger requires the target
+     directory to be EMPTY on the first deploy. If your site is
+     already there: temporarily move app/config.php and uploads/
+     aside (File Manager), empty public_html, deploy, then move
+     config.php and uploads/ back.
+  3. Enable "Auto Deployment" — hPanel gives you a webhook URL; add
+     it on GitHub under repo → Settings → Webhooks. Every push then
+     updates the site.
+
+With either option, database changes are NOT automatic — when an
+update ships a file like database/upgrade-vN.sql, import it once via
+phpMyAdmin after the deploy.

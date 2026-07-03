@@ -10,6 +10,30 @@ error_reporting(E_ALL);
 ini_set('display_errors', '1');
 header('Content-Type: text/html; charset=UTF-8');
 
+// Self-locking: once the site is configured and working (config present, debug
+// off, database reachable), this page refuses to run — so automatic deployments
+// can safely ship it without exposing server details on a live site.
+$mlLockCfg = null;
+foreach (array(__DIR__ . '/app/config.php', dirname(__DIR__) . '/app/config.php') as $mlCfgPath) {
+    if (is_file($mlCfgPath)) { $mlLockCfg = @include $mlCfgPath; break; }
+}
+if (is_array($mlLockCfg) && empty($mlLockCfg['debug']) && isset($mlLockCfg['db']) && extension_loaded('pdo_mysql')) {
+    try {
+        new PDO(
+            'mysql:host=' . $mlLockCfg['db']['host'] . ';dbname=' . $mlLockCfg['db']['name'],
+            $mlLockCfg['db']['user'], $mlLockCfg['db']['pass'],
+            array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_TIMEOUT => 3)
+        );
+        // Site is healthy — don't leak diagnostics publicly.
+        echo '<p style="font-family:Arial;padding:30px">Self-test disabled: this site is configured and running. '
+           . 'To re-run it, temporarily set <code>\'debug\' => true</code> in <code>app/config.php</code>.</p>';
+        exit;
+    } catch (Exception $e) {
+        // DB down — let the diagnostics run.
+    }
+}
+unset($mlLockCfg, $mlCfgPath);
+
 function ml_row($ok, $label, $detail) {
     $icon  = $ok === true ? '✅' : ($ok === null ? '⚠️' : '❌');
     $color = $ok === true ? '#0ca678' : ($ok === null ? '#d97706' : '#dc2626');

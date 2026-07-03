@@ -1,12 +1,12 @@
 <?php
-// Image uploads: validate → resize with GD → save as JPEG under public/uploads/.
+// Image uploads: validate → resize with GD → save as JPEG under the webroot's uploads/.
 // Shared-hosting safe: no exec, no external tools.
 
 const UPLOAD_MAX_BYTES = 5 * 1024 * 1024;
 
 function uploads_dir(): string
 {
-    return BASE_ROOT . '/public/uploads';
+    return WEB_ROOT . '/uploads';
 }
 
 /**
@@ -68,6 +68,6 @@ function files_list(string $field): array
 function delete_upload(?string $webPath): void
 {
     if (!$webPath || !str_starts_with($webPath, '/uploads/')) return;
-    $real = realpath(BASE_ROOT . '/public' . $webPath);
+    $real = realpath(WEB_ROOT . $webPath);
     if ($real && str_starts_with($real, uploads_dir())) @unlink($real);
 }

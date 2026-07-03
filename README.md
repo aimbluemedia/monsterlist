@@ -62,12 +62,12 @@ no build step.
 ## Directory layout
 
 ```
-public/          ← web root (point the domain's docroot here)
-  index.php        front controller + router
-  .htaccess        rewrites, HTTPS, caching, security headers
-  robots.txt       AI-crawler-friendly
-  assets/          css / js / img
-app/             ← application (outside the web root)
+index.php        ← front controller + router (repo root = web root)
+.htaccess          rewrites, HTTPS, caching, security headers
+robots.txt         AI-crawler-friendly
+assets/            css / js / img
+uploads/           member-uploaded images (git-ignored)
+app/             ← application (protected by its own .htaccess)
   config.php       your settings (copy from config.example.php — git-ignored)
   bootstrap.php    loads config, session, libraries
   lib/             db, auth, csrf, seo, geo, listings, plans, stripe, mailer
@@ -84,9 +84,8 @@ scripts/
 
 ## Install (cPanel / shared hosting)
 
-1. Upload the repo; set the domain's **document root to `public/`**.
-   (If you can't change the docroot, move the *contents* of `public/` into
-   `public_html/` and edit the `require` path at the top of `index.php`.)
+1. Upload everything into `public_html` (the repo root **is** the web root —
+   `app/`, `database/` and `scripts/` are protected by deny-all `.htaccess` files).
 2. Create a MySQL database + user, then import `database/schema.sql`
    and `database/seed.sql` (phpMyAdmin → Import).
 3. `cp app/config.example.php app/config.php` and fill in the site URL + DB credentials.
@@ -114,11 +113,11 @@ mysql monsterlist < database/schema.sql
 mysql monsterlist < database/seed.sql
 cp app/config.example.php app/config.php   # edit db creds + set site_url to http://localhost:8090
 php scripts/create_admin.php super@example.com "Super" superpass123 superadmin
-php -S localhost:8090 -t public dev-router.php   # or use Apache
+php -S localhost:8090 dev-router.php   # run from the repo root, or use Apache
 ```
 
 `dev-router.php` (not committed) just needs to serve static files and otherwise
-include `public/index.php`.
+include `index.php`.
 
 ## Moderation model
 
