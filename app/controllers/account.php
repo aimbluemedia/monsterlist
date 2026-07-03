@@ -75,17 +75,41 @@ function listing_form_data(array $user, array $plan): array
             if ($v) $social[$net] = $v;
         }
         $data['social'] = $social ? json_encode($social) : null;
-        $urls = array_filter(array_map('clean_url', array_slice(preg_split('/\R+/', post('gallery_urls')) ?: [], 0, 6)));
-        $data['_gallery'] = array_values($urls);
     }
     return [$data, $errors];
 }
 
-function save_gallery(int $bizId, array $urls): void
+/** Handle logo + gallery uploads and removals for a saved listing. */
+function handle_listing_images(int $bizId, array $plan, array &$errors): void
 {
-    q('DELETE FROM gallery WHERE business_id = ?', [$bizId]);
-    foreach ($urls as $i => $url) {
-        q('INSERT INTO gallery (business_id, url, sort) VALUES (?,?,?)', [$bizId, $url, $i]);
+    $biz = row('SELECT logo_url FROM businesses WHERE id = ?', [$bizId]);
+
+    // logo (all plans)
+    if (!empty($_POST['remove_logo']) && $biz['logo_url']) {
+        delete_upload($biz['logo_url']);
+        q('UPDATE businesses SET logo_url = NULL WHERE id = ?', [$bizId]);
+    }
+    if (!empty($_FILES['logo']['name'])) {
+        $url = save_image($_FILES['logo'], $bizId, 'logo', 400, $errors);
+        if ($url) {
+            delete_upload($biz['logo_url']);
+            q('UPDATE businesses SET logo_url = ? WHERE id = ?', [$url, $bizId]);
+        }
+    }
+
+    // gallery (enhanced plans only)
+    if (!$plan['enhanced']) return;
+    foreach ((array)($_POST['remove_gallery'] ?? []) as $gid) {
+        $g = row('SELECT * FROM gallery WHERE id = ? AND business_id = ?', [(int)$gid, $bizId]);
+        if ($g) { delete_upload($g['url']); q('DELETE FROM gallery WHERE id = ?', [$g['id']]); }
+    }
+    $have = (int)scalar('SELECT COUNT(*) FROM gallery WHERE business_id = ?', [$bizId]);
+    $slots = max(0, 6 - $have);
+    $files = array_slice(files_list('gallery'), 0, $slots);
+    if (count(files_list('gallery')) > $slots) $errors[] = 'Gallery is limited to 6 photos — extra files were skipped.';
+    foreach ($files as $i => $f) {
+        $url = save_image($f, $bizId, 'gallery', 1600, $errors);
+        if ($url) q('INSERT INTO gallery (business_id, url, sort) VALUES (?,?,?)', [$bizId, $url, $have + $i]);
     }
 }
 
@@ -131,7 +155,9 @@ if ($sub === 'dashboard') {
                $data['tagline'], $data['description'], $data['phone'], $data['website'], $data['email'],
                $data['address'], $data['founded'], $data['video_url'] ?? null, $data['social'] ?? null]);
             $bizId = (int)db()->lastInsertId();
-            if (!empty($data['_gallery'])) save_gallery($bizId, $data['_gallery']);
+            $imgErrors = [];
+            handle_listing_images($bizId, $plan, $imgErrors);
+            foreach ($imgErrors as $ie) flash_set('error', $ie);
             flash_set('success', 'Listing submitted! It will appear publicly once approved by our team (usually within 24 hours).');
             redirect('/account/listings');
         }
@@ -160,14 +186,16 @@ if ($sub === 'dashboard') {
                $data['video_url'] ?? $biz['video_url'], $data['social'] ?? $biz['social'],
                $needsReview && $biz['status'] === 'live' ? 'pending' : $biz['status'],
                $biz['id'], $u['id']]);
-            if (isset($data['_gallery'])) save_gallery((int)$biz['id'], $data['_gallery']);
+            $imgErrors = [];
+            handle_listing_images((int)$biz['id'], $plan, $imgErrors);
+            foreach ($imgErrors as $ie) flash_set('error', $ie);
             refresh_city_count((int)$biz['city_id']);
             if ((int)$data['city_id'] !== (int)$biz['city_id']) refresh_city_count((int)$data['city_id']);
             flash_set('success', 'Listing updated.' . ($needsReview ? ' Changes will be re-reviewed before going live.' : ''));
             redirect('/account/listings');
         }
     }
-    $gallery   = rows('SELECT url FROM gallery WHERE business_id = ? ORDER BY sort', [$biz['id']]);
+    $gallery   = rows('SELECT id, url FROM gallery WHERE business_id = ? ORDER BY sort', [$biz['id']]);
     $countries = all_countries();
     $usStates  = regions_of('US');
     $cats      = categories_all();

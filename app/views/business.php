@@ -14,7 +14,7 @@ $enhanced = in_array($b['tier'], ['pro', 'featured'], true);
 
   <section class="store-hero">
     <div class="store-title">
-      <span class="avatar" style="width:64px;height:64px;font-size:1.6rem;border-radius:14px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800"><?= e(mb_substr($b['name'], 0, 1)) ?></span>
+      <span class="avatar" style="width:64px;height:64px;font-size:1.6rem;border-radius:14px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;overflow:hidden"><?php if (!empty($b['logo_url'])): ?><img src="<?= e($b['logo_url']) ?>" alt="<?= e($b['name']) ?> logo" style="width:100%;height:100%;object-fit:cover"><?php else: ?><?= e(mb_substr($b['name'], 0, 1)) ?><?php endif; ?></span>
       <div>
         <h1 style="margin:0"><?= e($b['name']) ?>
           <?php if ($b['tier'] === 'featured'): ?><span class="badge badge-featured">Featured</span><?php endif; ?>
@@ -35,6 +35,19 @@ $enhanced = in_array($b['tier'], ['pro', 'featured'], true);
 
   <div class="two-col section" style="padding-top:0">
     <div>
+      <div class="card card-pad" style="margin-bottom:14px">
+        <h3>Quick facts</h3>
+        <div class="info-row"><span class="mute">Business</span><span><?= e($b['name']) ?></span></div>
+        <div class="info-row"><span class="mute">Category</span><span><?= e($b['category_label'] ?? 'Local business') ?></span></div>
+        <div class="info-row"><span class="mute">Location</span><span><?= e($city['name']) ?><?= $region ? ', ' . e($region['name']) : '' ?>, <?= e($country['name']) ?></span></div>
+        <?php if ((float)$b['rating'] > 0): ?>
+          <div class="info-row"><span class="mute">Rating</span><span><?= fmt_rating($b['rating']) ?> out of 5 (<?= (int)$b['review_count'] ?> review<?= (int)$b['review_count'] === 1 ? '' : 's' ?>)</span></div>
+        <?php endif; ?>
+        <?php if ($b['founded']): ?><div class="info-row"><span class="mute">In business since</span><span><?= (int)$b['founded'] ?></span></div><?php endif; ?>
+        <div class="info-row"><span class="mute">Verified</span><span><?= $b['verified'] ? 'Yes — identity confirmed by ' . e(setting('site_name')) : 'Not yet verified' ?></span></div>
+        <div class="info-row"><span class="mute">Listed on <?= e(setting('site_name')) ?></span><span><?= e(date('F Y', strtotime($b['created_at']))) ?></span></div>
+      </div>
+
       <?php if ($b['description']): ?>
         <div class="card card-pad" style="margin-bottom:14px">
           <h3>About</h3>
@@ -142,7 +155,7 @@ $enhanced = in_array($b['tier'], ['pro', 'featured'], true);
         <div class="card card-pad" style="background:var(--accent-soft);border-color:var(--accent)">
           <h3>Is this your business?</h3>
           <p class="mute">Claim this listing to update details, add photos and reply to reviews.</p>
-          <a class="btn btn-primary btn-block" href="/signup">Claim this listing</a>
+          <a class="btn btn-primary btn-block" href="/claim/<?= (int)$b['id'] ?>">Claim this listing</a>
         </div>
       <?php endif; ?>
     </aside>

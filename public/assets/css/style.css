@@ -77,7 +77,7 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 .listing .avatar{width:56px;height:56px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.3rem;flex-shrink:0}
 .listing-body{flex:1;min-width:0}
 .listing-title{font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.listing-meta{color:var(--mute);font-size:.87rem;margin-top:2px}
+.listing-meta{display:block;color:var(--mute);font-size:.87rem;margin-top:2px}
 .stars{color:var(--star);letter-spacing:1px}
 .badge{font-size:.72rem;font-weight:700;padding:3px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.3px}
 .badge-featured{background:var(--gold-soft);color:var(--gold)}

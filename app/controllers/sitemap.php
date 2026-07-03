@@ -18,6 +18,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
 if ($path === '/sitemap.xml') {
     $geoCount = (int)scalar('SELECT COUNT(*) FROM cities') + (int)scalar('SELECT COUNT(*) FROM regions');
     $bizCount = (int)scalar('SELECT COUNT(*) FROM businesses WHERE status = "live"');
+    $catGeo   = (int)scalar('SELECT COUNT(DISTINCT category_id, city_id) FROM businesses WHERE status = "live"');
     echo '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
     echo '<sitemap><loc>' . site_url('/sitemap-static.xml') . '</loc></sitemap>';
     for ($i = 1; $i <= max(1, ceil($geoCount / SM_CHUNK)); $i++) {
@@ -25,6 +26,9 @@ if ($path === '/sitemap.xml') {
     }
     for ($i = 1; $i <= max(1, ceil($bizCount / SM_CHUNK)); $i++) {
         echo '<sitemap><loc>' . site_url("/sitemap-biz-$i.xml") . '</loc></sitemap>';
+    }
+    for ($i = 1; $i <= max(1, ceil($catGeo / SM_CHUNK)); $i++) {
+        echo '<sitemap><loc>' . site_url("/sitemap-catgeo-$i.xml") . '</loc></sitemap>';
     }
     echo '</sitemapindex>';
     exit;
@@ -65,6 +69,19 @@ if ($path === '/sitemap-static.xml') {
          WHERE b.status = 'live'
          ORDER BY b.id LIMIT " . SM_CHUNK . " OFFSET $offset");
     foreach ($items as $it) echo sm_url(site_url($it['p']), 'weekly', '0.7');
+
+} elseif (preg_match('#^/sitemap-catgeo-(\d+)\.xml$#', $path, $m)) {
+    // category×city pages — only combos that actually have live listings
+    $offset = ((int)$m[1] - 1) * SM_CHUNK;
+    $items = rows(
+        "SELECT DISTINCT CONCAT('/category/', b.category_id, '/', LOWER(ci.country_code),
+                IF(ci.region_id IS NULL, '', CONCAT('/', r.slug)), '/', ci.slug) AS p
+         FROM businesses b
+         JOIN cities ci ON ci.id = b.city_id
+         LEFT JOIN regions r ON r.id = ci.region_id
+         WHERE b.status = 'live' AND b.category_id IS NOT NULL
+         ORDER BY p LIMIT " . SM_CHUNK . " OFFSET $offset");
+    foreach ($items as $it) echo sm_url(site_url($it['p']), 'daily', '0.8');
 }
 
 echo '</urlset>';

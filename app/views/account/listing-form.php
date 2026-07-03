@@ -4,8 +4,6 @@ $v = fn(string $field, $default = '') => post($field) !== '' && $_SERVER['REQUES
     ? post($field)
     : ($editing ? (string)($biz[$field] ?? $default) : $default);
 $social = $editing ? (json_decode((string)$biz['social'], true) ?: []) : [];
-$galleryText = '';
-if (!empty($gallery)) $galleryText = implode("\n", array_column($gallery, 'url'));
 $selCountry = $_SERVER['REQUEST_METHOD'] === 'POST' ? strtoupper(post('country')) : (!empty($cityRow) ? $cityRow['country_code'] : 'US');
 $selRegion  = $_SERVER['REQUEST_METHOD'] === 'POST' ? post('region') : (!empty($cityRow['region_slug']) ? $cityRow['region_slug'] : '');
 $selCity    = $_SERVER['REQUEST_METHOD'] === 'POST' ? post('city') : (!empty($cityRow) ? $cityRow['name'] : '');
@@ -15,7 +13,7 @@ $selCity    = $_SERVER['REQUEST_METHOD'] === 'POST' ? post('city') : (!empty($ci
   <div>
     <h1><?= $editing ? 'Edit listing' : 'New listing' ?></h1>
     <?php foreach ($errors as $er): ?><div class="flash flash-error"><?= e($er) ?></div><?php endforeach; ?>
-    <form method="post" class="card card-pad"><?= csrf_field() ?>
+    <form method="post" enctype="multipart/form-data" class="card card-pad"><?= csrf_field() ?>
       <h3>Basics</h3>
       <div class="form-grid">
         <div>
@@ -76,10 +74,29 @@ $selCity    = $_SERVER['REQUEST_METHOD'] === 'POST' ? post('city') : (!empty($ci
         <div><label>Year founded</label><input type="number" name="founded" value="<?= e($v('founded')) ?>" min="1800" max="<?= date('Y') ?>"></div>
       </div>
 
+      <h3 style="margin-top:24px">Logo</h3>
+      <?php if ($editing && $biz['logo_url']): ?>
+        <p><img src="<?= e($biz['logo_url']) ?>" alt="Current logo" style="width:72px;height:72px;object-fit:cover;border-radius:12px;border:1px solid var(--border)">
+        <label style="display:inline;font-weight:500;margin-left:10px"><input type="checkbox" name="remove_logo" value="1" style="width:auto"> Remove current logo</label></p>
+      <?php endif; ?>
+      <input type="file" name="logo" accept="image/jpeg,image/png,image/webp,image/gif">
+      <p class="form-note">JPG, PNG, WebP or GIF up to 5 MB. Shown on your listing card and storefront.</p>
+
       <?php if ($plan['enhanced']): ?>
         <h3 style="margin-top:24px">Storefront extras <span class="badge badge-pro">Pro</span></h3>
-        <label>Photo gallery — one image URL per line (max 6)</label>
-        <textarea name="gallery_urls" rows="4" placeholder="https://example.com/photo1.jpg"><?= e($_SERVER['REQUEST_METHOD'] === 'POST' ? post('gallery_urls') : $galleryText) ?></textarea>
+        <label>Photo gallery (up to 6 photos)</label>
+        <?php if (!empty($gallery)): ?>
+          <div class="gallery-grid" style="margin-bottom:10px">
+            <?php foreach ($gallery as $g): ?>
+              <div>
+                <img src="<?= e($g['url']) ?>" alt="">
+                <label style="font-weight:500;margin-top:4px"><input type="checkbox" name="remove_gallery[]" value="<?= (int)$g['id'] ?>" style="width:auto"> Remove</label>
+              </div>
+            <?php endforeach; ?>
+          </div>
+        <?php endif; ?>
+        <input type="file" name="gallery[]" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
+        <p class="form-note">Add up to <?= max(0, 6 - count($gallery ?? [])) ?> more photos, 5 MB each. They're resized automatically.</p>
         <label>Video URL (YouTube, Vimeo…)</label>
         <input type="text" name="video_url" value="<?= e($v('video_url')) ?>">
         <div class="form-grid">

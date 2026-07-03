@@ -115,6 +115,7 @@ CREATE TABLE IF NOT EXISTS businesses (
   hours        TEXT,                                   -- JSON [{d,h,open}]
   social       TEXT,                                   -- JSON {facebook,instagram,...}
   video_url    VARCHAR(255) DEFAULT NULL,              -- pro+: featured video embed
+  logo_url     VARCHAR(255) DEFAULT NULL,              -- uploaded logo
   rating       DECIMAL(2,1) NOT NULL DEFAULT 0.0,
   review_count INT NOT NULL DEFAULT 0,
   created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -173,6 +174,20 @@ CREATE TABLE IF NOT EXISTS reviews (
   KEY idx_rev_biz (business_id, status),
   CONSTRAINT fk_rev_biz  FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE,
   CONSTRAINT fk_rev_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---- Listing claims (unclaimed business → owner) --------------------------------
+CREATE TABLE IF NOT EXISTS claims (
+  id          INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  business_id INT UNSIGNED NOT NULL,
+  user_id     INT UNSIGNED NOT NULL,
+  message     VARCHAR(1000) DEFAULT NULL,
+  status      ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_claim (business_id, user_id),
+  KEY idx_claim_status (status),
+  CONSTRAINT fk_claim_biz  FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE,
+  CONSTRAINT fk_claim_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---- Analytics (per-listing daily rollups) --------------------------------------

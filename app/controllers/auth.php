@@ -23,6 +23,7 @@ switch ($path) {
                   [$email, password_hash($pass, PASSWORD_DEFAULT), $name]);
                 $user = row('SELECT * FROM users WHERE email = ?', [$email]);
                 login_user($user);
+                notify_welcome($email, $name);
                 flash_set('success', 'Welcome to ' . $site . '! Create your first listing below.');
                 redirect('/account/listings/new');
             }

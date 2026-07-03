@@ -44,3 +44,5 @@ require APP_ROOT . '/lib/plans.php';
 require APP_ROOT . '/lib/settings.php';
 require APP_ROOT . '/lib/stripe.php';
 require APP_ROOT . '/lib/mailer.php';
+require APP_ROOT . '/lib/uploads.php';
+require APP_ROOT . '/lib/notify.php';

@@ -35,3 +35,5 @@ User-agent: Bytespider
 Allow: /
 
 Sitemap: https://monsterlist.org/sitemap.xml
+
+# Machine-readable site guide for LLMs: https://monsterlist.org/llms.txt

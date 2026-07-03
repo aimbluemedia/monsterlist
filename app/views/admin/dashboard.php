@@ -6,9 +6,10 @@
   <div class="card stat"><div class="n"><?= $stats['members'] ?></div><div class="l">Members</div></div>
   <div class="card stat"><div class="n"><?= $stats['paid'] ?></div><div class="l">Paying members</div></div>
 </div>
-<div class="stat-row" style="grid-template-columns:repeat(2,1fr)">
+<div class="stat-row" style="grid-template-columns:repeat(3,1fr)">
   <div class="card stat"><div class="n"><?= $stats['views7'] ?></div><div class="l">Listing views (7d)</div></div>
   <div class="card stat"><div class="n"><?= $stats['reviews'] ?></div><div class="l">New reviews (7d)</div></div>
+  <div class="card stat"><div class="n"><?= $stats['claims'] ?></div><div class="l">Pending claims</div></div>
 </div>
 <div class="card card-pad">
   <div class="section-head"><h3>Moderation queue</h3><a href="/admin/listings?status=pending" class="mute">All pending →</a></div>

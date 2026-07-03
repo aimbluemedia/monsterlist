@@ -13,11 +13,21 @@ no build step.
   `/us` → `/us/arizona` → `/us/arizona/phoenix` → `/us/arizona/phoenix/sunrise-bakery`
   (non-US countries are 2-tier: `/gb/london/business-name`)
 - Category landing pages (`/category/food`), full-text search, business storefronts
+- **Category × location SEO pages** (`/category/food/us/arizona/phoenix`) with unique
+  intro copy, rendered FAQs + `FAQPage` JSON-LD, and internal links (nearby cities,
+  other categories) — pages with zero listings are noindexed automatically
 - JSON-LD everywhere: `WebSite`+`SearchAction`, `Organization`, `LocalBusiness`,
   `BreadcrumbList`, `ItemList`, `FAQPage`
-- Dynamic paginated sitemaps (`/sitemap.xml` index → static/geo/business parts, 10k URLs each)
-- `robots.txt` that explicitly welcomes AI crawlers
+- Dynamic paginated sitemaps (`/sitemap.xml` index → static/geo/business/category×city
+  parts, 10k URLs each)
+- `robots.txt` that explicitly welcomes AI crawlers, plus `/llms.txt` (machine-readable
+  site guide), a "Quick facts" block on every storefront, and **IndexNow** pings when
+  listings go live
 - Reviews with cached aggregate ratings
+- Logo + photo gallery **uploads** (GD resize server-side, execution-proof uploads dir)
+- **Claim-listing flow**: unclaimed businesses can be claimed by members; admins verify
+  and approve from a claims queue; claimant is emailed either way
+- Transactional email: welcome, listing approved/rejected, plan upgraded, claim decisions
 
 **Memberships (free + monthly via Stripe)**
 - **Free** — 1 basic listing
@@ -57,6 +67,7 @@ database/
 scripts/
   create_admin.php   create the first superadmin
   generate_seed.php  regenerate seed.sql from database/data/*.json
+  seed_demo.php      populate popular cities with demo listings (--remove to undo)
 ```
 
 ## Install (cPanel / shared hosting)

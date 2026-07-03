@@ -27,7 +27,7 @@
   <div class="grid grid-3">
     <?php foreach ($featured as $b): ?>
       <a class="card listing" href="<?= e(business_path($b)) ?>">
-        <span class="avatar"><?= e(mb_substr($b['name'], 0, 1)) ?></span>
+            <span class="avatar"><?php if (!empty($b['logo_url'])): ?><img src="<?= e($b['logo_url']) ?>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px"><?php else: ?><?= e(mb_substr($b['name'], 0, 1)) ?><?php endif; ?></span>
         <span class="listing-body">
           <span class="listing-title"><?= e($b['name']) ?> <span class="badge badge-featured">Featured</span></span>
           <span class="listing-meta"><?= e($b['category_label'] ?? '') ?> · <?= e($b['city_name']) ?></span>
@@ -45,7 +45,7 @@
   <div class="grid grid-3">
     <?php foreach ($newest as $b): ?>
       <a class="card listing" href="<?= e(business_path($b)) ?>">
-        <span class="avatar"><?= e(mb_substr($b['name'], 0, 1)) ?></span>
+            <span class="avatar"><?php if (!empty($b['logo_url'])): ?><img src="<?= e($b['logo_url']) ?>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px"><?php else: ?><?= e(mb_substr($b['name'], 0, 1)) ?><?php endif; ?></span>
         <span class="listing-body">
           <span class="listing-title"><?= e($b['name']) ?>
             <?php if ($b['tier'] === 'pro'): ?><span class="badge badge-pro">Pro</span><?php endif; ?>

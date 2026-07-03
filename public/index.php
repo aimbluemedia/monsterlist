@@ -44,9 +44,21 @@ switch (true) {
         require $controllers . '/search.php';
         break;
 
-    case $first === 'category' && count($segments) === 2:
+    case $first === 'category' && count($segments) >= 2 && count($segments) <= 5:
         $catSlug = $segments[1];
         require $controllers . '/category.php';
+        break;
+
+    case $path === '/llms.txt':
+        require $controllers . '/llms.php';
+        break;
+
+    case preg_match('#^/([a-f0-9]{32})\.txt$#', $path, $m) === 1 && $m[1] === setting('indexnow_key'):
+        header('Content-Type: text/plain');
+        exit(setting('indexnow_key'));
+
+    case $first === 'claim' && count($segments) === 2:
+        require $controllers . '/claim.php';
         break;
 
     case in_array($path, ['/pricing', '/about', '/contact', '/terms', '/privacy', '/add-listing'], true):

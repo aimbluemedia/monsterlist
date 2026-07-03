@@ -32,6 +32,14 @@ function render_city_page(array $country, ?array $region, array $city): void
 
     $items = array_map(fn($b) => ['name' => $b['name'], 'path' => $path . '/' . $b['slug']], $list);
 
+    // category chips → category×city landing pages
+    $cityCats = rows(
+        'SELECT c.id, c.label, c.icon, COUNT(*) cnt
+         FROM businesses b JOIN categories c ON c.id = b.category_id
+         WHERE b.city_id = ? AND b.status = "live"
+         GROUP BY c.id ORDER BY cnt DESC, c.label', [$city['id']]);
+    $catCityBase = '/category/%s/' . strtolower($country['code']) . ($region ? '/' . $region['slug'] : '') . '/' . $city['slug'];
+
     $where = $city['name'] . ($region ? ', ' . $region['name'] : '') . ', ' . $country['name'];
     $meta = [
         'title'       => "Local businesses in $where — $site" . ($page > 1 ? " (page $page)" : ''),
@@ -39,7 +47,7 @@ function render_city_page(array $country, ?array $region, array $city): void
         'canonical'   => site_url($path . ($page > 1 ? "?page=$page" : '')),
         'jsonld'      => [jsonld_breadcrumbs($crumbs), jsonld_itemlist($items)],
     ];
-    view('city', compact('meta', 'country', 'region', 'city', 'list', 'total', 'page', 'pages', 'path', 'crumbs'));
+    view('city', compact('meta', 'country', 'region', 'city', 'list', 'total', 'page', 'pages', 'path', 'crumbs', 'cityCats', 'catCityBase'));
 }
 
 function render_storefront(array $country, ?array $region, array $city, string $bizSlug): void

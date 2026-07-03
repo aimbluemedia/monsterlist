@@ -47,6 +47,7 @@ if ($path === '/stripe/webhook' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($userId && in_array($plan, ['pro', 'featured'], true)) {
             q('UPDATE users SET plan = ? WHERE id = ?', [$plan, $userId]);
             sync_business_tiers($userId, $plan);
+            notify_plan_change($userId, $plan);
             if ($subId) {
                 q('INSERT INTO subscriptions (user_id, plan, status, stripe_subscription_id) VALUES (?,?,"active",?)
                    ON DUPLICATE KEY UPDATE plan = VALUES(plan), status = "active"', [$userId, $plan, $subId]);

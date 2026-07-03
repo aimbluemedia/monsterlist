@@ -10,6 +10,14 @@
     <h1>Local businesses in <?= e($city['name']) ?><?= $region ? ', ' . e($region['name']) : '' ?></h1>
     <p class="mute"><?= (int)$total ?> listing<?= $total === 1 ? '' : 's' ?> in <?= e($city['name']) ?>, <?= e($country['name']) ?>.</p>
 
+    <?php if (!empty($cityCats)): ?>
+      <div style="margin-bottom:16px">
+        <?php foreach ($cityCats as $cc2): ?>
+          <a class="chip" href="<?= e(sprintf($catCityBase, $cc2['id'])) ?>"><?= e($cc2['icon']) ?> <?= e($cc2['label']) ?> (<?= (int)$cc2['cnt'] ?>)</a>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
+
     <?php if (!$list): ?>
       <div class="card card-pad">
         <strong>No businesses listed here yet.</strong>
@@ -20,7 +28,7 @@
       <div class="grid">
         <?php foreach ($list as $b): ?>
           <a class="card listing" href="<?= e($path . '/' . $b['slug']) ?>">
-            <span class="avatar"><?= e(mb_substr($b['name'], 0, 1)) ?></span>
+            <span class="avatar"><?php if (!empty($b['logo_url'])): ?><img src="<?= e($b['logo_url']) ?>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px"><?php else: ?><?= e(mb_substr($b['name'], 0, 1)) ?><?php endif; ?></span>
             <span class="listing-body">
               <span class="listing-title">
                 <?= e($b['name']) ?>

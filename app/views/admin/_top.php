@@ -17,6 +17,7 @@
       <a href="/admin">Dashboard</a>
       <a href="/admin/listings">Listings</a>
       <a href="/admin/members">Members</a>
+      <a href="/admin/claims">Claims</a>
       <a href="/admin/reviews">Reviews</a>
       <a href="/admin/categories">Categories</a>
       <?php if (is_superadmin()): ?>
