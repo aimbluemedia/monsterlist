@@ -1,6 +1,11 @@
-# Uploaded images only — never execute anything here
-<FilesMatch "\.(php|phtml|php\d|cgi|pl|py|sh)$">
-  Require all denied
+# Uploaded images only — never execute scripts here.
+# Both authorization syntaxes included for old/new Apache compatibility.
+<FilesMatch "\.(php|phtml|php[0-9]|cgi|pl|py|sh)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
 </FilesMatch>
-Options -ExecCGI -Indexes
-RemoveHandler .php .phtml

@@ -89,13 +89,30 @@ STEP 7 — GO-LIVE CHECKLIST
         UPDATE cities SET listing_count = (SELECT COUNT(*) FROM businesses
           WHERE city_id = cities.id AND status = 'live');
 
-TROUBLESHOOTING
----------------
-  • "Missing app/config.php"      → Step 4 not done, or app/ path wrong
-  • 500 error                     → set 'debug' => true in app/config.php
-                                    temporarily to see the real error
+TROUBLESHOOTING — HTTP 500 FIRST AID
+------------------------------------
+  1. Open  https://yourdomain/install-check.php  in your browser.
+     It tests everything (PHP version, extensions, config, database,
+     folders) and tells you exactly what to fix, in order.
+     → DELETE install-check.php once the site works.
+
+  2. The three most common causes, in order:
+     a) PHP VERSION — the app needs PHP 7.4+, 8.1+ recommended.
+        cPanel → MultiPHP Manager (or "Select PHP Version") → set 8.1/8.2/8.3
+        for the domain.
+     b) app/config.php missing — Step 4 not done yet.
+     c) Wrong DB credentials in app/config.php — or the DB user was created
+        but never ADDED to the database (cPanel → MySQL Databases → bottom
+        section "Add User To Database" → All Privileges).
+
+  3. Still stuck? Set 'debug' => true in app/config.php, reload the page,
+     and read the real error message. Set it back to false afterwards.
+
+OTHER ISSUES
+------------
   • Pretty URLs 404               → .htaccess didn't upload (it's a hidden
                                     file — enable "show hidden files" in
                                     your file manager)
+  • Blank white page              → same as 500: run /install-check.php
   • Images won't upload           → uploads/ folder missing or not writable
 =====================================================================

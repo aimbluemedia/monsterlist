@@ -3,13 +3,30 @@
 // Bootstrap: config, error mode, session, core libraries.
 // Every entry point (public/index.php) requires this file first.
 // ---------------------------------------------------------------------------
+if (PHP_VERSION_ID < 70400) {
+    http_response_code(500);
+    header('Content-Type: text/html; charset=UTF-8');
+    echo '<h1>PHP version too old</h1><p>MonsterList needs PHP 7.4 or newer (8.1+ recommended); this server is running PHP '
+       . PHP_VERSION . '.</p><p>Fix: in cPanel open <strong>MultiPHP Manager</strong> (or "Select PHP Version"), '
+       . 'select this domain and set PHP 8.1 or newer, then reload this page.</p>'
+       . str_repeat(' ', 600); // pad past 512 bytes so browsers show this message instead of a generic error page
+    exit;
+}
+
 define('APP_ROOT', __DIR__);
 define('BASE_ROOT', dirname(__DIR__));
 
 $configFile = APP_ROOT . '/config.php';
 if (!is_file($configFile)) {
     http_response_code(500);
-    exit('Missing app/config.php — copy app/config.example.php and edit it.');
+    header('Content-Type: text/html; charset=UTF-8');
+    echo '<h1>Configuration file missing</h1>'
+       . '<p>MonsterList is uploaded but not configured yet: <code>app/config.php</code> does not exist.</p>'
+       . '<p>Fix: in your file manager, copy <code>app/config.example.php</code> to <code>app/config.php</code>, '
+       . 'then edit it with your site URL and MySQL database credentials (Step 4 in INSTALL.txt).</p>'
+       . '<p>You can run a full server self-test at <code>/install-check.php</code>.</p>'
+       . str_repeat(' ', 600);
+    exit;
 }
 $GLOBALS['config'] = require $configFile;
 

@@ -1,6 +1,26 @@
 <?php
 // Shared helpers: escaping, slugs, redirects, views, pagination, flash messages.
 
+// Polyfills so the app runs on PHP 7.4 (str_* helpers are PHP 8.0+)
+if (!function_exists('str_starts_with')) {
+    function str_starts_with(string $haystack, string $needle): bool
+    {
+        return $needle === '' || strncmp($haystack, $needle, strlen($needle)) === 0;
+    }
+}
+if (!function_exists('str_contains')) {
+    function str_contains(string $haystack, string $needle): bool
+    {
+        return $needle === '' || strpos($haystack, $needle) !== false;
+    }
+}
+if (!function_exists('str_ends_with')) {
+    function str_ends_with(string $haystack, string $needle): bool
+    {
+        return $needle === '' || substr($haystack, -strlen($needle)) === $needle;
+    }
+}
+
 /** HTML-escape. */
 function e(?string $s): string
 {
@@ -25,13 +45,13 @@ function site_url(string $path = ''): string
     return rtrim($GLOBALS['config']['site_url'], '/') . $path;
 }
 
-function redirect(string $path): never
+function redirect(string $path): void
 {
     header('Location: ' . $path);
     exit;
 }
 
-function not_found(): never
+function not_found(): void
 {
     http_response_code(404);
     $meta = ['title' => 'Page not found — ' . setting('site_name'), 'description' => '', 'robots' => 'noindex'];
