@@ -13,6 +13,18 @@ $selCity    = $_SERVER['REQUEST_METHOD'] === 'POST' ? post('city') : (!empty($ci
   <div>
     <h1><?= $editing ? 'Edit listing' : 'New listing' ?></h1>
     <?php foreach ($errors as $er): ?><div class="flash flash-error"><?= e($er) ?></div><?php endforeach; ?>
+
+    <?php if (!$editing && ai_configured()): ?>
+      <div class="card card-pad" id="ai-fill-card" style="margin-bottom:16px;background:var(--accent-soft);border-color:var(--accent)">
+        <h3>✨ Let AI fill this out for you</h3>
+        <p class="mute" style="margin:4px 0 10px">Paste your website address — we'll read it and pre-fill the form. You review everything before submitting.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input type="text" id="ai-url" placeholder="https://yourbusiness.com" style="flex:1;min-width:220px" data-csrf="<?= e(csrf_token()) ?>">
+          <button type="button" class="btn btn-primary" id="ai-fill-btn">Fill the form</button>
+        </div>
+        <p class="form-note" id="ai-status" style="min-height:1.2em"></p>
+      </div>
+    <?php endif; ?>
     <form method="post" enctype="multipart/form-data" class="card card-pad"><?= csrf_field() ?>
       <h3>Basics</h3>
       <div class="form-grid">

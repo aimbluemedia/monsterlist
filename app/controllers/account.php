@@ -138,6 +138,30 @@ if ($sub === 'dashboard') {
          WHERE b.owner_id = ? ORDER BY b.created_at DESC', [$u['id']]);
     view('account/listings', compact('meta', 'u', 'plan', 'listings'));
 
+} elseif ($sub === 'listings' && $act === 'autofill' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    // AJAX: fetch the member's website and let Claude pre-fill the listing form.
+    header('Content-Type: application/json; charset=UTF-8');
+    csrf_check();
+
+    // simple per-session throttle: 10 autofills per hour
+    $_SESSION['ai_fills'] = array_filter($_SESSION['ai_fills'] ?? [], fn($t) => $t > time() - 3600);
+    if (count($_SESSION['ai_fills']) >= 10) {
+        echo json_encode(['ok' => false, 'error' => 'AI fill limit reached — try again in a little while.']);
+        exit;
+    }
+
+    $url = trim((string)post('url'));
+    if ($url === '') { echo json_encode(['ok' => false, 'error' => 'Please enter your website address.']); exit; }
+
+    $fields = ai_extract_listing($url, $aiError);
+    if ($fields === null) {
+        echo json_encode(['ok' => false, 'error' => $aiError ?: 'Something went wrong — please fill the form manually.']);
+        exit;
+    }
+    $_SESSION['ai_fills'][] = time();
+    echo json_encode(['ok' => true, 'fields' => $fields], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    exit;
+
 } elseif ($sub === 'listings' && $act === 'new') {
     if (!user_can_add_listing($u)) {
         flash_set('error', 'Your ' . $plan['label'] . ' plan allows ' . $plan['max_listings'] . ' listing(s). Upgrade to add more.');

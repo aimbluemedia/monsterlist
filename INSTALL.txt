@@ -74,6 +74,16 @@ STEP 6 — STRIPE (monthly memberships)
   5. Test with a Stripe test card (4242 4242 4242 4242) using test keys
      before switching to live keys.
 
+STEP 6b — AI FILL (optional but recommended)
+--------------------------------------------
+Members can paste their website URL on the New Listing form and AI
+pre-fills everything. To enable:
+  1. Get an Anthropic API key at https://platform.claude.com (API keys)
+  2. Put it in app/config.php → 'anthropic' → 'api_key'
+Cost guide: each fill is one Claude API call (typically a few cents).
+Members are limited to 10 fills per hour. Leave the key empty to
+disable the feature — the form works normally without it.
+
 STEP 7 — GO-LIVE CHECKLIST
 --------------------------
   [ ] https:// works (the .htaccess already forces HTTPS)

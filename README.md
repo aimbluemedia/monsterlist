@@ -38,6 +38,18 @@ no build step.
 - Stripe Checkout + billing portal + webhook (plan changes sync automatically);
   prices/IDs editable in Admin → Settings
 
+**✨ AI fill (Claude API)**
+- On the New Listing form, members paste their website URL and AI reads the site
+  and pre-fills the whole form: name, category, city/state/country, contact details,
+  description, tagline, social links, year founded. Members review, then submit.
+- Powered by the Anthropic Claude API (`claude-opus-4-8`) with structured outputs —
+  the extraction is schema-validated, then re-validated server-side against the
+  directory's own categories/countries/states before it touches the form.
+- Setup: put your Anthropic API key in `app/config.php` → `'anthropic'`. Get one at
+  https://platform.claude.com. No key = the feature quietly hides; everything else works.
+- Safety: SSRF-guarded fetcher (public hosts only, redirect re-validation, 1 MB cap),
+  10 fills/hour per member, the AI is instructed never to invent contact details.
+
 **Member area** (`/account`)
 - Dashboard, listing CRUD with plan limits, analytics (views / website clicks / calls,
   daily rollups), billing, profile settings

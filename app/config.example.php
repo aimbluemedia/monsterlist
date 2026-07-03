@@ -22,6 +22,13 @@ return [
         'webhook_secret'  => '',   // whsec_... (Developers → Webhooks)
     ],
 
+    // Anthropic Claude API — powers "AI fill" on the listing form.
+    // Get a key at https://platform.claude.com → API keys. Leave empty to disable.
+    'anthropic' => [
+        'api_key' => '',                    // sk-ant-...
+        'model'   => 'claude-opus-4-8',
+    ],
+
     // Transactional email (password resets, notifications)
     'mail' => [
         'from'      => 'no-reply@monsterlist.org',
