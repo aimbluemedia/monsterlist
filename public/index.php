@@ -15,7 +15,21 @@
 //   /out/{id}                      tracked click-through to a business website
 //   /{country}[/{region}][/{city}][/{business}]   geo pages (catch-all, last)
 // ---------------------------------------------------------------------------
-require dirname(__DIR__) . '/app/bootstrap.php';
+// Locate the app folder — works whether app/ sits above the web root
+// (recommended) or inside it (e.g. everything uploaded into public_html).
+$bootstrap = null;
+foreach ([dirname(__DIR__) . '/app/bootstrap.php', __DIR__ . '/app/bootstrap.php'] as $candidate) {
+    if (is_file($candidate)) { $bootstrap = $candidate; break; }
+}
+if ($bootstrap === null) {
+    http_response_code(500);
+    header('Content-Type: text/html; charset=UTF-8');
+    echo '<h1>App folder not found</h1><p>Could not find <code>app/bootstrap.php</code>. '
+       . 'Upload the <code>app</code> folder either next to the web root or inside it, '
+       . 'or run <code>/install-check.php</code> for a full diagnosis.</p>' . str_repeat(' ', 600);
+    exit;
+}
+require $bootstrap;
 
 $uri  = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 $uri  = rawurldecode($uri);
