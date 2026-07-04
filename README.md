@@ -55,7 +55,7 @@ no build step.
 - Dashboard, listing CRUD with plan limits, analytics (views / website clicks / calls,
   daily rollups), billing, profile settings
 
-**Admin** (`/admin`) — two levels
+**Admin** (`/admin`) — separate staff sign-in at `/admin/login`, two levels
 - **admin**: moderation queue (all listings launch as `pending`), members, reviews, categories
 - **superadmin**: everything above + manage admin accounts + site settings (branding,
   pricing, Stripe price IDs)
@@ -93,7 +93,8 @@ scripts/
 4. Create your superadmin:
    `php scripts/create_admin.php you@example.com "Your Name" yourpassword superadmin`
    (or run the INSERT by hand — the script prints usage).
-5. Visit `/login` → you land in `/admin`.
+5. Visit `/admin/login` (dedicated staff sign-in) → you land in `/admin`.
+   Members sign up and sign in at `/signup` / `/login`.
 
 ## Stripe setup
 

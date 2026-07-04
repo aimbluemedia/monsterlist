@@ -42,7 +42,8 @@ STEP 4 — CONFIGURE
 
 STEP 5 — FIRST LOGIN
 --------------------
-  1. Visit https://monsterlist.org/login
+  1. Visit https://monsterlist.org/admin/login  (staff sign-in;
+     members use /login)
   2. Log in with the email from create-superadmin.sql
      and password:  ChangeMe-2026!
   3. IMMEDIATELY change the password (top-right → My account → Settings)

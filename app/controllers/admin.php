@@ -1,10 +1,41 @@
 <?php
 // Admin area: /admin[/listings|/members|/reviews|/categories|/admins|/settings]
 // Roles: admin = moderation + members; superadmin = admins + site settings too.
-$u    = require_admin();
 $site = setting('site_name');
 $sub  = $segments[1] ?? 'dashboard';
 $meta = ['title' => "Admin — $site", 'robots' => 'noindex'];
+
+// Dedicated staff entrance — the only /admin route that doesn't require auth.
+if ($sub === 'login') {
+    if (is_admin()) redirect('/admin');
+    $errors = [];
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        csrf_check();
+        if (login_throttled()) {
+            $errors[] = 'Too many failed attempts. Please wait 15 minutes and try again.';
+        } else {
+            $email = post('email');
+            $pass  = (string)($_POST['password'] ?? '');
+            $user  = row('SELECT * FROM users WHERE email = ?', [$email]);
+            if ($user && $user['status'] === 'active'
+                && in_array($user['role'], ['admin', 'superadmin'], true)
+                && password_verify($pass, $user['password_hash'])) {
+                login_user($user);
+                $to = $_SESSION['after_login'] ?? '/admin';
+                unset($_SESSION['after_login']);
+                redirect($to);
+            }
+            record_failed_login($email);
+            // Same message whether the account is wrong, not staff, or bad password.
+            $errors[] = 'Invalid admin credentials.';
+        }
+    }
+    $meta = ['title' => "Admin login — $site", 'robots' => 'noindex'];
+    view_raw('admin/login', compact('meta', 'errors'));
+    exit;
+}
+
+$u = require_admin();
 
 if ($sub === 'dashboard') {
     $stats = [

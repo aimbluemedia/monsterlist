@@ -48,13 +48,19 @@ switch ($path) {
                 $pass  = (string)($_POST['password'] ?? '');
                 $user  = row('SELECT * FROM users WHERE email = ?', [$email]);
                 if ($user && $user['status'] === 'active' && password_verify($pass, $user['password_hash'])) {
-                    login_user($user);
-                    $to = $_SESSION['after_login'] ?? (in_array($user['role'], ['admin','superadmin'], true) ? '/admin' : '/account');
-                    unset($_SESSION['after_login']);
-                    redirect($to);
+                    if (in_array($user['role'], ['admin', 'superadmin'], true)) {
+                        // Staff accounts use the dedicated admin entrance.
+                        $errors[] = 'This is the member login. Administrators sign in at /admin/login.';
+                    } else {
+                        login_user($user);
+                        $to = $_SESSION['after_login'] ?? '/account';
+                        unset($_SESSION['after_login']);
+                        redirect($to);
+                    }
+                } else {
+                    record_failed_login($email);
+                    $errors[] = 'Invalid email or password.';
                 }
-                record_failed_login($email);
-                $errors[] = 'Invalid email or password.';
             }
         }
         $meta = ['title' => "Log in — $site", 'description' => "Member and admin login for $site.", 'canonical' => site_url('/login'), 'robots' => 'noindex'];

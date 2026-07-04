@@ -40,7 +40,11 @@ function require_login(): array
 
 function require_admin(): array
 {
-    $u = require_login();
+    $u = current_user();
+    if (!$u) {
+        $_SESSION['after_login'] = $_SERVER['REQUEST_URI'] ?? '/admin';
+        redirect('/admin/login');
+    }
     if (!in_array($u['role'], ['admin', 'superadmin'], true)) {
         http_response_code(403);
         exit('Forbidden');
