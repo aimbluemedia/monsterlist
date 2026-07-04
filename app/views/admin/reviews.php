@@ -20,7 +20,7 @@
       </tr>
     <?php endforeach; ?>
   </table>
-  <?php if (count($list) === 30): ?><nav class="pager"><a href="/admin/reviews?page=<?= $page + 1 ?>">Next →</a></nav><?php endif; ?>
+  <?php if (count($list) === 30): ?><nav class="pager"><a href="/superadmin/reviews?page=<?= $page + 1 ?>">Next →</a></nav><?php endif; ?>
   <?php endif; ?>
 </div>
 <?php require __DIR__ . '/_bottom.php'; ?>

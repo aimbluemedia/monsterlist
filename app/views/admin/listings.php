@@ -2,7 +2,7 @@
 <div class="section-head"><h1>Listings</h1></div>
 <p>
   <?php foreach (['pending','live','rejected','all'] as $s): ?>
-    <a class="chip" style="<?= $s === $status ? 'border-color:var(--accent);color:var(--accent)' : '' ?>" href="/admin/listings?status=<?= $s ?>"><?= ucfirst($s) ?></a>
+    <a class="chip" style="<?= $s === $status ? 'border-color:var(--accent);color:var(--accent)' : '' ?>" href="/superadmin/listings?status=<?= $s ?>"><?= ucfirst($s) ?></a>
   <?php endforeach; ?>
 </p>
 <div class="card card-pad">
@@ -31,7 +31,7 @@
       </tr>
     <?php endforeach; ?>
   </table>
-  <?php if (count($list) === 30): ?><nav class="pager"><a href="/admin/listings?status=<?= e($status) ?>&page=<?= $page + 1 ?>">Next →</a></nav><?php endif; ?>
+  <?php if (count($list) === 30): ?><nav class="pager"><a href="/superadmin/listings?status=<?= e($status) ?>&page=<?= $page + 1 ?>">Next →</a></nav><?php endif; ?>
   <?php endif; ?>
 </div>
 <?php require __DIR__ . '/_bottom.php'; ?>

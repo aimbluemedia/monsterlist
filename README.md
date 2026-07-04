@@ -36,7 +36,7 @@ no build step.
 - **Featured** ($49/mo default) — 15 listings, everything in Pro + priority placement
   (homepage + top of city/category pages)
 - Stripe Checkout + billing portal + webhook (plan changes sync automatically);
-  prices/IDs editable in Admin → Settings
+  prices/IDs editable in Superadmin panel → Settings
 
 **✨ AI fill (Claude API)**
 - On the New Listing form, members paste their website URL and AI reads the site
@@ -45,7 +45,7 @@ no build step.
 - Powered by the Anthropic Claude API (`claude-opus-4-8`) with structured outputs —
   the extraction is schema-validated, then re-validated server-side against the
   directory's own categories/countries/states before it touches the form.
-- Setup: paste your Anthropic API key in **Admin → Settings** (or in `app/config.php`
+- Setup: paste your Anthropic API key in **Superadmin panel → Settings** (or in `app/config.php`
   → `'anthropic'`). Get one at https://platform.claude.com. No key = the feature
   quietly hides; everything else works.
 - Safety: SSRF-guarded fetcher (public hosts only, redirect re-validation, 1 MB cap),
@@ -55,7 +55,7 @@ no build step.
 - Dashboard, listing CRUD with plan limits, analytics (views / website clicks / calls,
   daily rollups), billing, profile settings
 
-**Admin** (`/admin`) — separate staff sign-in at `/admin/login`, two levels
+**Admin** (`/superadmin`) — separate staff sign-in at `/superadmin/login`, two levels
 - **admin**: moderation queue (all listings launch as `pending`), members, reviews, categories
 - **superadmin**: everything above + manage admin accounts + site settings (branding,
   pricing, Stripe price IDs)
@@ -93,7 +93,7 @@ scripts/
 4. Create your superadmin:
    `php scripts/create_admin.php you@example.com "Your Name" yourpassword superadmin`
    (or run the INSERT by hand — the script prints usage).
-5. Visit `/admin/login` (dedicated staff sign-in) → you land in `/admin`.
+5. Visit `/superadmin/login` (dedicated staff sign-in) → you land in `/superadmin`.
    Members sign up and sign in at `/signup` / `/login`.
 
 ## Stripe setup
@@ -101,7 +101,7 @@ scripts/
 1. In the Stripe dashboard create a **Product** with two recurring monthly **Prices**
    (Pro and Featured).
 2. Put your API keys in `app/config.php` (`secret_key`, `publishable_key`).
-3. Paste the two `price_…` IDs in **Admin → Settings**.
+3. Paste the two `price_…` IDs in **Superadmin panel → Settings**.
 4. Add a webhook endpoint `https://yourdomain/stripe/webhook` for events
    `checkout.session.completed`, `customer.subscription.updated`,
    `customer.subscription.deleted`, and put its signing secret (`whsec_…`)
@@ -124,5 +124,5 @@ include `index.php`.
 ## Moderation model
 
 Every new listing (and any edit that changes its name/description) goes to
-`pending`. Admins approve or reject from the queue at `/admin`. This keeps the
+`pending`. Admins approve or reject from the queue at `/superadmin`. This keeps the
 directory clean — which is exactly what search engines and AI answers reward.

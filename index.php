@@ -9,7 +9,7 @@
 //   /pricing /about /contact /terms /privacy /add-listing
 //   /signup /login /logout /forgot /reset
 //   /account[...]                  member area
-//   /admin[...]                    admin + superadmin
+//   /superadmin[...]                    admin + superadmin
 //   /stripe/checkout|webhook|portal
 //   /sitemap.xml /sitemap-{n}.xml  dynamic sitemaps
 //   /out/{id}                      tracked click-through to a business website
@@ -88,7 +88,7 @@ switch (true) {
         require $controllers . '/account.php';
         break;
 
-    case $first === 'admin':
+    case $first === 'superadmin':
         require $controllers . '/admin.php';
         break;
 

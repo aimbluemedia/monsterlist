@@ -1,13 +1,13 @@
 <?php
-// Admin area: /admin[/listings|/members|/reviews|/categories|/admins|/settings]
+// Staff area: /superadmin[/listings|/members|/claims|/reviews|/categories|/admins|/settings]
 // Roles: admin = moderation + members; superadmin = admins + site settings too.
 $site = setting('site_name');
 $sub  = $segments[1] ?? 'dashboard';
 $meta = ['title' => "Admin — $site", 'robots' => 'noindex'];
 
-// Dedicated staff entrance — the only /admin route that doesn't require auth.
+// Dedicated staff entrance — the only /superadmin route that doesn't require auth.
 if ($sub === 'login') {
-    if (is_admin()) redirect('/admin');
+    if (is_admin()) redirect('/superadmin');
     $errors = [];
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         csrf_check();
@@ -21,7 +21,7 @@ if ($sub === 'login') {
                 && in_array($user['role'], ['admin', 'superadmin'], true)
                 && password_verify($pass, $user['password_hash'])) {
                 login_user($user);
-                $to = $_SESSION['after_login'] ?? '/admin';
+                $to = $_SESSION['after_login'] ?? '/superadmin';
                 unset($_SESSION['after_login']);
                 redirect($to);
             }
@@ -80,7 +80,7 @@ if ($sub === 'dashboard') {
             }
             if ($biz['city_id']) refresh_city_count((int)$biz['city_id']);
         }
-        redirect('/admin/listings' . (post('back') ? '?status=' . post('back') : ''));
+        redirect('/superadmin/listings' . (post('back') ? '?status=' . post('back') : ''));
     }
     $status = in_array($_GET['status'] ?? 'pending', ['pending','live','rejected','all'], true) ? ($_GET['status'] ?? 'pending') : 'pending';
     $where  = $status === 'all' ? '1=1' : 'b.status = ' . db()->quote($status);
@@ -114,7 +114,7 @@ if ($sub === 'dashboard') {
                 flash_set('success', 'Account deleted. Their listings remain, unclaimed.');
             }
         }
-        redirect('/admin/members');
+        redirect('/superadmin/members');
     }
     $qstr = trim((string)($_GET['q'] ?? ''));
     $page = page_param();
@@ -151,7 +151,7 @@ if ($sub === 'dashboard') {
                 flash_set('success', 'Claim rejected.');
             }
         }
-        redirect('/admin/claims');
+        redirect('/superadmin/claims');
     }
     $list = rows(
         'SELECT cl.*, b.name AS business_name, u.name AS claimant_name, u.email AS claimant_email, u.plan AS claimant_plan
@@ -174,7 +174,7 @@ if ($sub === 'dashboard') {
             refresh_rating((int)$rev['business_id']);
             flash_set('success', 'Review updated.');
         }
-        redirect('/admin/reviews');
+        redirect('/superadmin/reviews');
     }
     $page = page_param();
     $offset = ($page - 1) * 30;
@@ -206,7 +206,7 @@ if ($sub === 'dashboard') {
                 flash_set('success', 'Category deleted.');
             }
         }
-        redirect('/admin/categories');
+        redirect('/superadmin/categories');
     }
     $list = rows('SELECT c.*, (SELECT COUNT(*) FROM businesses WHERE category_id = c.id) AS in_use FROM categories c ORDER BY c.label');
     view_raw('admin/categories', compact('meta', 'u', 'list'));
@@ -231,10 +231,10 @@ if ($sub === 'dashboard') {
             $t = row('SELECT * FROM users WHERE id = ? AND role = "admin"', [(int)post('id')]);
             if ($t) { q('UPDATE users SET role = "member" WHERE id = ?', [$t['id']]); flash_set('success', 'Admin demoted to member.'); }
         }
-        redirect('/admin/admins');
+        redirect('/superadmin/admins');
     }
     $list = rows('SELECT * FROM users WHERE role IN ("admin","superadmin") ORDER BY role DESC, created_at');
-    view_raw('admin/admins', compact('meta', 'u', 'list'));
+    view_raw('admin/superadmins', compact('meta', 'u', 'list'));
 
 } elseif ($sub === 'settings') {
     require_superadmin();
@@ -244,7 +244,7 @@ if ($sub === 'dashboard') {
             if (isset($_POST[$k])) setting_save($k, trim((string)$_POST[$k]));
         }
         flash_set('success', 'Settings saved.');
-        redirect('/admin/settings');
+        redirect('/superadmin/settings');
     }
     view_raw('admin/settings', compact('meta', 'u'));
 

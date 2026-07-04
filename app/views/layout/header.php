@@ -41,7 +41,7 @@ $me            = current_user();
     <div class="nav-actions">
       <?php if ($me): ?>
         <?php if (in_array($me['role'], ['admin','superadmin'], true)): ?>
-          <a class="btn btn-ghost" href="/admin">Admin</a>
+          <a class="btn btn-ghost" href="/superadmin">Admin</a>
         <?php endif; ?>
         <a class="btn btn-ghost" href="/account">My account</a>
         <a class="btn btn-primary" href="/account/listings/new">Add a business</a>

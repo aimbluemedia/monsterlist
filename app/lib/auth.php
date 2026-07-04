@@ -42,8 +42,8 @@ function require_admin(): array
 {
     $u = current_user();
     if (!$u) {
-        $_SESSION['after_login'] = $_SERVER['REQUEST_URI'] ?? '/admin';
-        redirect('/admin/login');
+        $_SESSION['after_login'] = $_SERVER['REQUEST_URI'] ?? '/superadmin';
+        redirect('/superadmin/login');
     }
     if (!in_array($u['role'], ['admin', 'superadmin'], true)) {
         http_response_code(403);

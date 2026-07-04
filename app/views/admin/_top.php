@@ -12,17 +12,17 @@
 <body>
 <header class="site-header">
   <div class="wrap nav-row">
-    <a class="logo" href="/admin"><span class="logo-mark" style="background:#1a1d24">A</span> <?= e(setting('site_name')) ?> Admin</a>
+    <a class="logo" href="/superadmin"><span class="logo-mark" style="background:#1a1d24">A</span> <?= e(setting('site_name')) ?> Admin</a>
     <nav class="main-nav">
-      <a href="/admin">Dashboard</a>
-      <a href="/admin/listings">Listings</a>
-      <a href="/admin/members">Members</a>
-      <a href="/admin/claims">Claims</a>
-      <a href="/admin/reviews">Reviews</a>
-      <a href="/admin/categories">Categories</a>
+      <a href="/superadmin">Dashboard</a>
+      <a href="/superadmin/listings">Listings</a>
+      <a href="/superadmin/members">Members</a>
+      <a href="/superadmin/claims">Claims</a>
+      <a href="/superadmin/reviews">Reviews</a>
+      <a href="/superadmin/categories">Categories</a>
       <?php if (is_superadmin()): ?>
-        <a href="/admin/admins">Admins</a>
-        <a href="/admin/settings">Settings</a>
+        <a href="/superadmin/admins">Admins</a>
+        <a href="/superadmin/settings">Settings</a>
       <?php endif; ?>
     </nav>
     <div class="nav-actions">

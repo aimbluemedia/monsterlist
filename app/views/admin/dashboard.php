@@ -12,7 +12,7 @@
   <div class="card stat"><div class="n"><?= $stats['claims'] ?></div><div class="l">Pending claims</div></div>
 </div>
 <div class="card card-pad">
-  <div class="section-head"><h3>Moderation queue</h3><a href="/admin/listings?status=pending" class="mute">All pending →</a></div>
+  <div class="section-head"><h3>Moderation queue</h3><a href="/superadmin/listings?status=pending" class="mute">All pending →</a></div>
   <?php if (!$pending): ?><p class="mute">Queue is empty — nothing waiting for review. 🎉</p>
   <?php else: ?>
   <table class="table">
@@ -25,11 +25,11 @@
         <td><?= e($b['owner_email'] ?? 'unclaimed') ?></td>
         <td><?= e(date('M j', strtotime($b['created_at']))) ?></td>
         <td style="white-space:nowrap">
-          <form method="post" action="/admin/listings" style="display:inline"><?= csrf_field() ?>
+          <form method="post" action="/superadmin/listings" style="display:inline"><?= csrf_field() ?>
             <input type="hidden" name="id" value="<?= (int)$b['id'] ?>"><input type="hidden" name="action" value="approve">
             <button class="btn btn-sm btn-primary">Approve</button>
           </form>
-          <form method="post" action="/admin/listings" style="display:inline"><?= csrf_field() ?>
+          <form method="post" action="/superadmin/listings" style="display:inline"><?= csrf_field() ?>
             <input type="hidden" name="id" value="<?= (int)$b['id'] ?>"><input type="hidden" name="action" value="reject">
             <button class="btn btn-sm btn-ghost">Reject</button>
           </form>

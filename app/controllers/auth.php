@@ -37,7 +37,7 @@ switch ($path) {
         break;
 
     case '/login':
-        if (is_logged_in()) redirect(is_admin() ? '/admin' : '/account');
+        if (is_logged_in()) redirect(is_admin() ? '/superadmin' : '/account');
         $errors = [];
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             csrf_check();
@@ -50,7 +50,7 @@ switch ($path) {
                 if ($user && $user['status'] === 'active' && password_verify($pass, $user['password_hash'])) {
                     if (in_array($user['role'], ['admin', 'superadmin'], true)) {
                         // Staff accounts use the dedicated admin entrance.
-                        $errors[] = 'This is the member login. Administrators sign in at /admin/login.';
+                        $errors[] = 'This is the member login. Administrators sign in at /superadmin/login.';
                     } else {
                         login_user($user);
                         $to = $_SESSION['after_login'] ?? '/account';

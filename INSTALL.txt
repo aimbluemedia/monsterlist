@@ -42,19 +42,19 @@ STEP 4 — CONFIGURE
 
 STEP 5 — FIRST LOGIN
 --------------------
-  1. Visit https://monsterlist.org/admin/login  (staff sign-in;
+  1. Visit https://monsterlist.org/superadmin/login  (staff sign-in;
      members use /login)
   2. Log in with the email from create-superadmin.sql
      and password:  ChangeMe-2026!
   3. IMMEDIATELY change the password (top-right → My account → Settings)
-  4. Check Admin → Settings: site name, tagline, plan pricing
+  4. Check Superadmin panel → Settings: site name, tagline, plan pricing
 
 STEP 6 — STRIPE (monthly memberships)
 -------------------------------------
   1. dashboard.stripe.com → create a Product with TWO recurring monthly
      Prices (Pro and Featured)
   2. Put your API keys (sk_..., pk_...) in app/config.php → 'stripe'
-  3. Paste the two price IDs (price_...) in Admin → Settings
+  3. Paste the two price IDs (price_...) in Superadmin panel → Settings
   4. Stripe → Developers → Webhooks → Add endpoint:
         https://monsterlist.org/stripe/webhook
      Events:  checkout.session.completed
@@ -69,7 +69,7 @@ STEP 6b — AI FILL (optional but recommended)
 Members can paste their website URL on the New Listing form and AI
 pre-fills everything. To enable:
   1. Get an Anthropic API key at https://platform.claude.com (API keys)
-  2. Log in as superadmin → Admin → Settings → "AI fill (Anthropic API)"
+  2. Log in as superadmin → Superadmin panel → Settings → "AI fill (Anthropic API)"
      → paste the key → Save. (No file editing needed.)
 Cost guide: each fill is one Claude API call (typically a few cents).
 Members are limited to 10 fills per hour. Leave the key empty to
@@ -82,7 +82,7 @@ STEP 7 — GO-LIVE CHECKLIST
   [ ] /sitemap.xml loads (then submit it in Google Search Console
       and Bing Webmaster Tools)
   [ ] /llms.txt loads
-  [ ] Sign up a test member, create a listing, approve it in /admin
+  [ ] Sign up a test member, create a listing, approve it in /superadmin
   [ ] The approval email arrived (check spam; if unreliable, ask about
       SMTP — see README)
   [ ] Demo data decision: keep it, or clean it out with this SQL:
