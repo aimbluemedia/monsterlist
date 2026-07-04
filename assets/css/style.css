@@ -174,3 +174,32 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 @media(max-width:900px){.browse-list{grid-template-columns:repeat(2,1fr)}}
 .browse-list a{padding:10px 12px;background:var(--card);border:1px solid var(--border);border-radius:9px;font-weight:600;font-size:.9rem}
 .browse-list a:hover{border-color:var(--accent);color:var(--accent)}
+
+/* superadmin panel — left sidebar layout */
+.sa-body{background:var(--bg)}
+.sa-shell{display:flex;min-height:100vh}
+.sa-side{width:232px;flex-shrink:0;background:#14161c;color:#c3c8d4;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.sa-brand{display:flex;align-items:center;gap:10px;padding:18px 16px;font-weight:800;color:#fff;border-bottom:1px solid #23262f}
+.sa-brand small{display:block;font-size:.68rem;font-weight:600;color:#7d8494;text-transform:uppercase;letter-spacing:.5px}
+.sa-nav{flex:1;padding:12px 10px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.sa-nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;font-weight:600;font-size:.92rem;color:#9aa1ad}
+.sa-nav a:hover{background:#1c1f27;color:#fff}
+.sa-nav a.active{background:var(--accent);color:#fff}
+.sa-nav .ico{width:20px;text-align:center}
+.sa-user{border-top:1px solid #23262f;padding:14px 16px}
+.sa-user-name{font-weight:700;color:#fff;font-size:.9rem}
+.sa-user-name small{display:block;color:#7d8494;font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.4px}
+.sa-user-actions{display:flex;gap:12px;margin-top:8px}
+.sa-user-actions a{color:#9aa1ad;font-size:.82rem;font-weight:600}
+.sa-user-actions a:hover{color:#fff}
+.sa-main{flex:1;min-width:0;padding:28px 32px}
+.sa-main .two-col{grid-template-columns:3fr 2fr}
+@media(max-width:860px){
+  .sa-shell{flex-direction:column}
+  .sa-side{width:100%;height:auto;position:static;flex-direction:column}
+  .sa-nav{flex-direction:row;flex-wrap:wrap;padding:8px}
+  .sa-nav a{padding:8px 10px;font-size:.85rem}
+  .sa-user{display:flex;justify-content:space-between;align-items:center}
+  .sa-main{padding:18px 14px}
+  .sa-main .two-col{grid-template-columns:1fr}
+}

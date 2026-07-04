@@ -1,3 +1,16 @@
+<?php
+$saPath = parse_url($_SERVER['REQUEST_URI'] ?? '/superadmin', PHP_URL_PATH);
+$saNav = [
+    ['/superadmin',            'Dashboard',  '📊', true],
+    ['/superadmin/listings',   'Listings',   '📋', true],
+    ['/superadmin/members',    'Members',    '👥', true],
+    ['/superadmin/claims',     'Claims',     '🏷️', true],
+    ['/superadmin/reviews',    'Reviews',    '⭐', true],
+    ['/superadmin/categories', 'Categories', '🗂️', true],
+    ['/superadmin/admins',     'Admins',     '🛡️', is_superadmin()],
+    ['/superadmin/settings',   'Settings',   '⚙️', is_superadmin()],
+];
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,30 +22,28 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/style.css">
 </head>
-<body>
-<header class="site-header">
-  <div class="wrap nav-row">
-    <a class="logo" href="/superadmin"><span class="logo-mark" style="background:#1a1d24">A</span> <?= e(setting('site_name')) ?> Admin</a>
-    <nav class="main-nav">
-      <a href="/superadmin">Dashboard</a>
-      <a href="/superadmin/listings">Listings</a>
-      <a href="/superadmin/members">Members</a>
-      <a href="/superadmin/claims">Claims</a>
-      <a href="/superadmin/reviews">Reviews</a>
-      <a href="/superadmin/categories">Categories</a>
-      <?php if (is_superadmin()): ?>
-        <a href="/superadmin/admins">Admins</a>
-        <a href="/superadmin/settings">Settings</a>
-      <?php endif; ?>
+<body class="sa-body">
+<div class="sa-shell">
+  <aside class="sa-side">
+    <a class="sa-brand" href="/superadmin">
+      <span class="logo-mark" style="background:#2563eb">M</span>
+      <span><?= e(setting('site_name')) ?><small>Control panel</small></span>
+    </a>
+    <nav class="sa-nav">
+      <?php foreach ($saNav as [$href, $label, $icon, $show]): if (!$show) continue; ?>
+        <?php $active = $href === '/superadmin' ? $saPath === '/superadmin' : str_starts_with($saPath, $href); ?>
+        <a class="<?= $active ? 'active' : '' ?>" href="<?= e($href) ?>"><span class="ico"><?= $icon ?></span><?= e($label) ?></a>
+      <?php endforeach; ?>
     </nav>
-    <div class="nav-actions">
-      <span class="mute" style="font-size:.85rem"><?= e($u['name']) ?> · <?= e($u['role']) ?></span>
-      <a class="btn btn-ghost btn-sm" href="/">View site</a>
-      <a class="btn btn-ghost btn-sm" href="/logout">Log out</a>
+    <div class="sa-user">
+      <div class="sa-user-name"><?= e($u['name']) ?><small><?= e($u['role']) ?></small></div>
+      <div class="sa-user-actions">
+        <a href="/">View site</a>
+        <a href="/logout">Log out</a>
+      </div>
     </div>
-  </div>
-</header>
-<?php foreach (flash_pull() as $f): ?>
-  <div class="wrap"><div class="flash flash-<?= e($f['type']) ?>"><?= e($f['msg']) ?></div></div>
-<?php endforeach; ?>
-<main class="wrap section">
+  </aside>
+  <main class="sa-main">
+    <?php foreach (flash_pull() as $f): ?>
+      <div class="flash flash-<?= e($f['type']) ?>"><?= e($f['msg']) ?></div>
+    <?php endforeach; ?>
