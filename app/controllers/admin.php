@@ -234,7 +234,7 @@ if ($sub === 'dashboard') {
         redirect('/superadmin/admins');
     }
     $list = rows('SELECT * FROM users WHERE role IN ("admin","superadmin") ORDER BY role DESC, created_at');
-    view_raw('admin/superadmins', compact('meta', 'u', 'list'));
+    view_raw('admin/admins', compact('meta', 'u', 'list'));
 
 } elseif ($sub === 'settings') {
     require_superadmin();
