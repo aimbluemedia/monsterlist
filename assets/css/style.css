@@ -68,7 +68,6 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 /* category + location chips */
 .cat-card{padding:16px;text-align:center;transition:border-color .15s}
 .cat-card:hover{border-color:var(--accent)}
-.cat-card .ico{font-size:1.6rem;display:block;margin-bottom:6px}
 .chip{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--border);border-radius:999px;padding:7px 14px;font-weight:600;font-size:.88rem;margin:0 6px 8px 0}
 .chip:hover{border-color:var(--accent);color:var(--accent)}
 
@@ -185,7 +184,6 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 .sa-nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;font-weight:600;font-size:.92rem;color:#9aa1ad}
 .sa-nav a:hover{background:#1c1f27;color:#fff}
 .sa-nav a.active{background:var(--accent);color:#fff}
-.sa-nav .ico{width:20px;text-align:center}
 .sa-user{border-top:1px solid #23262f;padding:14px 16px}
 .sa-user-name{font-weight:700;color:#fff;font-size:.9rem}
 .sa-user-name small{display:block;color:#7d8494;font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.4px}

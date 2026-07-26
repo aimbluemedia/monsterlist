@@ -4,12 +4,12 @@
 <div class="lp-ticker" aria-hidden="true">
   <div class="lp-ticker-track">
     <?php for ($i = 0; $i < 2; $i++): ?>
-      <span>🎉 100% FREE TO JOIN</span><span>✦</span>
-      <span>🤖 AI BUILDS YOUR PAGE IN SECONDS</span><span>✦</span>
-      <span>🔍 FOUND ON GOOGLE + CHATGPT + CLAUDE + PERPLEXITY</span><span>✦</span>
-      <span>📣 ONE PAGE, EVERY SOCIAL CHANNEL</span><span>✦</span>
-      <span>⭐ REAL REVIEWS, REAL CUSTOMERS</span><span>✦</span>
-      <span>📊 LIVE ANALYTICS</span><span>✦</span>
+      <span>100% FREE TO JOIN</span><span>&bull;</span>
+      <span>AI BUILDS YOUR PAGE IN SECONDS</span><span>&bull;</span>
+      <span>FOUND ON GOOGLE + CHATGPT + CLAUDE + PERPLEXITY</span><span>&bull;</span>
+      <span>ONE PAGE, EVERY SOCIAL CHANNEL</span><span>&bull;</span>
+      <span>REAL REVIEWS, REAL CUSTOMERS</span><span>&bull;</span>
+      <span>LIVE ANALYTICS</span><span>&bull;</span>
     <?php endfor; ?>
   </div>
 </div>
@@ -17,7 +17,7 @@
 <!-- hero -->
 <section class="lp-hero">
   <div class="wrap">
-    <span class="lp-badge">⚡ The promotion engine for small business &amp; creators</span>
+    <span class="lp-badge">The promotion engine for small business &amp; creators</span>
     <h1 class="lp-h1">GET FOUND<br><span class="lp-accent">EVERYWHERE</span><br>IN MINUTES.</h1>
     <p class="lp-sub">The only all-in-one platform where <strong>AI builds your page</strong>, search engines
       and AI assistants <strong>promote it</strong>, and your reviews, socials and content
@@ -40,12 +40,12 @@
 <!-- icon strip -->
 <div class="lp-strip">
   <div class="lp-strip-track">
-    <div><span>🚀</span><b>Live in minutes</b><small>AI does the writing</small></div>
-    <div><span>💸</span><b>Free forever</b><small>No card required</small></div>
-    <div><span>🛡️</span><b>Human-reviewed</b><small>Quality you can trust</small></div>
-    <div><span>📣</span><b>Social hub</b><small>All 7 networks linked</small></div>
-    <div><span>⭐</span><b>Reviews</b><small>Build your reputation</small></div>
-    <div><span>📊</span><b>Analytics</b><small>Views, clicks &amp; calls</small></div>
+    <div><b>Live in minutes</b><small>AI does the writing</small></div>
+    <div><b>Free forever</b><small>No card required</small></div>
+    <div><b>Human-reviewed</b><small>Quality you can trust</small></div>
+    <div><b>Social hub</b><small>All 7 networks linked</small></div>
+    <div><b>Reviews</b><small>Build your reputation</small></div>
+    <div><b>Analytics</b><small>Views, clicks &amp; calls</small></div>
   </div>
 </div>
 
@@ -81,9 +81,9 @@
           </div>
         </div>
       </div>
-      <span class="lp-chip c1">🤖 Cited by AI assistants</span>
-      <span class="lp-chip c2">⭐ “Best in town” — new review</span>
-      <span class="lp-chip c3">📈 +212% profile views</span>
+      <span class="lp-chip c1">Cited by AI assistants</span>
+      <span class="lp-chip c2">“Best in town” — new review</span>
+      <span class="lp-chip c3">+212% profile views</span>
     </div>
   </div>
 </section>
@@ -92,12 +92,12 @@
 <section class="lp-section lp-tint">
   <div class="wrap">
     <div class="lp-tiles">
-      <div><span>🚀</span><b>Launch in minutes</b><p>Paste your website — AI writes your whole page.</p></div>
-      <div><span>💯</span><b>100% free</b><p>Free listing forever. Upgrade only if you want more.</p></div>
-      <div><span>🧠</span><b>No tech skills</b><p>If you can copy &amp; paste, you can join.</p></div>
-      <div><span>🔍</span><b>SEO built in</b><p>Every page engineered to rank and be cited.</p></div>
-      <div><span>📣</span><b>Promote your socials</b><p>Facebook, Instagram, TikTok, YouTube &amp; more.</p></div>
-      <div><span>📊</span><b>See results</b><p>Real-time views, clicks and calls in your dashboard.</p></div>
+      <div><b>Launch in minutes</b><p>Paste your website — AI writes your whole page.</p></div>
+      <div><b>100% free</b><p>Free listing forever. Upgrade only if you want more.</p></div>
+      <div><b>No tech skills</b><p>If you can copy &amp; paste, you can join.</p></div>
+      <div><b>SEO built in</b><p>Every page engineered to rank and be cited.</p></div>
+      <div><b>Promote your socials</b><p>Facebook, Instagram, TikTok, YouTube &amp; more.</p></div>
+      <div><b>See results</b><p>Real-time views, clicks and calls in your dashboard.</p></div>
     </div>
   </div>
 </section>
@@ -107,11 +107,11 @@
   <div class="wrap">
     <h2 class="lp-h2">Three Steps To <span class="lp-accent">More Customers</span></h2>
     <div class="lp-steps">
-      <div class="card card-pad step"><span class="step-num">1</span><h3>✨ AI builds your page</h3>
+      <div class="card card-pad step"><span class="step-num">1</span><h3>AI builds your page</h3>
         <p class="mute">Sign up free and paste your website. Our AI writes your description, picks your category and links your socials — you just hit submit.</p></div>
-      <div class="card card-pad step"><span class="step-num">2</span><h3>🔍 We put you everywhere</h3>
+      <div class="card card-pad step"><span class="step-num">2</span><h3>We put you everywhere</h3>
         <p class="mute">Your page is engineered for Google rankings and structured so ChatGPT, Claude and Perplexity can recommend you by name.</p></div>
-      <div class="card card-pad step"><span class="step-num">3</span><h3>📈 You grow</h3>
+      <div class="card card-pad step"><span class="step-num">3</span><h3>You grow</h3>
         <p class="mute">Collect reviews, showcase photos and video, and track every view, click and call. More participation = more reach.</p></div>
     </div>
     <p style="text-align:center;margin-top:26px">
@@ -192,7 +192,7 @@
   <div class="grid grid-4">
     <?php foreach (array_slice($cats, 0, 8) as $c): ?>
       <a class="card cat-card" href="/category/<?= e($c['id']) ?>">
-        <span class="ico"><?= e($c['icon']) ?></span><strong><?= e($c['label']) ?></strong>
+        <strong><?= e($c['label']) ?></strong>
       </a>
     <?php endforeach; ?>
   </div>
@@ -218,7 +218,7 @@
 
 <?php if ($newest): ?>
 <section class="section wrap">
-  <div class="section-head"><h2>Just joined</h2><span class="mute">Welcome our newest members 👋</span></div>
+  <div class="section-head"><h2>Just joined</h2><span class="mute">Welcome our newest members</span></div>
   <div class="grid grid-3">
     <?php foreach ($newest as $b): ?>
       <a class="card listing" href="<?= e(business_path($b)) ?>">
@@ -240,13 +240,13 @@
   <div class="section-head"><h2>Top locations</h2><a class="mute" href="/browse">All locations →</a></div>
   <div>
     <?php foreach ($popCities as $ci): ?>
-      <a class="chip" href="<?= e(city_path($ci)) ?>"><?= e($ci['flag']) ?> <?= e($ci['name']) ?></a>
+      <a class="chip" href="<?= e(city_path($ci)) ?>"><?= e($ci['name']) ?></a>
     <?php endforeach; ?>
     <?php foreach ($popStates as $s): ?>
       <a class="chip" href="/us/<?= e($s['slug']) ?>"><?= e($s['name']) ?></a>
     <?php endforeach; ?>
     <?php foreach ($popCtries as $co): ?>
-      <a class="chip" href="/<?= e(strtolower($co['code'])) ?>"><?= e($co['flag']) ?> <?= e($co['name']) ?></a>
+      <a class="chip" href="/<?= e(strtolower($co['code'])) ?>"><?= e($co['name']) ?></a>
     <?php endforeach; ?>
   </div>
 </section>
@@ -263,7 +263,7 @@
 <!-- final CTA -->
 <div class="wrap">
   <div class="lp-final">
-    <span class="lp-badge" style="background:rgba(255,255,255,.15);color:#fff">🎉 100% free — no credit card, ever</span>
+    <span class="lp-badge" style="background:rgba(255,255,255,.15);color:#fff">100% free — no credit card, ever</span>
     <h2>YOUR NEXT CUSTOMER IS SEARCHING <span class="lp-accent2">RIGHT NOW.</span></h2>
     <p><?= number_format($stats['listings']) ?> businesses across <?= number_format($stats['countries']) ?> countries are already on <?= e($site) ?>. Don't let them get found first.</p>
     <a class="btn lp-btn-big" style="background:#fff;color:var(--accent)" href="/signup">Join free today →</a>

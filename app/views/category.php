@@ -7,7 +7,7 @@
     <?php endforeach; ?>
   </nav>
   <section class="section">
-    <h1><?= e($cat['icon']) ?> <?= e($cat['label']) ?><?= $place ? ' in ' . e($place) : '' ?></h1>
+    <h1><?= e($cat['label']) ?><?= $place ? ' in ' . e($place) : '' ?></h1>
     <p class="mute" style="max-width:760px"><?= e($intro) ?></p>
 
     <?php if (!$list): ?>
@@ -62,7 +62,7 @@
       <div>
         <?php foreach ($otherCats as $oc): ?>
           <?php $ocPath = '/category/' . $oc['id'] . '/' . strtolower($country['code']) . ($region ? '/' . $region['slug'] : '') . '/' . $city['slug']; ?>
-          <a class="chip" href="<?= e($ocPath) ?>"><?= e($oc['icon']) ?> <?= e($oc['label']) ?> (<?= (int)$oc['cnt'] ?>)</a>
+          <a class="chip" href="<?= e($ocPath) ?>"><?= e($oc['label']) ?> (<?= (int)$oc['cnt'] ?>)</a>
         <?php endforeach; ?>
       </div>
     <?php endif; ?>

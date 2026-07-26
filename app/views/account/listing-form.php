@@ -16,7 +16,7 @@ $selCity    = $_SERVER['REQUEST_METHOD'] === 'POST' ? post('city') : (!empty($ci
 
     <?php if (!$editing && ai_configured()): ?>
       <div class="card card-pad" id="ai-fill-card" style="margin-bottom:16px;background:var(--accent-soft);border-color:var(--accent)">
-        <h3>✨ Let AI fill this out for you</h3>
+        <h3>Let AI fill this out for you</h3>
         <p class="mute" style="margin:4px 0 10px">Paste your website address — we'll read it and pre-fill the form. You review everything before submitting.</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <input type="text" id="ai-url" placeholder="https://yourbusiness.com" style="flex:1;min-width:220px" data-csrf="<?= e(csrf_token()) ?>">
@@ -37,7 +37,7 @@ $selCity    = $_SERVER['REQUEST_METHOD'] === 'POST' ? post('city') : (!empty($ci
           <select name="category_id" required>
             <option value="">Choose…</option>
             <?php foreach ($cats as $c): ?>
-              <option value="<?= e($c['id']) ?>" <?= $v('category_id') === $c['id'] ? 'selected' : '' ?>><?= e($c['icon']) ?> <?= e($c['label']) ?></option>
+              <option value="<?= e($c['id']) ?>" <?= $v('category_id') === $c['id'] ? 'selected' : '' ?>><?= e($c['label']) ?></option>
             <?php endforeach; ?>
           </select>
         </div>
@@ -53,7 +53,7 @@ $selCity    = $_SERVER['REQUEST_METHOD'] === 'POST' ? post('city') : (!empty($ci
           <label>Country *</label>
           <select name="country" required>
             <?php foreach ($countries as $co): ?>
-              <option value="<?= e($co['code']) ?>" <?= $selCountry === $co['code'] ? 'selected' : '' ?>><?= e($co['flag']) ?> <?= e($co['name']) ?></option>
+              <option value="<?= e($co['code']) ?>" <?= $selCountry === $co['code'] ? 'selected' : '' ?>><?= e($co['name']) ?></option>
             <?php endforeach; ?>
           </select>
         </div>

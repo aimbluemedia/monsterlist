@@ -13,7 +13,7 @@
     <?php if (!empty($cityCats)): ?>
       <div style="margin-bottom:16px">
         <?php foreach ($cityCats as $cc2): ?>
-          <a class="chip" href="<?= e(sprintf($catCityBase, $cc2['id'])) ?>"><?= e($cc2['icon']) ?> <?= e($cc2['label']) ?> (<?= (int)$cc2['cnt'] ?>)</a>
+          <a class="chip" href="<?= e(sprintf($catCityBase, $cc2['id'])) ?>"><?= e($cc2['label']) ?> (<?= (int)$cc2['cnt'] ?>)</a>
         <?php endforeach; ?>
       </div>
     <?php endif; ?>
@@ -36,7 +36,7 @@
                 <?php if ($b['tier'] === 'pro'): ?><span class="badge badge-pro">Pro</span><?php endif; ?>
                 <?php if ($b['verified']): ?><span class="badge badge-verified">Verified</span><?php endif; ?>
               </span>
-              <span class="listing-meta"><?= e($b['category_icon'] ?? '') ?> <?= e($b['category_label'] ?? 'Local business') ?></span>
+              <span class="listing-meta"><?= e($b['category_label'] ?? 'Local business') ?></span>
               <?php if ($b['tagline']): ?><span class="listing-meta"><?= e($b['tagline']) ?></span><?php endif; ?>
               <?php if ((float)$b['rating'] > 0): ?>
                 <span class="listing-meta"><span class="stars">★</span> <?= fmt_rating($b['rating']) ?> · <?= (int)$b['review_count'] ?> review<?= (int)$b['review_count'] === 1 ? '' : 's' ?></span>

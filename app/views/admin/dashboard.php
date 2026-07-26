@@ -13,7 +13,7 @@
 </div>
 <div class="card card-pad">
   <div class="section-head"><h3>Moderation queue</h3><a href="/superadmin/listings?status=pending" class="mute">All pending →</a></div>
-  <?php if (!$pending): ?><p class="mute">Queue is empty — nothing waiting for review. 🎉</p>
+  <?php if (!$pending): ?><p class="mute">Queue is empty — nothing waiting for review.</p>
   <?php else: ?>
   <table class="table">
     <tr><th>Business</th><th>Category</th><th>City</th><th>Owner</th><th>Submitted</th><th></th></tr>

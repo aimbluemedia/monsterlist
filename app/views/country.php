@@ -1,7 +1,7 @@
 <div class="wrap">
   <nav class="crumbs"><a href="/">Home</a><span>›</span><?= e($country['name']) ?></nav>
   <section class="section">
-    <h1><?= e($country['flag']) ?> Small businesses in <?= e($country['name']) ?></h1>
+    <h1>Small businesses in <?= e($country['name']) ?></h1>
     <?php if ($isUS): ?>
       <p class="mute">Choose a state to browse cities and local listings.</p>
       <input type="text" placeholder="Filter states…" data-filter="#geo-list" style="max-width:320px;margin-bottom:14px">

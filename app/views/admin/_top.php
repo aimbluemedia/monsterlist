@@ -1,14 +1,14 @@
 <?php
 $saPath = parse_url($_SERVER['REQUEST_URI'] ?? '/superadmin', PHP_URL_PATH);
 $saNav = [
-    ['/superadmin',            'Dashboard',  '📊', true],
-    ['/superadmin/listings',   'Listings',   '📋', true],
-    ['/superadmin/members',    'Members',    '👥', true],
-    ['/superadmin/claims',     'Claims',     '🏷️', true],
-    ['/superadmin/reviews',    'Reviews',    '⭐', true],
-    ['/superadmin/categories', 'Categories', '🗂️', true],
-    ['/superadmin/admins',     'Admins',     '🛡️', is_superadmin()],
-    ['/superadmin/settings',   'Settings',   '⚙️', is_superadmin()],
+    ['/superadmin',            'Dashboard',  true],
+    ['/superadmin/listings',   'Listings',   true],
+    ['/superadmin/members',    'Members',    true],
+    ['/superadmin/claims',     'Claims',     true],
+    ['/superadmin/reviews',    'Reviews',    true],
+    ['/superadmin/categories', 'Categories', true],
+    ['/superadmin/admins',     'Admins',     is_superadmin()],
+    ['/superadmin/settings',   'Settings',   is_superadmin()],
 ];
 ?>
 <!DOCTYPE html>
@@ -30,9 +30,9 @@ $saNav = [
       <span><?= e(setting('site_name')) ?><small>Control panel</small></span>
     </a>
     <nav class="sa-nav">
-      <?php foreach ($saNav as [$href, $label, $icon, $show]): if (!$show) continue; ?>
+      <?php foreach ($saNav as [$href, $label, $show]): if (!$show) continue; ?>
         <?php $active = $href === '/superadmin' ? $saPath === '/superadmin' : str_starts_with($saPath, $href); ?>
-        <a class="<?= $active ? 'active' : '' ?>" href="<?= e($href) ?>"><span class="ico"><?= $icon ?></span><?= e($label) ?></a>
+        <a class="<?= $active ? 'active' : '' ?>" href="<?= e($href) ?>"><?= e($label) ?></a>
       <?php endforeach; ?>
     </nav>
     <div class="sa-user">

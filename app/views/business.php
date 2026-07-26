@@ -22,7 +22,7 @@ $enhanced = in_array($b['tier'], ['pro', 'featured'], true);
           <?php if ($b['verified']): ?><span class="badge badge-verified">Verified</span><?php endif; ?>
         </h1>
         <div class="mute">
-          <?= e($b['category_icon'] ?? '') ?> <?= e($b['category_label'] ?? 'Local business') ?>
+          <?= e($b['category_label'] ?? 'Local business') ?>
           · <?= e($city['name']) ?><?= $region ? ', ' . e($region['name']) : '' ?>, <?= e($country['name']) ?>
           <?php if ((float)$b['rating'] > 0): ?>
             · <span class="stars">★</span> <?= fmt_rating($b['rating']) ?> (<?= (int)$b['review_count'] ?>)
