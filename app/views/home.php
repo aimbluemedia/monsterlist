@@ -1,78 +1,198 @@
-<section class="hero hero-brand">
+<?php $site = setting('site_name'); ?>
+
+<!-- scrolling ticker -->
+<div class="lp-ticker" aria-hidden="true">
+  <div class="lp-ticker-track">
+    <?php for ($i = 0; $i < 2; $i++): ?>
+      <span>🎉 100% FREE TO JOIN</span><span>✦</span>
+      <span>🤖 AI BUILDS YOUR PAGE IN SECONDS</span><span>✦</span>
+      <span>🔍 FOUND ON GOOGLE + CHATGPT + CLAUDE + PERPLEXITY</span><span>✦</span>
+      <span>📣 ONE PAGE, EVERY SOCIAL CHANNEL</span><span>✦</span>
+      <span>⭐ REAL REVIEWS, REAL CUSTOMERS</span><span>✦</span>
+      <span>📊 LIVE ANALYTICS</span><span>✦</span>
+    <?php endfor; ?>
+  </div>
+</div>
+
+<!-- hero -->
+<section class="lp-hero">
   <div class="wrap">
-    <span class="free-badge">🎉 100% free to join — no credit card, ever</span>
-    <h1>The AI-powered promotion engine<br>for small business.</h1>
-    <p class="hero-sub">Paste your website and our AI builds your business page in seconds — then
-      <?= e(setting('site_name')) ?> promotes it where customers actually look:
-      <strong>Google, ChatGPT, Claude and Perplexity</strong>. Content, reviews,
-      social links and analytics — all in one free profile.</p>
-    <div class="hero-ctas">
-      <a class="btn btn-primary btn-lg" href="/signup">Join free &amp; get listed</a>
-      <a class="btn btn-ghost btn-lg" href="/browse">Explore the directory</a>
+    <span class="lp-badge">⚡ The promotion engine for small business &amp; creators</span>
+    <h1 class="lp-h1">GET FOUND<br><span class="lp-accent">EVERYWHERE</span><br>IN MINUTES.</h1>
+    <p class="lp-sub">The only all-in-one platform where <strong>AI builds your page</strong>, search engines
+      and AI assistants <strong>promote it</strong>, and your reviews, socials and content
+      <strong>work together</strong> to bring customers in. <span class="lp-free">100% free to join.</span></p>
+    <div class="lp-ctas">
+      <a class="btn btn-primary lp-btn-big" href="/signup">Join free — get listed today</a>
+      <a class="btn btn-ghost lp-btn-big" href="/browse">Explore the directory</a>
     </div>
-    <form class="search-bar" action="/search" method="get" role="search" style="margin-top:26px">
-      <input type="text" name="q" placeholder="Or search businesses, services, trades…" aria-label="Search">
-      <button class="btn btn-primary" type="submit">Search</button>
-    </form>
+    <div class="lp-pills">
+      <span class="lp-pill-label">Your page gets seen on</span>
+      <span class="lp-pill">Google</span>
+      <span class="lp-pill">ChatGPT</span>
+      <span class="lp-pill">Claude</span>
+      <span class="lp-pill">Perplexity</span>
+      <span class="lp-pill">Bing</span>
+    </div>
   </div>
 </section>
 
-<section class="stats-band">
-  <div class="wrap stats-row">
-    <div><strong><?= number_format($stats['listings']) ?></strong><span>live business listings</span></div>
-    <div><strong><?= number_format($stats['countries']) ?></strong><span>countries covered</span></div>
-    <div><strong><?= number_format($stats['categories']) ?></strong><span>business categories</span></div>
-    <div><strong>Free</strong><span>to join, forever</span></div>
+<!-- icon strip -->
+<div class="lp-strip">
+  <div class="lp-strip-track">
+    <div><span>🚀</span><b>Live in minutes</b><small>AI does the writing</small></div>
+    <div><span>💸</span><b>Free forever</b><small>No card required</small></div>
+    <div><span>🛡️</span><b>Human-reviewed</b><small>Quality you can trust</small></div>
+    <div><span>📣</span><b>Social hub</b><small>All 7 networks linked</small></div>
+    <div><span>⭐</span><b>Reviews</b><small>Build your reputation</small></div>
+    <div><span>📊</span><b>Analytics</b><small>Views, clicks &amp; calls</small></div>
+  </div>
+</div>
+
+<!-- platform mockup -->
+<section class="lp-section">
+  <div class="wrap">
+    <h2 class="lp-h2">The All-In-One Platform That <span class="lp-accent">Does It For You</span></h2>
+    <p class="lp-center-sub">You run your business. <?= e($site) ?> runs your presence — one profile that
+      feeds search engines, AI assistants and your customers everything they need to choose you.</p>
+
+    <div class="lp-mockup-zone">
+      <div class="lp-mockup">
+        <div class="lp-mock-top"><i></i><i></i><i></i><em><?= e(strtolower($site)) ?>.org/account</em></div>
+        <div class="lp-mock-body">
+          <div class="lp-mock-side">
+            <b>My dashboard</b>
+            <u class="on">Overview</u><u>My listings</u><u>Analytics</u><u>Billing</u>
+          </div>
+          <div class="lp-mock-main">
+            <div class="lp-mock-stats">
+              <div><b>2,481</b><small>Views</small></div>
+              <div><b>312</b><small>Clicks</small></div>
+              <div><b>47</b><small>Calls</small></div>
+              <div><b>4.9★</b><small>Rating</small></div>
+            </div>
+            <div class="lp-mock-chart">
+              <i style="height:34%"></i><i style="height:48%"></i><i style="height:42%"></i><i style="height:61%"></i>
+              <i style="height:55%"></i><i style="height:74%"></i><i style="height:68%"></i><i style="height:88%"></i>
+              <i style="height:79%"></i><i style="height:96%"></i>
+            </div>
+            <div class="lp-mock-row"><span class="dot g"></span> New 5★ review from Maria G.</div>
+            <div class="lp-mock-row"><span class="dot b"></span> Your page appeared in an AI answer</div>
+          </div>
+        </div>
+      </div>
+      <span class="lp-chip c1">🤖 Cited by AI assistants</span>
+      <span class="lp-chip c2">⭐ “Best in town” — new review</span>
+      <span class="lp-chip c3">📈 +212% profile views</span>
+    </div>
   </div>
 </section>
 
-<section class="section wrap">
-  <div class="section-head" style="justify-content:center;text-align:center"><h2>Up and running in three steps</h2></div>
-  <div class="grid grid-3 steps">
-    <div class="card card-pad step">
-      <span class="step-num">1</span>
-      <h3>✨ Let AI build your page</h3>
-      <p class="mute">Sign up free, paste your website address, and our AI reads it and writes your
-        listing for you — description, category, contact details, social links. You just review and submit.</p>
+<!-- benefit tiles -->
+<section class="lp-section lp-tint">
+  <div class="wrap">
+    <div class="lp-tiles">
+      <div><span>🚀</span><b>Launch in minutes</b><p>Paste your website — AI writes your whole page.</p></div>
+      <div><span>💯</span><b>100% free</b><p>Free listing forever. Upgrade only if you want more.</p></div>
+      <div><span>🧠</span><b>No tech skills</b><p>If you can copy &amp; paste, you can join.</p></div>
+      <div><span>🔍</span><b>SEO built in</b><p>Every page engineered to rank and be cited.</p></div>
+      <div><span>📣</span><b>Promote your socials</b><p>Facebook, Instagram, TikTok, YouTube &amp; more.</p></div>
+      <div><span>📊</span><b>See results</b><p>Real-time views, clicks and calls in your dashboard.</p></div>
     </div>
-    <div class="card card-pad step">
-      <span class="step-num">2</span>
-      <h3>🔍 Get found everywhere</h3>
-      <p class="mute">Your page is built to rank on Google <em>and</em> to be read by AI assistants like
-        ChatGPT, Claude and Perplexity — so when customers ask "who's the best near me," you're in the answer.</p>
-    </div>
-    <div class="card card-pad step">
-      <span class="step-num">3</span>
-      <h3>📈 Grow with the community</h3>
-      <p class="mute">Collect reviews, add photos and video, link every social channel, and watch your
-        views and clicks in your dashboard. The more you participate, the more customers find you.</p>
-    </div>
-  </div>
-  <p style="text-align:center;margin-top:22px">
-    <a class="btn btn-primary btn-lg" href="/signup">Create your free listing →</a>
-    <span class="mute" style="display:block;margin-top:8px;font-size:.88rem">Takes about five minutes. Every listing is human-reviewed, so the directory stays trustworthy.</span>
-  </p>
-</section>
-
-<section class="section wrap">
-  <div class="section-head" style="justify-content:center;text-align:center"><h2>Everything a small business needs to get noticed</h2></div>
-  <div class="grid grid-3">
-    <div class="card card-pad"><h3>🤖 AI listing builder</h3><p class="mute">Don't stare at a blank form — AI drafts your whole profile from your website in seconds.</p></div>
-    <div class="card card-pad"><h3>🌐 Your own storefront page</h3><p class="mute">A clean, professional page with your logo, photos, video, services, hours and contact details.</p></div>
-    <div class="card card-pad"><h3>📣 Social media hub</h3><p class="mute">Link Facebook, Instagram, TikTok, YouTube, LinkedIn, Pinterest and X — one page that promotes them all.</p></div>
-    <div class="card card-pad"><h3>⭐ Reviews that build trust</h3><p class="mute">Real customer reviews with star ratings, shown to searchers and search engines alike.</p></div>
-    <div class="card card-pad"><h3>⚡ Instant search visibility</h3><p class="mute">The moment your listing is approved we ping search engines, and structured data helps AI assistants cite you.</p></div>
-    <div class="card card-pad"><h3>📊 Know what's working</h3><p class="mute">See views, website clicks and calls in your dashboard, day by day.</p></div>
   </div>
 </section>
 
+<!-- steps -->
+<section class="lp-section">
+  <div class="wrap">
+    <h2 class="lp-h2">Three Steps To <span class="lp-accent">More Customers</span></h2>
+    <div class="lp-steps">
+      <div class="card card-pad step"><span class="step-num">1</span><h3>✨ AI builds your page</h3>
+        <p class="mute">Sign up free and paste your website. Our AI writes your description, picks your category and links your socials — you just hit submit.</p></div>
+      <div class="card card-pad step"><span class="step-num">2</span><h3>🔍 We put you everywhere</h3>
+        <p class="mute">Your page is engineered for Google rankings and structured so ChatGPT, Claude and Perplexity can recommend you by name.</p></div>
+      <div class="card card-pad step"><span class="step-num">3</span><h3>📈 You grow</h3>
+        <p class="mute">Collect reviews, showcase photos and video, and track every view, click and call. More participation = more reach.</p></div>
+    </div>
+    <p style="text-align:center;margin-top:26px">
+      <a class="btn btn-primary lp-btn-big" href="/signup">Start free — takes 5 minutes</a>
+    </p>
+  </div>
+</section>
+
+<!-- pricing -->
+<section class="lp-section lp-tint" id="plans">
+  <div class="wrap">
+    <h2 class="lp-h2">Start Free. <span class="lp-accent">Upgrade When You're Ready.</span></h2>
+    <p class="lp-center-sub">Every plan gets the AI page builder, SEO placement and human-reviewed quality.</p>
+    <div class="lp-plans">
+      <?php foreach ($planList as $key => $p): ?>
+        <div class="lp-plan <?= $key === 'pro' ? 'hot' : '' ?>">
+          <?php if ($key === 'pro'): ?><span class="lp-plan-tag">MOST POPULAR</span><?php endif; ?>
+          <h3><?= e($p['label']) ?></h3>
+          <div class="lp-price">$<?= number_format($p['price'], 0) ?><small>/mo</small></div>
+          <p class="lp-plan-blurb"><?= e($p['blurb']) ?></p>
+          <ul>
+            <li><?= (int)$p['max_listings'] ?> listing<?= $p['max_listings'] > 1 ? 's' : '' ?></li>
+            <li>AI page builder</li>
+            <li>Google + AI search placement</li>
+            <?php if ($p['enhanced']): ?><li>Photo gallery, video &amp; social hub</li><li>Verified badge</li><?php endif; ?>
+            <?php if ($p['analytics']): ?><li>Views, clicks &amp; calls analytics</li><?php endif; ?>
+            <?php if ($p['featured']): ?><li>Priority placement — homepage &amp; top of results</li><?php endif; ?>
+          </ul>
+          <?php if ($key === 'free'): ?>
+            <a class="btn btn-ghost btn-block" href="/signup">Join free</a>
+          <?php else: ?>
+            <form method="post" action="/stripe/checkout"><?= csrf_field() ?>
+              <input type="hidden" name="plan" value="<?= e($key) ?>">
+              <button class="btn btn-primary btn-block">Get <?= e($p['label']) ?></button>
+            </form>
+          <?php endif; ?>
+        </div>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+
+<!-- two audiences -->
+<section class="lp-dark">
+  <div class="wrap">
+    <h2 class="lp-h2 lp-h2-light">ONE ENGINE. <span class="lp-accent2">TWO WAYS TO GROW.</span></h2>
+    <p class="lp-center-sub lp-light-sub">Built for anyone with something to promote.</p>
+    <div class="lp-duo">
+      <div class="lp-duo-card">
+        <span class="lp-duo-tag">FOR SMALL BUSINESSES</span>
+        <h3>Turn searches into customers</h3>
+        <ul>
+          <li>Professional storefront page with your branding</li>
+          <li>Show up when locals search — and when they ask AI</li>
+          <li>Reviews and a verified badge that build instant trust</li>
+          <li>Analytics that show exactly what's working</li>
+        </ul>
+        <a class="btn btn-primary btn-block" href="/signup">List my business free</a>
+      </div>
+      <div class="lp-duo-card">
+        <span class="lp-duo-tag alt">FOR INFLUENCERS &amp; CREATORS</span>
+        <h3>Extend your reach beyond the feed</h3>
+        <ul>
+          <li>One hub page linking every channel you're on</li>
+          <li>Get discovered by brands and fans searching your niche</li>
+          <li>AI-search visibility your bio link will never give you</li>
+          <li>Free forever — your audience, your page, your terms</li>
+        </ul>
+        <a class="btn btn-primary btn-block" href="/signup">Claim my creator page</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- community / SEO sections -->
 <section class="section wrap">
   <div class="section-head"><h2>Browse by category</h2><a class="mute" href="/browse">Browse all →</a></div>
   <div class="grid grid-4">
     <?php foreach (array_slice($cats, 0, 8) as $c): ?>
       <a class="card cat-card" href="/category/<?= e($c['id']) ?>">
-        <span class="ico"><?= e($c['icon']) ?></span>
-        <strong><?= e($c['label']) ?></strong>
+        <span class="ico"><?= e($c['icon']) ?></span><strong><?= e($c['label']) ?></strong>
       </a>
     <?php endforeach; ?>
   </div>
@@ -122,24 +242,30 @@
     <?php foreach ($popCities as $ci): ?>
       <a class="chip" href="<?= e(city_path($ci)) ?>"><?= e($ci['flag']) ?> <?= e($ci['name']) ?></a>
     <?php endforeach; ?>
-  </div>
-  <div style="margin-top:10px">
     <?php foreach ($popStates as $s): ?>
       <a class="chip" href="/us/<?= e($s['slug']) ?>"><?= e($s['name']) ?></a>
     <?php endforeach; ?>
-  </div>
-  <div style="margin-top:10px">
     <?php foreach ($popCtries as $co): ?>
       <a class="chip" href="/<?= e(strtolower($co['code'])) ?>"><?= e($co['flag']) ?> <?= e($co['name']) ?></a>
     <?php endforeach; ?>
   </div>
 </section>
 
+<!-- search for visitors -->
+<section class="section wrap" style="max-width:760px">
+  <h2 style="text-align:center">Looking for a business instead?</h2>
+  <form class="search-bar" action="/search" method="get" role="search">
+    <input type="text" name="q" placeholder="Search businesses, services, trades…" aria-label="Search">
+    <button class="btn btn-primary" type="submit">Search</button>
+  </form>
+</section>
+
+<!-- final CTA -->
 <div class="wrap">
-  <div class="cta-band">
-    <h2>Your business belongs here. And it costs nothing.</h2>
-    <p>Join thousands of small businesses using <?= e(setting('site_name')) ?> to get found by real customers —
-      in classic search and in AI answers. Free listing, AI-built page, human-reviewed quality.</p>
-    <a class="btn btn-lg" href="/signup">Join free today</a>
+  <div class="lp-final">
+    <span class="lp-badge" style="background:rgba(255,255,255,.15);color:#fff">🎉 100% free — no credit card, ever</span>
+    <h2>YOUR NEXT CUSTOMER IS SEARCHING <span class="lp-accent2">RIGHT NOW.</span></h2>
+    <p><?= number_format($stats['listings']) ?> businesses across <?= number_format($stats['countries']) ?> countries are already on <?= e($site) ?>. Don't let them get found first.</p>
+    <a class="btn lp-btn-big" style="background:#fff;color:var(--accent)" href="/signup">Join free today →</a>
   </div>
 </div>
