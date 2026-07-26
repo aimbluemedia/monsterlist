@@ -28,6 +28,17 @@ function is_superadmin(): bool
     return $u && $u['role'] === 'superadmin';
 }
 
+/**
+ * True when $userId is a superadmin and the last one left — the guard that
+ * stops the site being locked out of its own control panel.
+ */
+function last_superadmin(int $userId): bool
+{
+    $target = row('SELECT role FROM users WHERE id = ?', [$userId]);
+    if (!$target || $target['role'] !== 'superadmin') return false;
+    return (int)scalar('SELECT COUNT(*) FROM users WHERE role = "superadmin"') <= 1;
+}
+
 function require_login(): array
 {
     $u = current_user();

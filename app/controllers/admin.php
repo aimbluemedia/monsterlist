@@ -227,14 +227,63 @@ if ($sub === 'dashboard') {
             } else {
                 flash_set('error', 'Check the fields — email must be unused, password 8+ characters.');
             }
+        } elseif ($action === 'edit') {
+            $t = row('SELECT * FROM users WHERE id = ? AND role IN ("admin","superadmin")', [(int)post('id')]);
+            $email = filter_var(post('email'), FILTER_VALIDATE_EMAIL);
+            $name  = mb_substr(post('name'), 0, 140);
+            $role  = post('role') === 'superadmin' ? 'superadmin' : 'admin';
+            $pass  = (string)($_POST['password'] ?? '');
+            $taken = $email ? row('SELECT id FROM users WHERE email = ? AND id <> ?', [$email, $t['id'] ?? 0]) : null;
+
+            if (!$t) {
+                flash_set('error', 'Staff account not found.');
+            } elseif (!$email || $name === '') {
+                flash_set('error', 'Name and a valid email are both required.');
+            } elseif ($taken) {
+                flash_set('error', 'That email is already used by another account.');
+            } elseif ($pass !== '' && strlen($pass) < 8) {
+                flash_set('error', 'New password must be at least 8 characters.');
+            } elseif ($t['role'] === 'superadmin' && $role !== 'superadmin' && last_superadmin((int)$t['id'])) {
+                flash_set('error', "Can't change the role of the only superadmin.");
+            } else {
+                q('UPDATE users SET name = ?, email = ?, role = ? WHERE id = ?', [$name, $email, $role, $t['id']]);
+                if ($pass !== '') {
+                    q('UPDATE users SET password_hash = ? WHERE id = ?', [password_hash($pass, PASSWORD_DEFAULT), $t['id']]);
+                }
+                $note = $pass !== '' ? ' Password changed.' : '';
+                flash_set('success', 'Account updated.' . $note);
+            }
         } elseif ($action === 'demote') {
-            $t = row('SELECT * FROM users WHERE id = ? AND role = "admin"', [(int)post('id')]);
-            if ($t) { q('UPDATE users SET role = "member" WHERE id = ?', [$t['id']]); flash_set('success', 'Admin demoted to member.'); }
+            $t = row('SELECT * FROM users WHERE id = ? AND role IN ("admin","superadmin")', [(int)post('id')]);
+            if (!$t) {
+                flash_set('error', 'Staff account not found.');
+            } elseif ((int)$t['id'] === (int)$u['id']) {
+                flash_set('error', "You can't demote your own account.");
+            } elseif (last_superadmin((int)$t['id'])) {
+                flash_set('error', "Can't demote the only superadmin.");
+            } else {
+                q('UPDATE users SET role = "member" WHERE id = ?', [$t['id']]);
+                flash_set('success', 'Account demoted to member.');
+            }
+        } elseif ($action === 'delete') {
+            $t = row('SELECT * FROM users WHERE id = ? AND role IN ("admin","superadmin")', [(int)post('id')]);
+            if (!$t) {
+                flash_set('error', 'Staff account not found.');
+            } elseif ((int)$t['id'] === (int)$u['id']) {
+                flash_set('error', "You can't delete your own account.");
+            } elseif (last_superadmin((int)$t['id'])) {
+                flash_set('error', "Can't delete the only superadmin.");
+            } else {
+                q('UPDATE users SET role = "member", status = "suspended" WHERE id = ?', [$t['id']]);
+                flash_set('success', 'Staff access revoked and the account suspended.');
+            }
         }
         redirect('/superadmin/admins');
     }
     $list = rows('SELECT * FROM users WHERE role IN ("admin","superadmin") ORDER BY role DESC, created_at');
-    view_raw('admin/admins', compact('meta', 'u', 'list'));
+    $editId = (int)($_GET['edit'] ?? 0);
+    $edit   = $editId ? row('SELECT * FROM users WHERE id = ? AND role IN ("admin","superadmin")', [$editId]) : null;
+    view_raw('admin/admins', compact('meta', 'u', 'list', 'edit'));
 
 } elseif ($sub === 'settings') {
     require_superadmin();
