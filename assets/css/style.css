@@ -203,3 +203,19 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
   .sa-main{padding:18px 14px}
   .sa-main .two-col{grid-template-columns:1fr}
 }
+
+/* homepage rebrand: promotion-engine hero, stats band, steps */
+.hero-brand{padding:64px 0 48px;background:linear-gradient(180deg,#fff 0%,#eef3ff 70%,var(--bg) 100%)}
+.free-badge{display:inline-block;background:var(--green-soft);color:var(--green);font-weight:700;font-size:.85rem;padding:7px 16px;border-radius:999px;margin-bottom:18px}
+.hero-brand h1{font-size:clamp(1.9rem,4.6vw,3rem)}
+.hero-sub{max-width:640px !important;font-size:1.05rem}
+.hero-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:4px}
+.btn-lg{padding:13px 26px;font-size:1rem;border-radius:12px}
+.stats-band{background:#14161c;color:#fff;padding:22px 0}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;text-align:center}
+.stats-row strong{display:block;font-size:1.5rem;font-weight:800}
+.stats-row span{color:#9aa1ad;font-size:.85rem;font-weight:600}
+@media(max-width:640px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+.step{position:relative;padding-top:26px}
+.step-num{position:absolute;top:-14px;left:20px;width:30px;height:30px;border-radius:999px;background:var(--accent);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(37,99,235,.35)}
+.steps{margin-top:22px}
