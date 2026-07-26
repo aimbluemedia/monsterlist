@@ -1,0 +1,12 @@
+# Staff area — route deeper paths (/superadmin/listings, ...) to this folder's
+# index.php when mod_rewrite is available. Without mod_rewrite, /superadmin/
+# still works via DirectoryIndex, and sub-pages via /superadmin/?p=listings
+DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /superadmin/
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ index.php [L]
+</IfModule>

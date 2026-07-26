@@ -9,6 +9,9 @@ Options -Indexes
   RewriteCond %{HTTP:X-Forwarded-Proto} !https
   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
+  # Diagnostic: proves mod_rewrite is active (see server-check.php)
+  RewriteRule ^server-check-rewrite$ server-check.php [L]
+
   # Front controller: send everything that isn't a real file to index.php
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
