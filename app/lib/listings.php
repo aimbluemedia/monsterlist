@@ -173,3 +173,107 @@ function refresh_city_count(int $cityId): void
          (SELECT COUNT(*) FROM businesses WHERE city_id = ? AND status = "live")
        WHERE id = ?', [$cityId, $cityId]);
 }
+
+// ---------------------------------------------------------------------------
+// Listing form handling. Shared by the member area (/account/listings) and the
+// staff control panel (/superadmin/listings), so both write the same fields
+// through the same validation.
+// ---------------------------------------------------------------------------
+
+/** Find-or-create the city for a submitted location. Returns city id or null. */
+function resolve_city(string $countryCode, string $regionSlug, string $cityName): ?int
+{
+    $country = row('SELECT * FROM countries WHERE code = ?', [$countryCode]);
+    if (!$country || $cityName === '') return null;
+
+    $regionId = null;
+    if ($country['code'] === 'US') {
+        if ($regionSlug === '') return null;
+        $region = region_by_slug('US', $regionSlug);
+        if (!$region) return null;
+        $regionId = (int)$region['id'];
+    }
+    $slug = slugify($cityName);
+    if ($slug === '') return null;
+
+    $existing = $regionId
+        ? city_in_region($regionId, $slug)
+        : city_in_country($country['code'], $slug);
+    if ($existing) return (int)$existing['id'];
+
+    q('INSERT INTO cities (country_code, region_id, name, slug) VALUES (?,?,?,?)',
+      [$country['code'], $regionId, mb_substr(trim($cityName), 0, 140), $slug]);
+    return (int)db()->lastInsertId();
+}
+
+/** Read + validate the listing form. Returns [data, errors]. */
+function listing_form_data(array $user, array $plan): array
+{
+    $errors = [];
+    $name = mb_substr(post('name'), 0, 180);
+    if ($name === '') $errors[] = 'Business name is required.';
+
+    $catId = post('category_id');
+    if ($catId === '' || !category_by_id($catId)) $errors[] = 'Please choose a category.';
+
+    $cityId = resolve_city(strtoupper(post('country')), post('region'), post('city'));
+    if (!$cityId) $errors[] = 'Please choose a valid country' . (strtoupper(post('country')) === 'US' ? ', state' : '') . ' and city.';
+
+    $maxDesc = $plan['enhanced'] ? 5000 : 300;
+    $data = [
+        'name'        => $name,
+        'category_id' => $catId,
+        'city_id'     => $cityId,
+        'tagline'     => mb_substr(post('tagline'), 0, 255),
+        'description' => mb_substr(post('description'), 0, $maxDesc),
+        'phone'       => mb_substr(post('phone'), 0, 40),
+        'website'     => clean_url(post('website')),
+        'email'       => filter_var(post('email'), FILTER_VALIDATE_EMAIL) ?: null,
+        'address'     => mb_substr(post('address'), 0, 255),
+        'founded'     => (int)post('founded') ?: null,
+    ];
+    if ($plan['enhanced']) {
+        $data['video_url'] = clean_url(post('video_url'));
+        $social = [];
+        foreach (['facebook','instagram','tiktok','youtube','pinterest','linkedin','x'] as $net) {
+            $v = clean_url(post('social_' . $net));
+            if ($v) $social[$net] = $v;
+        }
+        $data['social'] = $social ? json_encode($social) : null;
+    }
+    return [$data, $errors];
+}
+
+/** Handle logo + gallery uploads and removals for a saved listing. */
+function handle_listing_images(int $bizId, array $plan, array &$errors): void
+{
+    $biz = row('SELECT logo_url FROM businesses WHERE id = ?', [$bizId]);
+
+    // logo (all plans)
+    if (!empty($_POST['remove_logo']) && $biz['logo_url']) {
+        delete_upload($biz['logo_url']);
+        q('UPDATE businesses SET logo_url = NULL WHERE id = ?', [$bizId]);
+    }
+    if (!empty($_FILES['logo']['name'])) {
+        $url = save_image($_FILES['logo'], $bizId, 'logo', 400, $errors);
+        if ($url) {
+            delete_upload($biz['logo_url']);
+            q('UPDATE businesses SET logo_url = ? WHERE id = ?', [$url, $bizId]);
+        }
+    }
+
+    // gallery (enhanced plans only)
+    if (!$plan['enhanced']) return;
+    foreach ((array)($_POST['remove_gallery'] ?? []) as $gid) {
+        $g = row('SELECT * FROM gallery WHERE id = ? AND business_id = ?', [(int)$gid, $bizId]);
+        if ($g) { delete_upload($g['url']); q('DELETE FROM gallery WHERE id = ?', [$g['id']]); }
+    }
+    $have = (int)scalar('SELECT COUNT(*) FROM gallery WHERE business_id = ?', [$bizId]);
+    $slots = max(0, 6 - $have);
+    $files = array_slice(files_list('gallery'), 0, $slots);
+    if (count(files_list('gallery')) > $slots) $errors[] = 'Gallery is limited to 6 photos — extra files were skipped.';
+    foreach ($files as $i => $f) {
+        $url = save_image($f, $bizId, 'gallery', 1600, $errors);
+        if ($url) q('INSERT INTO gallery (business_id, url, sort) VALUES (?,?,?)', [$bizId, $url, $have + $i]);
+    }
+}

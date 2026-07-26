@@ -56,6 +56,74 @@ if ($sub === 'dashboard') {
          WHERE b.status = "pending" ORDER BY b.created_at ASC LIMIT 10');
     view_raw('admin/dashboard', compact('meta', 'u', 'stats', 'pending'));
 
+} elseif ($sub === 'listings' && ($segments[2] ?? '') === 'edit') {
+    // Staff editing of ANY listing, claimed or not. Unlike the member form this
+    // never bumps the listing back into moderation — staff edits are trusted —
+    // and status, tier and owner are editable here too.
+    $biz = row('SELECT * FROM businesses WHERE id = ?', [(int)($_GET['id'] ?? 0)]);
+    if (!$biz) not_found();
+
+    $back   = in_array($_GET['back'] ?? 'pending', ['pending','live','rejected','all'], true) ? $_GET['back'] : 'pending';
+    $errors = [];
+
+    // Staff get the full field set regardless of what the owner is paying for.
+    $staffPlan = ['enhanced' => true, 'max_listings' => PHP_INT_MAX, 'label' => 'Staff', 'analytics' => true];
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        csrf_check();
+        [$data, $errors] = listing_form_data($u, $staffPlan);
+
+        $newStatus = in_array(post('status'), ['pending','live','rejected'], true) ? post('status') : $biz['status'];
+        $newTier   = in_array(post('tier'), ['free','pro','featured'], true) ? post('tier') : $biz['tier'];
+        $verified  = !empty($_POST['verified']) ? 1 : 0;
+
+        // Reassign owner by email, or clear it to make the listing claimable.
+        $ownerEmail = trim((string)post('owner_email'));
+        $ownerId    = $biz['owner_id'];
+        if ($ownerEmail === '') {
+            $ownerId = null;
+        } else {
+            $owner = row('SELECT id FROM users WHERE email = ?', [$ownerEmail]);
+            if ($owner) $ownerId = (int)$owner['id'];
+            else $errors[] = 'No account found for "' . $ownerEmail . '". Leave the field empty to make the listing unclaimed.';
+        }
+
+        if (!$errors) {
+            $slug = unique_business_slug($data['name'], (int)$data['city_id'], (int)$biz['id']);
+            q('UPDATE businesses SET name=?, slug=?, category_id=?, city_id=?, tagline=?, description=?, phone=?,
+                      website=?, email=?, address=?, founded=?, video_url=?, social=?, status=?, tier=?, verified=?, owner_id=?
+               WHERE id=?',
+              [$data['name'], $slug, $data['category_id'], $data['city_id'], $data['tagline'], $data['description'],
+               $data['phone'], $data['website'], $data['email'], $data['address'], $data['founded'],
+               $data['video_url'] ?? $biz['video_url'], $data['social'] ?? $biz['social'],
+               $newStatus, $newTier, $verified, $ownerId, $biz['id']]);
+
+            $imgErrors = [];
+            handle_listing_images((int)$biz['id'], $staffPlan, $imgErrors);
+            foreach ($imgErrors as $ie) flash_set('error', $ie);
+
+            if ($biz['city_id']) refresh_city_count((int)$biz['city_id']);
+            if ((int)$data['city_id'] !== (int)$biz['city_id']) refresh_city_count((int)$data['city_id']);
+
+            // Tell search engines about a listing that just became publicly visible.
+            if ($newStatus === 'live' && $biz['status'] !== 'live') {
+                $url = business_url_by_id((int)$biz['id']);
+                if ($url) indexnow_ping([$url]);
+            }
+            flash_set('success', '"' . $data['name'] . '" updated.');
+            redirect('/superadmin/listings?status=' . $back);
+        }
+    }
+
+    $gallery   = rows('SELECT id, url FROM gallery WHERE business_id = ? ORDER BY sort', [$biz['id']]);
+    $countries = all_countries();
+    $usStates  = regions_of('US');
+    $cats      = categories_all();
+    $cityRow   = $biz['city_id'] ? city_full((int)$biz['city_id']) : null;
+    $owner     = $biz['owner_id'] ? row('SELECT email FROM users WHERE id = ?', [$biz['owner_id']]) : null;
+    $meta      = ['title' => 'Edit listing — ' . $site, 'robots' => 'noindex'];
+    view_raw('admin/listing-edit', compact('meta', 'u', 'biz', 'errors', 'countries', 'usStates', 'cats', 'gallery', 'cityRow', 'owner', 'back'));
+
 } elseif ($sub === 'listings') {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         csrf_check();

@@ -19,6 +19,7 @@
         <td><?= e(ucfirst($b['tier'])) ?></td>
         <td><span class="badge badge-<?= e($b['status']) ?>"><?= e($b['status']) ?></span></td>
         <td style="white-space:nowrap">
+          <a class="btn btn-sm btn-ghost" href="/superadmin/listings/edit?id=<?= (int)$b['id'] ?>&back=<?= e($status) ?>">Edit</a>
           <?php if ($b['status'] !== 'live'): ?>
           <form method="post" style="display:inline"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int)$b['id'] ?>"><input type="hidden" name="action" value="approve"><input type="hidden" name="back" value="<?= e($status) ?>"><button class="btn btn-sm btn-primary">Approve</button></form>
           <?php endif; ?>
