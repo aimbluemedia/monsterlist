@@ -8,7 +8,7 @@
 //   /category/{cat}                category landing page
 //   /pricing /about /contact /terms /privacy /add-listing
 //   /signup /login /logout /forgot /reset
-//   /account[...]                  member area
+//   /account[...] /members[...]    member area (same thing, two names)
 //   /superadmin[...]                    admin + superadmin
 //   /stripe/checkout|webhook|portal
 //   /sitemap.xml /sitemap-{n}.xml  dynamic sitemaps
@@ -85,6 +85,13 @@ switch (true) {
         break;
 
     case $first === 'account':
+        require $controllers . '/account.php';
+        break;
+
+    // /members is a friendlier alias for the same member area.
+    case $first === 'members':
+        $segments[0] = 'account';
+        $path = '/' . implode('/', $segments);
         require $controllers . '/account.php';
         break;
 
