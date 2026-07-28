@@ -64,6 +64,43 @@ document.addEventListener('DOMContentLoaded', function () {
     aiUrl.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); runFill(); } });
   }
 
+  // Homepage graphic: count the numbers up once, when it scrolls into view.
+  // The final value is already in the markup, so no-JS and reduced-motion
+  // visitors simply see it sitting there.
+  var stage = document.getElementById('ml-stage');
+  var slowMo = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (stage && !slowMo && window.IntersectionObserver) {
+    var targets = stage.querySelectorAll('[data-count]');
+
+    var runCount = function () {
+      targets.forEach(function (el) {
+        var end = parseInt(el.getAttribute('data-count'), 10);
+        var suffix = el.getAttribute('data-suffix') || '';
+        if (isNaN(end)) return;
+        var dur = 1100 + Math.random() * 500;
+        var t0 = null;
+        var tick = function (now) {
+          if (t0 === null) t0 = now;
+          var p = Math.min((now - t0) / dur, 1);
+          var eased = 1 - Math.pow(1 - p, 3);           // ease-out cubic
+          el.textContent = Math.round(end * eased).toLocaleString() + suffix;
+          if (p < 1) requestAnimationFrame(tick);
+        };
+        el.textContent = '0' + suffix;
+        requestAnimationFrame(tick);
+      });
+    };
+
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        io.disconnect();
+        runCount();
+      });
+    }, { threshold: 0.25 });
+    io.observe(stage);
+  }
+
   // Client-side filter box on /browse lists
   document.querySelectorAll('[data-filter]').forEach(function (input) {
     var target = document.querySelector(input.getAttribute('data-filter'));

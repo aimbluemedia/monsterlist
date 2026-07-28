@@ -1,25 +1,56 @@
 <?php
 // ---------------------------------------------------------------------------
-// Homepage promotion-engine graphic. Pure HTML/CSS/SVG — no images, no scripts,
-// so it stays sharp on every screen and costs nothing to load.
+// Homepage promotion-engine graphic. HTML/CSS/SVG only — no images.
 //
 //   ml-stage
-//     ml-screen   the member dashboard on a desktop monitor
-//     ml-phone    floating "your reach this month" card
-//     ml-rail     social networks the profile feeds
-//     ml-base     search + AI engines that cite the profile
+//     ml-canvas   the member dashboard on a monitor + floating reach card
+//     ml-arc      dotted sweep carrying every channel the profile feeds
 //
-// On narrow screens the rails collapse into a scroll-free chip grid under the
-// screen, and the phone is hidden — see the .ml-* mobile rules in style.css.
+// The channel nodes sit on an ellipse that runs down the right of the screen
+// and curves along the bottom. Their coordinates are computed here rather than
+// hand-placed so the arc stays true if nodes are added or removed.
+//
+// Each node is an oval showing a metric that counts up when the graphic first
+// scrolls into view (assets/js/app.js). Without JS — or with reduced motion —
+// the final number is simply there from the start.
+//
+// On narrow screens the arc collapses into a plain grid of the same ovals.
 // ---------------------------------------------------------------------------
-$mlSocial = [
-    ['fb', 'Facebook'], ['ig', 'Instagram'], ['tt', 'TikTok'],
-    ['yt', 'YouTube'], ['rd', 'Reddit'],    ['pt', 'Pinterest'],
+
+// [icon id, network, metric label, target number]
+$mlNodes = [
+    ['fb', 'Facebook',   'Shares',   3412],
+    ['ig', 'Instagram',  'Posts',    2180],
+    ['tt', 'TikTok',     'Videos',    940],
+    ['yt', 'YouTube',    'Views',    1280],
+    ['rd', 'Reddit',     'Threads',   316],
+    ['pt', 'Pinterest',  'Pins',      528],
+    ['sr', 'Google',     'Clicks',   2140],
+    ['sp', 'ChatGPT',    'Mentions',  486],
+    ['pp', 'Perplexity', 'Cites',     273],
+    ['cl', 'Claude',     'Mentions',  198],
+    ['gm', 'Gemini',     'Answers',   152],
 ];
-$mlEngines = [
-    ['sr', 'Google'], ['sp', 'ChatGPT'], ['pp', 'Perplexity'],
-    ['cl', 'Claude'], ['gm', 'Gemini'],
-];
+
+// Arc geometry, in the SVG's 1120 x 580 user space (mirrored by percentages so
+// the layout scales with the stage).
+$mlW = 1120; $mlH = 700;
+$mlCx = 800; $mlCy = 318; $mlRx = 302; $mlRy = 336;
+$mlA0 = -62; $mlA1 = 134;          // degrees, 0 = due right, positive = downward
+
+$mlPoint = function (float $deg) use ($mlCx, $mlCy, $mlRx, $mlRy) {
+    $r = deg2rad($deg);
+    return [$mlCx + $mlRx * cos($r), $mlCy + $mlRy * sin($r)];
+};
+
+// Sampled points for the dotted trail.
+$mlTrail = [];
+for ($i = 0; $i <= 60; $i++) {
+    [$x, $y] = $mlPoint($mlA0 + ($mlA1 - $mlA0) * $i / 60);
+    $mlTrail[] = round($x, 1) . ',' . round($y, 1);
+}
+
+$mlStep = count($mlNodes) > 1 ? ($mlA1 - $mlA0) / (count($mlNodes) - 1) : 0;
 ?>
 <svg class="ml-sprite" aria-hidden="true" focusable="false">
   <symbol id="ml-fb" viewBox="0 0 24 24"><path d="M13.5 21v-7.5h2.5l.5-3h-3V8.8c0-.9.3-1.3 1.3-1.3H16.6V4.8A17 17 0 0 0 14.5 4.7c-2.2 0-3.6 1.3-3.6 3.8v2H8.4v3h2.5V21z"/></symbol>
@@ -35,7 +66,7 @@ $mlEngines = [
   <symbol id="ml-gm" viewBox="0 0 24 24"><path d="M12 2.6c.4 4.9 4.5 8.9 9.4 9.4-4.9.4-8.9 4.5-9.4 9.4-.4-4.9-4.5-8.9-9.4-9.4 4.9-.5 8.9-4.5 9.4-9.4z"/></symbol>
 </svg>
 
-<div class="ml-stage">
+<div class="ml-stage" id="ml-stage">
  <div class="ml-canvas">
 
   <!-- desktop dashboard -->
@@ -61,10 +92,10 @@ $mlEngines = [
 
       <div class="ml-main">
         <div class="ml-kpis">
-          <div><small>Storefront views</small><b>48,192</b><span class="up">+24.6%</span></div>
-          <div><small>Customer reviews</small><b>1,204</b><span class="up">+18.9%</span></div>
-          <div><small>Social reach</small><b>126K</b><span class="up">+31.4%</span></div>
-          <div><small>AI mentions</small><b>1,847</b><span class="up">+42.1%</span></div>
+          <div><small>Storefront views</small><b data-count="48192">48,192</b><span class="up">+24.6%</span></div>
+          <div><small>Customer reviews</small><b data-count="1204">1,204</b><span class="up">+18.9%</span></div>
+          <div><small>Social reach</small><b data-count="126" data-suffix="K">126K</b><span class="up">+31.4%</span></div>
+          <div><small>AI mentions</small><b data-count="1847">1,847</b><span class="up">+42.1%</span></div>
         </div>
 
         <div class="ml-panels">
@@ -91,7 +122,7 @@ $mlEngines = [
             <div class="ml-donut-row">
               <div class="ml-donut" role="img" aria-label="Traffic split across search, AI assistants and social"></div>
               <ul class="ml-legend">
-                <li><i style="background:#2563eb"></i>Google Search</li>
+                <li><i style="background:#2563eb"></i>Google</li>
                 <li><i style="background:#60a5fa"></i>ChatGPT</li>
                 <li><i style="background:#0f172a"></i>Perplexity</li>
                 <li><i style="background:#f97316"></i>Claude</li>
@@ -116,35 +147,36 @@ $mlEngines = [
     <div class="ml-phone-top"><span>9:41</span><i></i></div>
     <h4>Your reach<br>this month</h4>
     <div class="ml-phone-grid">
-      <div><small>Views</small><b>48,192</b></div>
-      <div><small>Reviews</small><b>1,204</b></div>
-      <div><small>Shares</small><b>9,318</b></div>
-      <div><small>AI mentions</small><b>1,847</b></div>
+      <div><small>Views</small><b data-count="48192">48,192</b></div>
+      <div><small>Reviews</small><b data-count="1204">1,204</b></div>
+      <div><small>Shares</small><b data-count="9318">9,318</b></div>
+      <div><small>AI mentions</small><b data-count="1847">1,847</b></div>
     </div>
     <span class="ml-phone-btn">View full report</span>
   </div>
 
  </div>
 
-  <!-- social networks -->
-  <div class="ml-rail">
-    <?php foreach ($mlSocial as $i => [$id, $label]): ?>
-      <div class="ml-node" style="--d:<?= $i * .22 ?>s">
-        <span><svg viewBox="0 0 24 24"><use href="#ml-<?= $id ?>"/></svg></span>
-        <em><?= e($label) ?></em>
-      </div>
-    <?php endforeach; ?>
-  </div>
+ <!-- channel arc -->
+ <div class="ml-arc">
+   <svg class="ml-arc-line" viewBox="0 0 <?= $mlW ?> <?= $mlH ?>" preserveAspectRatio="none" aria-hidden="true">
+     <polyline points="<?= implode(' ', $mlTrail) ?>" fill="none" stroke="#c9d2e3" stroke-width="2"
+               stroke-linecap="round" stroke-dasharray="2 10"/>
+   </svg>
 
-  <!-- search + AI engines -->
-  <div class="ml-base">
-    <?php foreach ($mlEngines as $i => [$id, $label]): ?>
-      <div class="ml-node" style="--d:<?= $i * .22 + .4 ?>s">
-        <span><svg viewBox="0 0 24 24"><use href="#ml-<?= $id ?>"/></svg></span>
-        <em><?= e($label) ?></em>
-      </div>
-    <?php endforeach; ?>
-  </div>
+   <?php foreach ($mlNodes as $i => [$id, $label, $metric, $target]): ?>
+     <?php [$x, $y] = $mlPoint($mlA0 + $mlStep * $i); ?>
+     <div class="ml-node" style="left:<?= round($x / $mlW * 100, 2) ?>%;top:<?= round($y / $mlH * 100, 2) ?>%;--d:<?= round($i * .12, 2) ?>s">
+       <span class="ml-oval">
+         <b data-count="<?= $target ?>"><?= number_format($target) ?></b>
+         <em><?= e($metric) ?></em>
+       </span>
+       <span class="ml-node-name">
+         <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-<?= $id ?>"/></svg><?= e($label) ?>
+       </span>
+     </div>
+   <?php endforeach; ?>
+ </div>
 
 </div>
 

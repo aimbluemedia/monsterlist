@@ -259,10 +259,10 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 .ml-sprite #ml-fb,.ml-sprite #ml-tt,.ml-sprite #ml-sp,.ml-sprite #ml-gm{fill:currentColor;stroke:none}
 .ml-sprite #ml-yt path:last-child{fill:currentColor;stroke:none}
 
-.ml-stage{position:relative;max-width:1120px;margin:0 auto;padding:8px 0 0}
+.ml-stage{position:relative;max-width:1120px;margin:0 auto;padding:8px 0 238px}
 /* the phone is positioned against the screen, not the stage, so the overlap
    stays constant at every width instead of swallowing the sidebar */
-.ml-canvas{position:relative;z-index:2;max-width:760px;margin:0 auto}
+.ml-canvas{position:relative;z-index:2;max-width:600px;margin:0 0 0 186px}
 
 /* --- monitor --- */
 .ml-screen{position:relative;z-index:2;background:#fff;border:1px solid var(--border);
@@ -331,18 +331,20 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 .ml-phone-btn{display:block;text-align:center;background:var(--accent);color:#fff;border-radius:9px;
   padding:8px;font-size:.72rem;font-weight:800}
 
-/* --- orbiting nodes --- */
-.ml-rail,.ml-base{position:absolute;z-index:1;display:flex}
-.ml-rail{right:0;top:0;bottom:0;flex-direction:column;justify-content:space-between;align-items:center}
-.ml-base{left:22%;right:12%;bottom:-52px;justify-content:space-between;align-items:flex-start}
-.ml-node{display:flex;flex-direction:column;align-items:center;gap:5px;width:76px;text-align:center;
+/* --- channel arc --- */
+.ml-arc{position:absolute;inset:0;z-index:1;pointer-events:none}
+.ml-arc-line{position:absolute;inset:0;width:100%;height:100%}
+.ml-node{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:6px;
   animation:ml-float 5.5s ease-in-out infinite;animation-delay:var(--d,0s)}
-.ml-node span{width:46px;height:46px;border-radius:50%;background:#fff;border:1px solid var(--border);
-  box-shadow:0 8px 22px rgba(16,24,40,.13);display:grid;place-items:center;color:var(--accent)}
-.ml-node svg{width:21px;height:21px}
-.ml-node em{font-style:normal;font-size:.68rem;font-weight:800;color:var(--mute);line-height:1.2}
+.ml-oval{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  width:78px;height:50px;border-radius:999px;background:#fff;border:1px solid var(--border);
+  box-shadow:0 8px 22px rgba(16,24,40,.13)}
+.ml-oval b{font-size:.88rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.ml-oval em{font-style:normal;font-size:.55rem;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--faint)}
+.ml-node-name{display:flex;align-items:center;gap:4px;font-size:.64rem;font-weight:800;color:var(--mute);white-space:nowrap}
+.ml-node-name svg{width:13px;height:13px;color:var(--accent);flex-shrink:0}
 
-.ml-caption{max-width:660px;margin:70px auto 0;text-align:center;color:var(--mute);font-size:.92rem;line-height:1.6}
+.ml-caption{max-width:660px;margin:18px auto 0;text-align:center;color:var(--mute);font-size:.92rem;line-height:1.6}
 
 @keyframes ml-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 @keyframes ml-pulse{0%,100%{opacity:1}50%{opacity:.3}}
@@ -391,14 +393,15 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 
 /* promo graphic stacks before the rails can collide with the screen */
 @media(max-width:1100px){
+  .ml-stage{padding-bottom:0}
   .ml-phone{display:none}
-  .ml-rail,.ml-base{position:static;display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:20px;left:auto;right:auto}
-  .ml-base{grid-template-columns:repeat(5,1fr);margin-top:10px}
-  .ml-node{width:auto}
-  .ml-node span{width:42px;height:42px}
-  .ml-node svg{width:19px;height:19px}
-  .ml-node em{font-size:.64rem}
-  .ml-caption{margin-top:28px}
+  .ml-canvas{max-width:100%;margin:0 auto}
+  .ml-arc{position:static;display:grid;grid-template-columns:repeat(4,1fr);gap:12px 8px;margin-top:22px}
+  .ml-arc-line{display:none}
+  .ml-node{position:static;transform:none;left:auto!important;top:auto!important}
+  .ml-oval{width:100%;max-width:104px;height:50px}
+  .ml-oval b{font-size:.88rem}
+  .ml-caption{margin-top:26px}
 }
 
 /* ===== mobile ===== */
@@ -421,8 +424,11 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
   .ml-side{width:auto;flex-direction:row;flex-wrap:wrap;gap:4px;padding:10px}
   .ml-brand{width:100%;margin-bottom:6px}
   .ml-side u{font-size:.66rem;padding:5px 8px}
-  .ml-rail{grid-template-columns:repeat(3,1fr)}
-  .ml-base{grid-template-columns:repeat(3,1fr)}
+  .ml-arc{grid-template-columns:repeat(3,1fr);gap:10px 6px}
+  .ml-oval{height:46px}
+  .ml-oval b{font-size:.8rem}
+  .ml-oval em{font-size:.54rem}
+  .ml-node-name{font-size:.62rem}
   .ml-feed div{font-size:.66rem;gap:6px}
   .ml-feed div>b{display:none}
   .ml-bar em{font-size:.66rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
