@@ -56,35 +56,7 @@
     <p class="lp-center-sub">You run your business. <?= e($site) ?> runs your presence — one profile that
       feeds search engines, AI assistants and your customers everything they need to choose you.</p>
 
-    <div class="lp-mockup-zone">
-      <div class="lp-mockup">
-        <div class="lp-mock-top"><i></i><i></i><i></i><em><?= e(strtolower($site)) ?>.org/account</em></div>
-        <div class="lp-mock-body">
-          <div class="lp-mock-side">
-            <b>My dashboard</b>
-            <u class="on">Overview</u><u>My listings</u><u>Analytics</u><u>Billing</u>
-          </div>
-          <div class="lp-mock-main">
-            <div class="lp-mock-stats">
-              <div><b>2,481</b><small>Views</small></div>
-              <div><b>312</b><small>Clicks</small></div>
-              <div><b>47</b><small>Calls</small></div>
-              <div><b>4.9★</b><small>Rating</small></div>
-            </div>
-            <div class="lp-mock-chart">
-              <i style="height:34%"></i><i style="height:48%"></i><i style="height:42%"></i><i style="height:61%"></i>
-              <i style="height:55%"></i><i style="height:74%"></i><i style="height:68%"></i><i style="height:88%"></i>
-              <i style="height:79%"></i><i style="height:96%"></i>
-            </div>
-            <div class="lp-mock-row"><span class="dot g"></span> New 5★ review from Maria G.</div>
-            <div class="lp-mock-row"><span class="dot b"></span> Your page appeared in an AI answer</div>
-          </div>
-        </div>
-      </div>
-      <span class="lp-chip c1">Cited by AI assistants</span>
-      <span class="lp-chip c2">“Best in town” — new review</span>
-      <span class="lp-chip c3">+212% profile views</span>
-    </div>
+    <?php require __DIR__ . '/_promo-graphic.php'; ?>
   </div>
 </section>
 
