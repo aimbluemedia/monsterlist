@@ -16,7 +16,7 @@
     </div>
     <div>
       <h4>For businesses</h4>
-      <a href="/add-listing">Add your business</a>
+      <a href="/add-listing">Add your business FREE</a>
       <a href="/pricing">Pricing &amp; plans</a>
       <a href="/login">Member login</a>
     </div>
