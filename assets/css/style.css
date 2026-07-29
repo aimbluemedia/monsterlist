@@ -340,6 +340,8 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
   width:78px;height:50px;border-radius:999px;background:#fff;border:1px solid var(--border);
   box-shadow:0 8px 22px rgba(16,24,40,.13)}
 .ml-oval b{font-size:.88rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.ml-oval-ok{color:var(--green);background:var(--green-soft);border-color:#bfe6d8}
+.ml-oval-ok svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
 .ml-oval em{font-style:normal;font-size:.55rem;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--faint)}
 .ml-node-name{display:flex;align-items:center;gap:4px;font-size:.64rem;font-weight:800;color:var(--mute);white-space:nowrap}
 .ml-node-name svg{width:13px;height:13px;color:var(--accent);flex-shrink:0}

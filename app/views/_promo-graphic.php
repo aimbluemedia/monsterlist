@@ -6,18 +6,22 @@
 //     ml-canvas   the member dashboard on a monitor + floating reach card
 //     ml-arc      dotted sweep carrying every channel the profile feeds
 //
-// The channel nodes sit on an ellipse that runs down the right of the screen
-// and curves along the bottom. Their coordinates are computed here rather than
-// hand-placed so the arc stays true if nodes are added or removed.
+// The channels ride a cubic bezier that starts at the top-right corner, curves
+// down past the right of the screen and along under it, and finishes at the
+// bottom-left corner. Node positions are spaced by arc length rather than by
+// curve parameter, so they stay evenly apart through the bends, and the dotted
+// trail is sampled from the same curve — adding or removing a channel
+// redistributes everything automatically.
 //
-// Each node is an oval showing a metric that counts up when the graphic first
-// scrolls into view (assets/js/app.js). Without JS — or with reduced motion —
-// the final number is simply there from the start.
+// Social channels carry a view count that counts up when the graphic scrolls
+// into view (assets/js/app.js). Search and AI engines carry a check instead:
+// being cited there is a yes/no, not a number. Without JS — or with reduced
+// motion — the final numbers are simply there from the start.
 //
 // On narrow screens the arc collapses into a plain grid of the same ovals.
 // ---------------------------------------------------------------------------
 
-// [icon id, network, metric label, target number]
+// [icon id, channel, metric label, view count]  — null metric renders a check
 $mlNodes = [
     ['fb', 'Facebook',   'Views', 74],
     ['ig', 'Instagram',  'Views', 68],
@@ -25,32 +29,62 @@ $mlNodes = [
     ['yt', 'YouTube',    'Views', 63],
     ['rd', 'Reddit',     'Views', 23],
     ['pt', 'Pinterest',  'Views', 36],
-    ['sr', 'Google',     'Views', 79],
-    ['sp', 'ChatGPT',    'Views', 45],
-    ['pp', 'Perplexity', 'Views', 28],
-    ['cl', 'Claude',     'Views', 19],
-    ['gm', 'Gemini',     'Views', 14],
+    ['sr', 'Google',     null,    null],
+    ['sp', 'ChatGPT',    null,    null],
+    ['pp', 'Perplexity', null,    null],
+    ['cl', 'Claude',     null,    null],
+    ['gm', 'Gemini',     null,    null],
 ];
 
-// Arc geometry, in the SVG's 1120 x 580 user space (mirrored by percentages so
-// the layout scales with the stage).
+// Curve control points, in the SVG's user space. Percentages of this box drive
+// the layout, so the whole arc scales with the stage.
 $mlW = 1120; $mlH = 700;
-$mlCx = 800; $mlCy = 318; $mlRx = 302; $mlRy = 336;
-$mlA0 = -62; $mlA1 = 134;          // degrees, 0 = due right, positive = downward
+$mlP = [[1050, 58], [1024, 508], [430, 700], [88, 618]];   // top-right → bottom-left
 
-$mlPoint = function (float $deg) use ($mlCx, $mlCy, $mlRx, $mlRy) {
-    $r = deg2rad($deg);
-    return [$mlCx + $mlRx * cos($r), $mlCy + $mlRy * sin($r)];
+$mlBez = function (float $t) use ($mlP) {
+    $u = 1 - $t;
+    $a = $u * $u * $u; $b = 3 * $u * $u * $t; $c = 3 * $u * $t * $t; $d = $t * $t * $t;
+    return [
+        $a * $mlP[0][0] + $b * $mlP[1][0] + $c * $mlP[2][0] + $d * $mlP[3][0],
+        $a * $mlP[0][1] + $b * $mlP[1][1] + $c * $mlP[2][1] + $d * $mlP[3][1],
+    ];
 };
 
-// Sampled points for the dotted trail.
+// Walk the curve once, recording points and cumulative length.
+$mlSteps = 400;
+$mlPts = []; $mlLen = [0.0];
+for ($i = 0; $i <= $mlSteps; $i++) {
+    $mlPts[$i] = $mlBez($i / $mlSteps);
+    if ($i > 0) {
+        $dx = $mlPts[$i][0] - $mlPts[$i - 1][0];
+        $dy = $mlPts[$i][1] - $mlPts[$i - 1][1];
+        $mlLen[$i] = $mlLen[$i - 1] + sqrt($dx * $dx + $dy * $dy);
+    }
+}
+$mlTotal = end($mlLen);
+
+/** Point at a given fraction of the curve's LENGTH, so nodes space evenly. */
+$mlAt = function (float $frac) use ($mlPts, $mlLen, $mlTotal, $mlSteps) {
+    $want = $mlTotal * $frac;
+    for ($i = 1; $i <= $mlSteps; $i++) {
+        if ($mlLen[$i] < $want) continue;
+        $span = $mlLen[$i] - $mlLen[$i - 1];
+        $k = $span > 0 ? ($want - $mlLen[$i - 1]) / $span : 0;
+        return [
+            $mlPts[$i - 1][0] + ($mlPts[$i][0] - $mlPts[$i - 1][0]) * $k,
+            $mlPts[$i - 1][1] + ($mlPts[$i][1] - $mlPts[$i - 1][1]) * $k,
+        ];
+    }
+    return $mlPts[$mlSteps];
+};
+
+// Dotted trail — every 5th sample is plenty for a smooth polyline.
 $mlTrail = [];
-for ($i = 0; $i <= 60; $i++) {
-    [$x, $y] = $mlPoint($mlA0 + ($mlA1 - $mlA0) * $i / 60);
-    $mlTrail[] = round($x, 1) . ',' . round($y, 1);
+for ($i = 0; $i <= $mlSteps; $i += 5) {
+    $mlTrail[] = round($mlPts[$i][0], 1) . ',' . round($mlPts[$i][1], 1);
 }
 
-$mlStep = count($mlNodes) > 1 ? ($mlA1 - $mlA0) / (count($mlNodes) - 1) : 0;
+$mlCount = count($mlNodes);
 ?>
 <svg class="ml-sprite" aria-hidden="true" focusable="false">
   <symbol id="ml-fb" viewBox="0 0 24 24"><path d="M13.5 21v-7.5h2.5l.5-3h-3V8.8c0-.9.3-1.3 1.3-1.3H16.6V4.8A17 17 0 0 0 14.5 4.7c-2.2 0-3.6 1.3-3.6 3.8v2H8.4v3h2.5V21z"/></symbol>
@@ -63,6 +97,7 @@ $mlStep = count($mlNodes) > 1 ? ($mlA1 - $mlA0) / (count($mlNodes) - 1) : 0;
   <symbol id="ml-sp" viewBox="0 0 24 24"><path d="m12 2.8 2.3 6.6 6.6 2.3-6.6 2.3-2.3 6.6-2.3-6.6L3.1 11.7l6.6-2.3z"/></symbol>
   <symbol id="ml-pp" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.6"/><path d="m16 16 4.6 4.6"/><path d="M11 7.6v6.8M7.6 11h6.8"/></symbol>
   <symbol id="ml-cl" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4"/></symbol>
+  <symbol id="ml-ok" viewBox="0 0 24 24"><path d="m5 12.5 4.6 4.6L19 7.6"/></symbol>
   <symbol id="ml-gm" viewBox="0 0 24 24"><path d="M12 2.6c.4 4.9 4.5 8.9 9.4 9.4-4.9.4-8.9 4.5-9.4 9.4-.4-4.9-4.5-8.9-9.4-9.4 4.9-.5 8.9-4.5 9.4-9.4z"/></symbol>
 </svg>
 
@@ -165,12 +200,18 @@ $mlStep = count($mlNodes) > 1 ? ($mlA1 - $mlA0) / (count($mlNodes) - 1) : 0;
    </svg>
 
    <?php foreach ($mlNodes as $i => [$id, $label, $metric, $target]): ?>
-     <?php [$x, $y] = $mlPoint($mlA0 + $mlStep * $i); ?>
+     <?php [$x, $y] = $mlAt($mlCount > 1 ? $i / ($mlCount - 1) : 0); ?>
      <div class="ml-node" style="left:<?= round($x / $mlW * 100, 2) ?>%;top:<?= round($y / $mlH * 100, 2) ?>%;--d:<?= round($i * .12, 2) ?>s">
-       <span class="ml-oval">
-         <b data-count="<?= $target ?>"><?= number_format($target) ?></b>
-         <em><?= e($metric) ?></em>
-       </span>
+       <?php if ($metric === null): ?>
+         <span class="ml-oval ml-oval-ok" title="Listed and citable">
+           <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-ok"/></svg>
+         </span>
+       <?php else: ?>
+         <span class="ml-oval">
+           <b data-count="<?= $target ?>"><?= number_format($target) ?></b>
+           <em><?= e($metric) ?></em>
+         </span>
+       <?php endif; ?>
        <span class="ml-node-name">
          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-<?= $id ?>"/></svg><?= e($label) ?>
        </span>
