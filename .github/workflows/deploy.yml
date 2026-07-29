@@ -9,6 +9,10 @@
 #   FTP_USERNAME  e.g. u312278121.monsterlist.org
 #   FTP_PASSWORD  the FTP account password
 #
+# Until those three secrets exist the deploy step is skipped and the run
+# finishes green, so nobody gets a failure email for a setup that simply has
+# not been done yet. Add the secrets and the very next push deploys for real.
+#
 # Your server's app/config.php and everything in uploads/ are never touched.
 
 name: Deploy to Hostinger
@@ -24,7 +28,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # The secrets context is not available to a job-level `if`, so the check
+      # happens here and later steps key off its output.
+      - name: Check FTP credentials are configured
+        id: ftp
+        env:
+          SERVER: ${{ secrets.FTP_SERVER }}
+          USERNAME: ${{ secrets.FTP_USERNAME }}
+          PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          if [ -n "$SERVER" ] && [ -n "$USERNAME" ] && [ -n "$PASSWORD" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Deploy skipped::FTP_SERVER, FTP_USERNAME and FTP_PASSWORD are not all set. Add them under Settings → Secrets and variables → Actions to enable automatic deployment."
+          fi
+
       - name: Sync files to Hostinger via FTP
+        if: steps.ftp.outputs.ready == 'true'
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -38,3 +59,19 @@ jobs:
             .github/**
             app/config.php
             uploads/**
+
+      - name: Summary
+        run: |
+          if [ "${{ steps.ftp.outputs.ready }}" = "true" ]; then
+            echo "Deployed to Hostinger public_html/." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "### Deploy skipped" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "Automatic deployment is not configured yet. Add these three repository secrets under **Settings → Secrets and variables → Actions**, using the details from hPanel → Files → FTP Accounts:" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "- \`FTP_SERVER\`" >> "$GITHUB_STEP_SUMMARY"
+            echo "- \`FTP_USERNAME\`" >> "$GITHUB_STEP_SUMMARY"
+            echo "- \`FTP_PASSWORD\`" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "The next push after that will deploy automatically." >> "$GITHUB_STEP_SUMMARY"
+          fi
