@@ -19,17 +19,17 @@
 
 // [icon id, network, metric label, target number]
 $mlNodes = [
-    ['fb', 'Facebook',   'Shares',   3412],
-    ['ig', 'Instagram',  'Posts',    2180],
-    ['tt', 'TikTok',     'Videos',    940],
-    ['yt', 'YouTube',    'Views',    1280],
-    ['rd', 'Reddit',     'Threads',   316],
-    ['pt', 'Pinterest',  'Pins',      528],
-    ['sr', 'Google',     'Clicks',   2140],
-    ['sp', 'ChatGPT',    'Mentions',  486],
-    ['pp', 'Perplexity', 'Cites',     273],
-    ['cl', 'Claude',     'Mentions',  198],
-    ['gm', 'Gemini',     'Answers',   152],
+    ['fb', 'Facebook',   'Views', 74],
+    ['ig', 'Instagram',  'Views', 68],
+    ['tt', 'TikTok',     'Views', 51],
+    ['yt', 'YouTube',    'Views', 63],
+    ['rd', 'Reddit',     'Views', 23],
+    ['pt', 'Pinterest',  'Views', 36],
+    ['sr', 'Google',     'Views', 79],
+    ['sp', 'ChatGPT',    'Views', 45],
+    ['pp', 'Perplexity', 'Views', 28],
+    ['cl', 'Claude',     'Views', 19],
+    ['gm', 'Gemini',     'Views', 14],
 ];
 
 // Arc geometry, in the SVG's 1120 x 580 user space (mirrored by percentages so
@@ -92,10 +92,10 @@ $mlStep = count($mlNodes) > 1 ? ($mlA1 - $mlA0) / (count($mlNodes) - 1) : 0;
 
       <div class="ml-main">
         <div class="ml-kpis">
-          <div><small>Storefront views</small><b data-count="48192">48,192</b><span class="up">+24.6%</span></div>
-          <div><small>Customer reviews</small><b data-count="1204">1,204</b><span class="up">+18.9%</span></div>
-          <div><small>Social reach</small><b data-count="126" data-suffix="K">126K</b><span class="up">+31.4%</span></div>
-          <div><small>AI mentions</small><b data-count="1847">1,847</b><span class="up">+42.1%</span></div>
+          <div><small>Storefront views</small><b data-count="2048">2,048</b><span class="up">+24.6%</span></div>
+          <div><small>Content views</small><b data-count="57">57</b><span class="up">+18.9%</span></div>
+          <div><small>Video views</small><b data-count="62">62</b><span class="up">+31.4%</span></div>
+          <div><small>Product views</small><b data-count="41">41</b><span class="up">+42.1%</span></div>
         </div>
 
         <div class="ml-panels">
@@ -147,10 +147,10 @@ $mlStep = count($mlNodes) > 1 ? ($mlA1 - $mlA0) / (count($mlNodes) - 1) : 0;
     <div class="ml-phone-top"><span>9:41</span><i></i></div>
     <h4>Your reach<br>this month</h4>
     <div class="ml-phone-grid">
-      <div><small>Views</small><b data-count="48192">48,192</b></div>
-      <div><small>Reviews</small><b data-count="1204">1,204</b></div>
-      <div><small>Shares</small><b data-count="9318">9,318</b></div>
-      <div><small>AI mentions</small><b data-count="1847">1,847</b></div>
+      <div><small>Storefront</small><b data-count="2048">2,048</b></div>
+      <div><small>Content</small><b data-count="57">57</b></div>
+      <div><small>Video</small><b data-count="62">62</b></div>
+      <div><small>Services</small><b data-count="34">34</b></div>
     </div>
     <span class="ml-phone-btn">View full report</span>
   </div>
