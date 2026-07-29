@@ -39,7 +39,7 @@ $mlNodes = [
 // Curve control points, in the SVG's user space. Percentages of this box drive
 // the layout, so the whole arc scales with the stage.
 $mlW = 1120; $mlH = 700;
-$mlP = [[1050, 58], [1024, 508], [430, 700], [88, 618]];   // top-right → bottom-left
+$mlP = [[860, 66], [920, 620], [820, 720], [120, 508]];   // top-right → bottom-left
 
 $mlBez = function (float $t) use ($mlP) {
     $u = 1 - $t;
@@ -205,6 +205,7 @@ $mlCount = count($mlNodes);
        <?php if ($metric === null): ?>
          <span class="ml-oval ml-oval-ok" title="Listed and citable">
            <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-ok"/></svg>
+           <em>Found</em>
          </span>
        <?php else: ?>
          <span class="ml-oval">
