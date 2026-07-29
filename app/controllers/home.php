@@ -14,7 +14,6 @@ $stats = [
     'categories'=> count($cats),
 ];
 
-$planList = plans();
 $site = setting('site_name');
 $meta = [
     'title'       => "$site — free AI-powered promotion for your small business",
@@ -23,4 +22,4 @@ $meta = [
     'jsonld'      => [jsonld_website(), jsonld_organization()],
 ];
 
-view('home', compact('meta', 'cats', 'featured', 'newest', 'popCities', 'popStates', 'popCtries', 'stats', 'planList'));
+view('home', compact('meta', 'cats', 'featured', 'newest', 'popCities', 'popStates', 'popCtries', 'stats'));

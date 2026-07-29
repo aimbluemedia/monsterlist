@@ -44,10 +44,10 @@ $me            = current_user();
           <a class="btn btn-ghost" href="/superadmin">Admin</a>
         <?php endif; ?>
         <a class="btn btn-ghost" href="/account">My account</a>
-        <a class="btn btn-primary" href="/account/listings/new">Add a business</a>
+        <a class="btn btn-primary" href="/account/listings/new">Add Your Business FREE</a>
       <?php else: ?>
         <a class="btn btn-ghost" href="/login">Log in</a>
-        <a class="btn btn-primary" href="/add-listing">Add a business</a>
+        <a class="btn btn-primary" href="/add-listing">Add Your Business FREE</a>
       <?php endif; ?>
     </div>
   </div>
