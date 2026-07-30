@@ -80,36 +80,36 @@
   <div class="pe-glow" aria-hidden="true"></div>
   <div class="wrap pe-inner">
 
-    <span class="pe-eyebrow">Member-powered reach</span>
-    <h2 class="pe-title">YOU POST IT.<br><span>THE COMMUNITY SHOWS UP.</span></h2>
-    <p class="pe-lead">Great content doesn't die from being bad. It dies from silence.
-      Publish anywhere you already do, drop the link here, and real members go watch it,
-      read it and click it <strong>where you posted it</strong> — so it counts.
-      You turn up for them. They turn up for you.</p>
+    <span class="pe-eyebrow">AI Promotion Engine</span>
+    <h2 class="pe-title">YOU POSTED IT.<br><span>NOBODY SAW IT.</span></h2>
+    <p class="pe-lead">You wrote the post, filmed the video, listed the product — and it reached
+      almost no one. The AI Promotion Engine takes anything you publish and puts it in front of
+      <strong>people who have never heard of your business</strong>: our member network, Google,
+      and the AI assistants your customers now ask for recommendations. One link. Free to start.</p>
 
     <ol class="pe-loop">
       <li>
         <span class="pe-num">1</span>
-        <h3>Post it anywhere</h3>
-        <p>Your blog. Your storefront. YouTube, TikTok, Reddit, Pinterest — wherever you already publish.</p>
+        <h3>Drop in one link</h3>
+        <p>A post, a product, a service, a video, a review — anything you've already published.</p>
       </li>
       <li>
         <span class="pe-num">2</span>
-        <h3>Drop the link</h3>
-        <p>Ten seconds in your dashboard. It lands in the member feed for your category.</p>
+        <h3>AI does the promoting</h3>
+        <p>It writes the pitch, files it under the right category and pushes it to the network, search and AI assistants.</p>
       </li>
       <li>
         <span class="pe-num">3</span>
-        <h3>The room fills up</h3>
-        <p>Real members open it and genuinely engage — on the channel that measures it.</p>
+        <h3>New customers find you</h3>
+        <p>Real people discover your business, click through and buy — and you see every view in your dashboard.</p>
       </li>
     </ol>
 
     <div class="pe-demo">
       <div class="pe-try">
         <span class="pe-kicker">Try it</span>
-        <h3>Paste a link. Watch it move.</h3>
-        <p>Pick something you'd post, hit boost, and see what the member feed does to it.</p>
+        <h3>See what it does to a post.</h3>
+        <p>Pick something you'd publish and press the button — this is what the engine does with it.</p>
         <div class="pe-field">
           <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-link"/></svg>
           <input type="text" id="pe-url" value="https://youtube.com/watch?v=your-latest-video"
@@ -148,7 +148,7 @@
     </div>
 
     <div class="pe-belt">
-      <span class="pe-belt-label">Boost anything</span>
+      <span class="pe-belt-label">The engine promotes all of it</span>
       <div class="pe-chips">
         <?php foreach ([
             ['blog', 'Blog Posts'], ['prod', 'Products'], ['serv', 'Services'], ['star', 'Reviews'],
@@ -163,9 +163,9 @@
     </div>
 
     <div class="pe-close">
-      <a class="btn btn-primary pe-btn" href="/signup">Start boosting — free</a>
-      <p class="pe-note">Free forever. No card. Boost others, get boosted —
-        the more you show up, the further your own posts travel.</p>
+      <a class="btn btn-primary pe-btn" href="/signup">Promote my business — free</a>
+      <p class="pe-note">Free forever. No card, no contract. Add your business, drop in your first link,
+        and the engine starts working today.</p>
     </div>
 
   </div>
