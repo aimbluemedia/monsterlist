@@ -74,20 +74,42 @@
   </div>
 </section>
 
-<!-- steps -->
-<section class="lp-section">
+<!-- promotion engine -->
+<section class="lp-section" id="engine">
   <div class="wrap">
-    <h2 class="lp-h2">Three Steps To <span class="lp-accent">More Customers</span></h2>
+    <?php require __DIR__ . '/_icons.php'; ?>
+    <h2 class="lp-h2">The <span class="lp-accent">Promotion Engine</span></h2>
+    <p class="lp-center-sub">Publishing is the easy part — getting seen is not. Post wherever you already do,
+      then drop the link into <?= e($site) ?>. Real members go and watch, read and click it
+      <strong>on the platform you posted it to</strong>, so the views land where they count. You show up for
+      them, they show up for you.</p>
+
     <div class="lp-steps">
-      <div class="card card-pad step"><span class="step-num">1</span><h3>AI builds your page</h3>
-        <p class="mute">Sign up free and paste your website. Our AI writes your description, picks your category and links your socials — you just hit submit.</p></div>
-      <div class="card card-pad step"><span class="step-num">2</span><h3>We put you everywhere</h3>
-        <p class="mute">Your page is engineered for Google rankings and structured so ChatGPT, Claude and Perplexity can recommend you by name.</p></div>
-      <div class="card card-pad step"><span class="step-num">3</span><h3>You grow</h3>
-        <p class="mute">Collect reviews, showcase photos and video, and track every view, click and call. More participation = more reach.</p></div>
+      <div class="card card-pad step"><span class="step-num">1</span><h3>Post it anywhere</h3>
+        <p class="mute">A blog post, a product, a service, a YouTube video, a Reel, a TikTok, a Reddit thread or a Pin — wherever your audience already is.</p></div>
+      <div class="card card-pad step"><span class="step-num">2</span><h3>Boost it here</h3>
+        <p class="mute">Paste the link into your dashboard. It joins the member feed and goes out to businesses and creators in your category.</p></div>
+      <div class="card card-pad step"><span class="step-num">3</span><h3>The community shows up</h3>
+        <p class="mute">Members open the original post and genuinely engage — real people, real attention, on the channel that measures it.</p></div>
     </div>
-    <p style="text-align:center;margin-top:26px">
-      <a class="btn btn-primary lp-btn-big" href="/signup">Start free — takes 5 minutes</a>
+
+    <h3 class="pe-h3">Boost anything you publish</h3>
+    <div class="pe-grid">
+      <?php foreach ([
+          ['blog', 'Blog Posts'], ['prod', 'Products'], ['serv', 'Services'], ['star', 'Reviews'],
+          ['yt',   'YouTube'],    ['fb',   'Facebook'], ['ig',   'Instagram'],
+          ['tt',   'TikTok'],     ['rd',   'Reddit'],   ['pt',   'Pinterest'],
+      ] as [$peId, $peLabel]): ?>
+        <div class="pe-tile">
+          <span><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-<?= $peId ?>"/></svg></span>
+          <b><?= e($peLabel) ?></b>
+        </div>
+      <?php endforeach; ?>
+    </div>
+
+    <p class="pe-cta">
+      <a class="btn btn-primary lp-btn-big" href="/signup">Join free — start boosting today</a>
+      <small>Free members boost and get boosted. The more you show up for others, the further your own posts travel.</small>
     </p>
   </div>
 </section>
