@@ -3,6 +3,7 @@ $saPath = parse_url($_SERVER['REQUEST_URI'] ?? '/superadmin', PHP_URL_PATH);
 $saNav = [
     ['/superadmin',            'Dashboard',  true],
     ['/superadmin/listings',   'Listings',   true],
+    ['/superadmin/promotions', 'Promotions', true],
     ['/superadmin/members',    'Members',    true],
     ['/superadmin/claims',     'Claims',     true],
     ['/superadmin/reviews',    'Reviews',    true],

@@ -138,6 +138,53 @@ if ($sub === 'dashboard') {
     }
     redirect('/account/listings');
 
+} elseif ($sub === 'promotions') {
+    // The promotion engine: submit a link you've already published elsewhere.
+    $mine   = rows('SELECT id, name FROM businesses WHERE owner_id = ? ORDER BY name', [$u['id']]);
+    $errors = [];
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        csrf_check();
+        $action = post('action');
+
+        if ($action === 'delete') {
+            $promo = promotion_owned((int)post('id'), (int)$u['id']);
+            if ($promo) {
+                q('DELETE FROM promotions WHERE id = ? AND user_id = ?', [$promo['id'], $u['id']]);
+                flash_set('success', 'Promotion removed.');
+            }
+            redirect('/account/promotions');
+        }
+
+        $bizId = (int)post('business_id');
+        $biz   = $bizId ? own_business($bizId, (int)$u['id']) : null;
+        $url   = clean_url(post('url'));
+        $title = mb_substr(post('title'), 0, 200);
+        $blurb = mb_substr(post('blurb'), 0, 400);
+        $chan  = post('channel');
+        if (!isset(promo_channels()[$chan])) $chan = $url ? promo_guess_channel($url) : 'other';
+
+        if (!$biz)                 $errors[] = 'Choose which of your listings this belongs to.';
+        if (!$url)                 $errors[] = 'Enter the full web address of the post, starting with https://';
+        if ($title === '')         $errors[] = 'Give it a title so members know what they are opening.';
+        if ($biz && $url && !$errors) {
+            $dupe = row('SELECT id FROM promotions WHERE user_id = ? AND url = ?', [$u['id'], $url]);
+            if ($dupe) $errors[] = 'You have already submitted that link.';
+        }
+
+        if (!$errors) {
+            q('INSERT INTO promotions (business_id, user_id, channel, url, title, blurb, status)
+               VALUES (?,?,?,?,?,?,"pending")',
+              [$biz['id'], $u['id'], $chan, $url, $title, $blurb ?: null]);
+            flash_set('success', 'Submitted. It goes live in the member feed once our team approves it — usually within 24 hours.');
+            redirect('/account/promotions');
+        }
+    }
+
+    $list = promotions_for_user((int)$u['id']);
+    $meta = ['title' => "Promotion engine — $site", 'robots' => 'noindex'];
+    view('account/promotions', compact('meta', 'u', 'plan', 'errors', 'mine', 'list'));
+
 } elseif ($sub === 'analytics') {
     if (!$plan['analytics']) {
         view('account/analytics-upsell', compact('meta', 'u', 'plan'));

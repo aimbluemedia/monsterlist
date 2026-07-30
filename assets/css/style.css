@@ -275,8 +275,17 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 
 .pe-loop{list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
   max-width:960px;margin:42px auto 0;padding:0;text-align:left}
-.pe-loop li{position:relative;background:#fff;border:1px solid #e4ebf7;border-radius:18px;
+.pe-loop li{position:relative;overflow:hidden;background:#fff;border:1px solid #e4ebf7;border-radius:18px;
   padding:26px 22px 22px;box-shadow:0 14px 34px rgba(23,43,99,.09)}
+/* watermark illustration, top-right of each step */
+.pe-ill{position:absolute;top:-14px;right:-14px;width:104px;height:104px;border-radius:50%;
+  display:grid;place-items:center;opacity:.16;pointer-events:none}
+.pe-ill svg{width:46px;height:46px;fill:none;stroke:currentColor;stroke-width:1.6;
+  stroke-linecap:round;stroke-linejoin:round;transform:translate(-10px,12px)}
+.pe-ill-a{background:radial-gradient(circle,#2563eb 0%,transparent 68%);color:#2563eb}
+.pe-ill-b{background:radial-gradient(circle,#7c3aed 0%,transparent 68%);color:#7c3aed}
+.pe-ill-c{background:radial-gradient(circle,#0ca678 0%,transparent 68%);color:#0ca678}
+.pe-ill-b svg{fill:currentColor;stroke:none}
 /* connector between the three cards */
 .pe-loop li:not(:last-child)::after{content:"";position:absolute;top:50%;right:-16px;width:16px;height:2px;
   background:linear-gradient(90deg,#c7d6f5,rgba(199,214,245,0))}
@@ -358,6 +367,9 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
   background:linear-gradient(96deg,#2563eb,#7c3aed);box-shadow:0 16px 36px rgba(79,70,229,.42)}
 .pe-btn:hover{background:linear-gradient(96deg,#1d4ed8,#6d28d9)}
 .pe-note{max-width:520px;margin:14px auto 0;color:var(--mute);font-size:.86rem;line-height:1.6}
+.pe-see{display:inline-block;margin-top:14px;color:var(--accent);font-weight:800;font-size:.94rem;
+  border-bottom:2px solid rgba(37,99,235,.28);padding-bottom:2px}
+.pe-see:hover{border-bottom-color:var(--accent)}
 
 @media(max-width:860px){
   .pe-loop{grid-template-columns:1fr;max-width:520px;gap:12px}
@@ -369,6 +381,38 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
   .pe-chip{padding:8px 13px;font-size:.8rem}
   .pe-btn{width:100%;justify-content:center}
 }
+
+/* ===== live promotion feed ===== */
+.pf-head{text-align:center;max-width:680px;margin:0 auto 22px}
+.pf-head h1{margin:14px 0 8px}
+.pf-link{color:var(--accent);font-weight:700;white-space:nowrap}
+.pf-filters{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:22px}
+.pf-filters .chip{margin:0}
+.pf-filters .chip svg{width:14px;height:14px;color:var(--accent);fill:none;stroke:currentColor;
+  stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.pf-filters .chip.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.pf-empty{text-align:center;max-width:560px;margin:0 auto}
+.pf-empty .btn{margin:6px 4px 0}
+.pf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.pf-card{display:flex;flex-direction:column;padding:20px}
+.pf-card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.pf-chan{display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--accent);
+  border-radius:999px;padding:5px 11px;font-size:.74rem;font-weight:800}
+.pf-chan svg{width:14px;height:14px}
+.pf-when{font-size:.76rem;font-weight:700}
+.pf-title{margin:0 0 6px;font-size:1.02rem;line-height:1.4}
+.pf-title a:hover{color:var(--accent)}
+.pf-blurb{margin:0 0 14px;font-size:.9rem;line-height:1.55}
+.pf-by{display:flex;align-items:center;gap:10px;margin-top:auto;padding-top:12px;border-top:1px solid var(--border2)}
+.pf-avatar{width:38px;height:38px;border-radius:10px;overflow:hidden;flex-shrink:0;display:grid;
+  place-items:center;background:var(--accent-soft);color:var(--accent);font-weight:800;font-size:1rem}
+.pf-avatar img{width:100%;height:100%;object-fit:cover}
+.pf-by-text{min-width:0}
+.pf-by-text b{display:block;font-size:.88rem}
+.pf-by-text small{color:var(--faint);font-size:.78rem}
+.pf-open{margin-top:14px}
+@media(max-width:900px){.pf-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.pf-grid{grid-template-columns:1fr}}
 
 /* ===== homepage promotion-engine graphic ===== */
 .ml-sprite{position:absolute;width:0;height:0;overflow:hidden}

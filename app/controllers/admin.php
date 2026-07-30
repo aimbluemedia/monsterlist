@@ -44,6 +44,7 @@ if ($sub === 'dashboard') {
         'members'  => (int)scalar('SELECT COUNT(*) FROM users WHERE role = "member"'),
         'paid'     => (int)scalar('SELECT COUNT(*) FROM users WHERE plan != "free" AND role = "member"'),
         'claims'   => (int)scalar('SELECT COUNT(*) FROM claims WHERE status = "pending"'),
+        'promos'   => (int)scalar('SELECT COUNT(*) FROM promotions WHERE status = "pending"'),
         'reviews'  => (int)scalar('SELECT COUNT(*) FROM reviews WHERE created_at > (NOW() - INTERVAL 7 DAY)'),
         'views7'   => (int)scalar('SELECT COALESCE(SUM(count),0) FROM listing_events WHERE event = "view" AND day > (CURDATE() - INTERVAL 7 DAY)'),
     ];
@@ -162,6 +163,37 @@ if ($sub === 'dashboard') {
          LEFT JOIN categories c ON c.id = b.category_id
          WHERE $where ORDER BY b.created_at DESC LIMIT 30 OFFSET $offset");
     view_raw('admin/listings', compact('meta', 'u', 'list', 'status', 'page'));
+
+} elseif ($sub === 'promotions') {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        csrf_check();
+        $promo  = row('SELECT * FROM promotions WHERE id = ?', [(int)post('id')]);
+        $action = post('action');
+        if ($promo) {
+            if ($action === 'approve') {
+                q('UPDATE promotions SET status = "live" WHERE id = ?', [$promo['id']]);
+                flash_set('success', '"' . $promo['title'] . '" is live in the feed.');
+            } elseif ($action === 'reject') {
+                q('UPDATE promotions SET status = "rejected" WHERE id = ?', [$promo['id']]);
+                flash_set('success', 'Promotion rejected.');
+            } elseif ($action === 'delete') {
+                q('DELETE FROM promotions WHERE id = ?', [$promo['id']]);
+                flash_set('success', 'Promotion deleted.');
+            }
+        }
+        redirect('/superadmin/promotions' . (post('back') ? '?status=' . post('back') : ''));
+    }
+    $status = in_array($_GET['status'] ?? 'pending', ['pending','live','rejected','all'], true) ? ($_GET['status'] ?? 'pending') : 'pending';
+    $where  = $status === 'all' ? '1=1' : 'p.status = ' . db()->quote($status);
+    $page   = page_param();
+    $offset = ($page - 1) * 30;
+    $list = rows(
+        "SELECT p.*, b.name AS business_name, u.email AS owner_email
+         FROM promotions p
+         JOIN businesses b ON b.id = p.business_id
+         JOIN users u ON u.id = p.user_id
+         WHERE $where ORDER BY p.created_at DESC LIMIT 30 OFFSET $offset");
+    view_raw('admin/promotions', compact('meta', 'u', 'list', 'status', 'page'));
 
 } elseif ($sub === 'members') {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {

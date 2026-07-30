@@ -201,6 +201,27 @@ CREATE TABLE IF NOT EXISTS listing_events (
   CONSTRAINT fk_evt_biz FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ---- Promotions (the promotion engine feed) --------------------------------------
+CREATE TABLE IF NOT EXISTS promotions (
+  id          INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  business_id INT UNSIGNED NOT NULL,
+  user_id     INT UNSIGNED NOT NULL,
+  channel     ENUM('blog','product','service','review','youtube','facebook',
+                   'instagram','tiktok','reddit','pinterest','other')
+              NOT NULL DEFAULT 'other',
+  url         VARCHAR(600) NOT NULL,
+  title       VARCHAR(200) NOT NULL,
+  blurb       VARCHAR(400) DEFAULT NULL,
+  status      ENUM('pending','live','rejected') NOT NULL DEFAULT 'pending',
+  clicks      INT UNSIGNED NOT NULL DEFAULT 0,
+  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_promo_feed (status, created_at),
+  KEY idx_promo_biz (business_id),
+  KEY idx_promo_user (user_id),
+  CONSTRAINT fk_promo_biz  FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE,
+  CONSTRAINT fk_promo_user FOREIGN KEY (user_id)     REFERENCES users(id)      ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ---- Site settings (editable by superadmin) --------------------------------------
 CREATE TABLE IF NOT EXISTS settings (
   name  VARCHAR(80) NOT NULL PRIMARY KEY,

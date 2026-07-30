@@ -90,16 +90,19 @@
     <ol class="pe-loop">
       <li>
         <span class="pe-num">1</span>
+        <span class="pe-ill pe-ill-a"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-drop"/></svg></span>
         <h3>Drop in one link</h3>
         <p>A post, a product, a service, a video, a review — anything you've already published.</p>
       </li>
       <li>
         <span class="pe-num">2</span>
+        <span class="pe-ill pe-ill-b"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-spark"/></svg></span>
         <h3>AI does the promoting</h3>
         <p>It writes the pitch, files it under the right category and pushes it to the network, search and AI assistants.</p>
       </li>
       <li>
         <span class="pe-num">3</span>
+        <span class="pe-ill pe-ill-c"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-people"/></svg></span>
         <h3>New customers find you</h3>
         <p>Real people discover your business, click through and buy — and you see every view in your dashboard.</p>
       </li>
@@ -164,6 +167,7 @@
 
     <div class="pe-close">
       <a class="btn btn-primary pe-btn" href="/signup">Promote my business — free</a>
+      <a class="pe-see" href="/promotions">See live member promotions →</a>
       <p class="pe-note">Free forever. No card, no contract. Add your business, drop in your first link,
         and the engine starts working today.</p>
     </div>

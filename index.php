@@ -8,6 +8,7 @@
 //   /category/{cat}                category landing page
 //   /pricing /about /contact /terms /privacy /add-listing
 //   /signup /login /logout /forgot /reset
+//   /promotions[/go/{id}]          live member promotion feed
 //   /account[...] /members[...]    member area (same thing, two names)
 //   /superadmin[...]                    admin + superadmin
 //   /stripe/checkout|webhook|portal
@@ -82,6 +83,10 @@ switch (true) {
 
     case in_array($path, ['/signup', '/login', '/logout', '/forgot', '/reset'], true):
         require $controllers . '/auth.php';
+        break;
+
+    case $first === 'promotions':
+        require $controllers . '/promotions.php';
         break;
 
     case $first === 'account':
