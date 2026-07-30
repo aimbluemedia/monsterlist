@@ -101,6 +101,125 @@ document.addEventListener('DOMContentLoaded', function () {
     io.observe(stage);
   }
 
+  // Promotion-engine demo: pick an example, hit boost, watch the preview move.
+  // Everything here is illustrative — it never calls the server.
+  var peBoost = document.getElementById('pe-boost');
+  if (peBoost) {
+    var DEMOS = {
+      yt:   { icon: 'ml-yt',   name: 'YouTube',   grad: 'linear-gradient(135deg,#2563eb,#7c3aed)',
+              url: 'https://youtube.com/watch?v=your-latest-video',
+              title: 'How we doubled our bookings in 60 days', stats: [128, 34, 19] },
+      blog: { icon: 'ml-blog', name: 'Blog post',  grad: 'linear-gradient(135deg,#0ca678,#2563eb)',
+              url: 'https://yoursite.com/blog/questions-customers-ask',
+              title: 'The 7 questions every customer asks before buying', stats: [96, 41, 12] },
+      ig:   { icon: 'ml-ig',   name: 'Instagram', grad: 'linear-gradient(135deg,#db2777,#7c3aed)',
+              url: 'https://instagram.com/p/your-latest-post',
+              title: 'Behind the scenes: our new spring collection', stats: [154, 28, 47] },
+      prod: { icon: 'ml-prod', name: 'Product',   grad: 'linear-gradient(135deg,#f59e0b,#db2777)',
+              url: 'https://yourstore.com/products/oak-dining-table',
+              title: 'Handmade oak dining table — now in three finishes', stats: [83, 52, 16] }
+    };
+
+    var peUrl    = document.getElementById('pe-url');
+    var peTitle  = document.getElementById('pe-title');
+    var peThumb  = document.getElementById('pe-thumb');
+    var peStatus = document.getElementById('pe-status');
+    var peFill   = document.getElementById('pe-bar-fill');
+    var peFaces  = document.getElementById('pe-faces');
+    var peFacesT = document.getElementById('pe-faces-text');
+    var peNums   = document.querySelectorAll('#pe-card [data-boost]');
+    var peSlow   = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var peRun    = null;
+
+    var setUse = function (id, symbol) {
+      var el = document.getElementById(id);
+      if (el) el.setAttribute('href', '#' + symbol);
+    };
+
+    var showDemo = function (key) {
+      var d = DEMOS[key];
+      if (!d) return;
+      peUrl.value = d.url;
+      peTitle.textContent = d.title;
+      peThumb.style.background = d.grad;
+      document.getElementById('pe-badge-text').textContent = d.name;
+      setUse('pe-badge-icon', d.icon);
+      setUse('pe-thumb-icon', d.icon);
+      peNums.forEach(function (n, i) { n.setAttribute('data-boost', d.stats[i]); });
+    };
+
+    var reset = function () {
+      if (peRun) { cancelAnimationFrame(peRun); peRun = null; }
+      peNums.forEach(function (n) { n.textContent = '0'; });
+      peFill.style.width = '0';
+      peFaces.querySelectorAll('span').forEach(function (f) { f.classList.remove('in'); });
+      peFacesT.textContent = 'members ready to boost';
+      peStatus.textContent = 'Ready';
+      peStatus.classList.remove('live');
+    };
+
+    var boost = function () {
+      reset();
+      peStatus.textContent = 'Boosting';
+      peStatus.classList.add('live');
+
+      var faces = peFaces.querySelectorAll('span');
+      var dur = peSlow ? 0 : 1900;
+
+      if (peSlow) {                                  // no animation: land on the end state
+        peNums.forEach(function (n) { n.textContent = n.getAttribute('data-boost'); });
+        peFill.style.width = '100%';
+        faces.forEach(function (f) { f.classList.add('in'); });
+        peFacesT.textContent = 'members boosted this';
+        peStatus.textContent = 'Boosted';
+        peStatus.classList.remove('live');
+        return;
+      }
+
+      var t0 = null;
+      var tick = function (now) {
+        if (t0 === null) t0 = now;
+        var p = Math.min((now - t0) / dur, 1);
+        var eased = 1 - Math.pow(1 - p, 3);
+        peNums.forEach(function (n) {
+          n.textContent = Math.round(parseInt(n.getAttribute('data-boost'), 10) * eased).toLocaleString();
+        });
+        peFill.style.width = (eased * 100) + '%';
+        faces.forEach(function (f, i) { if (eased > (i + 1) / (faces.length + 1)) f.classList.add('in'); });
+        if (p < 1) { peRun = requestAnimationFrame(tick); }
+        else {
+          peRun = null;
+          peFacesT.textContent = 'members boosted this';
+          peStatus.textContent = 'Boosted';
+          peStatus.classList.remove('live');
+        }
+      };
+      peRun = requestAnimationFrame(tick);
+    };
+
+    document.querySelectorAll('.pe-picks button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        document.querySelectorAll('.pe-picks button').forEach(function (o) { o.classList.remove('on'); });
+        b.classList.add('on');
+        showDemo(b.getAttribute('data-demo'));
+        boost();
+      });
+    });
+    peBoost.addEventListener('click', boost);
+
+    // Run once when the module first comes into view.
+    if (window.IntersectionObserver) {
+      var peIo = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (!en.isIntersecting) return;
+          peIo.disconnect();
+          boost();
+        });
+      }, { threshold: 0.3 });
+      peIo.observe(document.getElementById('pe-card'));
+    }
+  }
+
   // Client-side filter box on /browse lists
   document.querySelectorAll('[data-filter]').forEach(function (input) {
     var target = document.querySelector(input.getAttribute('data-filter'));

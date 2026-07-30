@@ -105,6 +105,48 @@
       </li>
     </ol>
 
+    <div class="pe-demo">
+      <div class="pe-try">
+        <span class="pe-kicker">Try it</span>
+        <h3>Paste a link. Watch it move.</h3>
+        <p>Pick something you'd post, hit boost, and see what the member feed does to it.</p>
+        <div class="pe-field">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-link"/></svg>
+          <input type="text" id="pe-url" value="https://youtube.com/watch?v=your-latest-video"
+                 aria-label="Example link to boost" spellcheck="false">
+        </div>
+        <div class="pe-picks" role="group" aria-label="Choose an example">
+          <button type="button" class="on" data-demo="yt">YouTube</button>
+          <button type="button" data-demo="blog">Blog post</button>
+          <button type="button" data-demo="ig">Instagram</button>
+          <button type="button" data-demo="prod">Product</button>
+        </div>
+        <button type="button" class="btn pe-boost" id="pe-boost">Boost it now</button>
+        <small class="pe-demo-note">Interactive preview — illustrative numbers, no account needed.</small>
+      </div>
+
+      <div class="pe-card" id="pe-card">
+        <div class="pe-card-head">
+          <span class="pe-badge"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-yt" id="pe-badge-icon"/></svg><span id="pe-badge-text">YouTube</span></span>
+          <span class="pe-status" id="pe-status">Ready</span>
+        </div>
+        <div class="pe-thumb" id="pe-thumb">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-yt" id="pe-thumb-icon"/></svg>
+        </div>
+        <b class="pe-card-title" id="pe-title">How we doubled our bookings in 60 days</b>
+        <div class="pe-metrics">
+          <div><b data-boost="128">0</b><small>Views</small></div>
+          <div><b data-boost="34">0</b><small>Clicks</small></div>
+          <div><b data-boost="19">0</b><small>Engagements</small></div>
+        </div>
+        <div class="pe-bar"><i id="pe-bar-fill"></i></div>
+        <div class="pe-faces" id="pe-faces">
+          <span>AM</span><span>KT</span><span>RJ</span><span>LP</span><span>DS</span><span>BW</span>
+          <em id="pe-faces-text">members ready to boost</em>
+        </div>
+      </div>
+    </div>
+
     <div class="pe-belt">
       <span class="pe-belt-label">Boost anything</span>
       <div class="pe-chips">

@@ -25,6 +25,7 @@ define('ML_ICONS', 1);
   <symbol id="ml-prod" viewBox="0 0 24 24"><path d="M12 3.2 4 7.6v8.8l8 4.4 8-4.4V7.6z"/><path d="M4 7.6 12 12l8-4.4"/><path d="M12 12v8.8"/></symbol>
   <symbol id="ml-serv" viewBox="0 0 24 24"><path d="M3.5 19.5h17"/><path d="M6.5 19.5v-5.2a5.5 5.5 0 0 1 11 0v5.2"/><path d="M12 6.4V3.6"/></symbol>
   <symbol id="ml-star" viewBox="0 0 24 24"><path d="m12 3.4 2.7 5.5 6 .9-4.35 4.2 1.03 6L12 17.2l-5.38 2.8 1.03-6L3.3 9.8l6-.9z"/></symbol>
+  <symbol id="ml-link" viewBox="0 0 24 24"><path d="M10.5 13.5a4 4 0 0 0 5.7 0l2.6-2.6a4 4 0 1 0-5.7-5.7l-1.3 1.3"/><path d="M13.5 10.5a4 4 0 0 0-5.7 0l-2.6 2.6a4 4 0 1 0 5.7 5.7l1.3-1.3"/></symbol>
   <symbol id="ml-ok" viewBox="0 0 24 24"><path d="m5 12.5 4.6 4.6L19 7.6"/></symbol>
   <symbol id="ml-gm" viewBox="0 0 24 24"><path d="M12 2.6c.4 4.9 4.5 8.9 9.4 9.4-4.9.4-8.9 4.5-9.4 9.4-.4-4.9-4.5-8.9-9.4-9.4 4.9-.5 8.9-4.5 9.4-9.4z"/></symbol>
 </svg>
