@@ -74,43 +74,58 @@
   </div>
 </section>
 
-<!-- promotion engine -->
-<section class="lp-section" id="engine">
-  <div class="wrap">
-    <?php require __DIR__ . '/_icons.php'; ?>
-    <h2 class="lp-h2">The <span class="lp-accent">Promotion Engine</span></h2>
-    <p class="lp-center-sub">Publishing is the easy part — getting seen is not. Post wherever you already do,
-      then drop the link into <?= e($site) ?>. Real members go and watch, read and click it
-      <strong>on the platform you posted it to</strong>, so the views land where they count. You show up for
-      them, they show up for you.</p>
+<!-- promotion engine — the core pitch -->
+<section class="pe" id="engine">
+  <?php require __DIR__ . '/_icons.php'; ?>
+  <div class="pe-glow" aria-hidden="true"></div>
+  <div class="wrap pe-inner">
 
-    <div class="lp-steps">
-      <div class="card card-pad step"><span class="step-num">1</span><h3>Post it anywhere</h3>
-        <p class="mute">A blog post, a product, a service, a YouTube video, a Reel, a TikTok, a Reddit thread or a Pin — wherever your audience already is.</p></div>
-      <div class="card card-pad step"><span class="step-num">2</span><h3>Boost it here</h3>
-        <p class="mute">Paste the link into your dashboard. It joins the member feed and goes out to businesses and creators in your category.</p></div>
-      <div class="card card-pad step"><span class="step-num">3</span><h3>The community shows up</h3>
-        <p class="mute">Members open the original post and genuinely engage — real people, real attention, on the channel that measures it.</p></div>
+    <span class="pe-eyebrow">Member-powered reach</span>
+    <h2 class="pe-title">YOU POST IT.<br><span>THE COMMUNITY SHOWS UP.</span></h2>
+    <p class="pe-lead">Great content doesn't die from being bad. It dies from silence.
+      Publish anywhere you already do, drop the link here, and real members go watch it,
+      read it and click it <strong>where you posted it</strong> — so it counts.
+      You turn up for them. They turn up for you.</p>
+
+    <ol class="pe-loop">
+      <li>
+        <span class="pe-num">1</span>
+        <h3>Post it anywhere</h3>
+        <p>Your blog. Your storefront. YouTube, TikTok, Reddit, Pinterest — wherever you already publish.</p>
+      </li>
+      <li>
+        <span class="pe-num">2</span>
+        <h3>Drop the link</h3>
+        <p>Ten seconds in your dashboard. It lands in the member feed for your category.</p>
+      </li>
+      <li>
+        <span class="pe-num">3</span>
+        <h3>The room fills up</h3>
+        <p>Real members open it and genuinely engage — on the channel that measures it.</p>
+      </li>
+    </ol>
+
+    <div class="pe-belt">
+      <span class="pe-belt-label">Boost anything</span>
+      <div class="pe-chips">
+        <?php foreach ([
+            ['blog', 'Blog Posts'], ['prod', 'Products'], ['serv', 'Services'], ['star', 'Reviews'],
+            ['yt',   'YouTube'],    ['fb',   'Facebook'], ['ig',   'Instagram'],
+            ['tt',   'TikTok'],     ['rd',   'Reddit'],   ['pt',   'Pinterest'],
+        ] as [$peId, $peLabel]): ?>
+          <span class="pe-chip">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-<?= $peId ?>"/></svg><?= e($peLabel) ?>
+          </span>
+        <?php endforeach; ?>
+      </div>
     </div>
 
-    <h3 class="pe-h3">Boost anything you publish</h3>
-    <div class="pe-grid">
-      <?php foreach ([
-          ['blog', 'Blog Posts'], ['prod', 'Products'], ['serv', 'Services'], ['star', 'Reviews'],
-          ['yt',   'YouTube'],    ['fb',   'Facebook'], ['ig',   'Instagram'],
-          ['tt',   'TikTok'],     ['rd',   'Reddit'],   ['pt',   'Pinterest'],
-      ] as [$peId, $peLabel]): ?>
-        <div class="pe-tile">
-          <span><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-<?= $peId ?>"/></svg></span>
-          <b><?= e($peLabel) ?></b>
-        </div>
-      <?php endforeach; ?>
+    <div class="pe-close">
+      <a class="btn btn-primary pe-btn" href="/signup">Start boosting — free</a>
+      <p class="pe-note">Free forever. No card. Boost others, get boosted —
+        the more you show up, the further your own posts travel.</p>
     </div>
 
-    <p class="pe-cta">
-      <a class="btn btn-primary lp-btn-big" href="/signup">Join free — start boosting today</a>
-      <small>Free members boost and get boosted. The more you show up for others, the further your own posts travel.</small>
-    </p>
   </div>
 </section>
 
