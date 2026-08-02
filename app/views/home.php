@@ -88,18 +88,24 @@
       and the AI assistants your customers now ask for recommendations. One link. Free to start.</p>
 
     <h3 class="pe-net-h">The engine promotes <span>all of it</span></h3>
-    <div class="pe-net">
+    <div class="cw-grid">
       <?php foreach ([
-          ['blog', 'Blog Posts', '#2563eb'], ['prod', 'Products',  '#7c3aed'],
-          ['serv', 'Services',   '#0ca678'], ['star', 'Reviews',   '#f59e0b'],
-          ['yt',   'YouTube',    '#dc2626'], ['fb',   'Facebook',  '#1877f2'],
-          ['ig',   'Instagram',  '#db2777'], ['tt',   'TikTok',    '#0f172a'],
-          ['rd',   'Reddit',     '#f97316'], ['pt',   'Pinterest', '#e11d48'],
-      ] as $i => [$peId, $peLabel, $peColor]): ?>
-        <div class="pe-net-tile" style="--c:<?= $peColor ?>;--d:<?= round($i * .05, 2) ?>s">
-          <span class="pe-net-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-<?= $peId ?>"/></svg></span>
-          <b><?= e($peLabel) ?></b>
-        </div>
+          ['blog',      'Blog Posts', '#2563eb', 'Your latest article goes out to the member feed and sits on your storefront where search engines and AI assistants read it.'],
+          ['product',   'Products',   '#7c3aed', 'Every new product gets its own card in the feed, linked straight through to your store.'],
+          ['service',   'Services',   '#0ca678', 'What you offer, priced and listed in front of people already looking for it nearby.'],
+          ['review',    'Reviews',    '#f59e0b', 'Fresh five-star reviews resurfaced to new customers instead of buried three pages down.'],
+          ['youtube',   'YouTube',    '#dc2626', 'Videos pushed to members who actually watch — the views land on your channel, not ours.'],
+          ['facebook',  'Facebook',   '#1877f2', 'Posts and offers carried to business owners well outside your existing followers.'],
+          ['instagram', 'Instagram',  '#db2777', 'Reels and photos put in front of people who have never come across your grid.'],
+          ['tiktok',    'TikTok',     '#0f172a', 'Short video promoted to members who watch it through on the app that counts it.'],
+          ['reddit',    'Reddit',     '#f97316', 'Threads surfaced to people in your niche rather than sinking on page three.'],
+          ['pinterest', 'Pinterest',  '#e11d48', 'Pins shown to members who save them and click back through to your site.'],
+      ] as [$caKey, $caLabel, $caColor, $caText]): ?>
+        <article class="cw-card" style="--c:<?= $caColor ?>">
+          <h4><?= e($caLabel) ?></h4>
+          <?php require __DIR__ . '/_channel-art.php'; ?>
+          <p><?= e($caText) ?></p>
+        </article>
       <?php endforeach; ?>
     </div>
 

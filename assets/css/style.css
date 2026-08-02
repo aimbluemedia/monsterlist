@@ -273,33 +273,73 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 .pe-lead{max-width:660px;margin:18px auto 0;color:#4a5468;font-size:1.04rem;line-height:1.65}
 .pe-lead strong{color:#0b1020}
 
-.pe-net-h{margin:40px 0 18px;font-size:clamp(1.15rem,2.4vw,1.5rem);font-weight:800;color:#0b1020}
+.pe-net-h{margin:44px 0 20px;font-size:clamp(1.15rem,2.4vw,1.5rem);font-weight:800;color:#0b1020}
 .pe-net-h span{background:linear-gradient(92deg,#2563eb,#7c3aed 55%,#0ca678);
   -webkit-background-clip:text;background-clip:text;color:transparent}
-.pe-net{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;max-width:960px;margin:0 auto}
-.pe-net-tile{position:relative;overflow:hidden;background:#fff;border:1px solid #e4ebf7;border-radius:18px;
-  padding:22px 12px 18px;text-align:center;box-shadow:0 12px 30px rgba(23,43,99,.10);
-  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
-/* colour wash keyed off the tile's own --c */
-.pe-net-tile::before{content:"";position:absolute;inset:0 0 auto;height:4px;background:var(--c)}
-.pe-net-tile::after{content:"";position:absolute;inset:auto -30% -55% -30%;height:110%;border-radius:50%;
-  background:radial-gradient(circle,color-mix(in srgb,var(--c) 22%,transparent),transparent 70%);
-  opacity:0;transition:opacity .22s ease}
-.pe-net-tile:hover{transform:translateY(-4px);border-color:var(--c);
-  box-shadow:0 18px 40px color-mix(in srgb,var(--c) 26%,rgba(23,43,99,.12))}
-.pe-net-tile:hover::after{opacity:1}
-.pe-net-icon{position:relative;z-index:1;display:grid;place-items:center;width:52px;height:52px;
-  margin:0 auto 10px;border-radius:15px;color:#fff;background:var(--c);
-  box-shadow:0 10px 22px color-mix(in srgb,var(--c) 45%,transparent)}
-.pe-net-icon svg{width:24px;height:24px}
-.pe-net-tile b{position:relative;z-index:1;font-size:.9rem;color:#0b1020}
-@media(max-width:1000px){.pe-net{grid-template-columns:repeat(4,1fr)}}
-@media(max-width:760px){.pe-net{grid-template-columns:repeat(3,1fr);gap:10px}}
-@media(max-width:460px){
-  .pe-net{grid-template-columns:repeat(2,1fr)}
-  .pe-net-tile{padding:18px 8px 15px}
-  .pe-net-icon{width:44px;height:44px;border-radius:13px}
-  .pe-net-icon svg{width:21px;height:21px}
+.cw-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:16px;max-width:1040px;margin:0 auto}
+.cw-card{flex:0 1 calc(33.333% - 11px)}
+.cw-card{background:#fff;min-width:0;border:1px solid #e4ebf7;border-radius:20px;padding:22px 22px 20px;text-align:left;
+  box-shadow:0 14px 34px rgba(23,43,99,.09);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.cw-card:hover{transform:translateY(-4px);border-color:var(--c);
+  box-shadow:0 20px 44px color-mix(in srgb,var(--c) 24%,rgba(23,43,99,.12))}
+.cw-card h4{margin:0 0 14px;font-size:1.12rem;font-weight:800;color:#0b1020}
+.cw-card p{margin:14px 0 0;color:var(--mute);font-size:.88rem;line-height:1.6}
+
+/* --- channel illustrations, CSS shapes only --- */
+.ca{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;height:150px;padding:16px;
+  border-radius:14px;overflow:hidden;
+  background:linear-gradient(160deg,color-mix(in srgb,var(--c) 10%,#fff),color-mix(in srgb,var(--c) 4%,#fff))}
+.ca-frame{background:#fff;border:1px solid #e6ecf6;border-radius:10px;padding:10px;
+  box-shadow:0 6px 16px rgba(23,43,99,.12);display:flex;flex-direction:column;gap:6px}
+.ca-back{position:absolute;opacity:.5;transform:scale(.86) translate(-58%,6%);left:50%;z-index:0}
+.ca-frame:not(.ca-back){position:relative;z-index:1}
+.ca-l{display:block;height:6px;border-radius:3px;background:#dde3ee}
+.ca-l.m{width:70%}.ca-l.s{width:45%}
+.ca-h{display:block;height:9px;width:58%;border-radius:4px;background:var(--c);opacity:.85}
+.ca-img{display:block;height:38px;border-radius:6px;background:color-mix(in srgb,var(--c) 26%,#dfe6f3)}
+.ca-price{display:block;height:7px;width:34%;border-radius:4px;background:var(--c);opacity:.8}
+.ca-row{display:flex;align-items:center;gap:7px}
+.ca-row .ca-l{flex:1}
+.ca-dot{width:16px;height:16px;border-radius:50%;background:color-mix(in srgb,var(--c) 40%,#dfe6f3);flex-shrink:0}
+.ca-doc{width:120px}
+.ca-prod-card{width:96px}
+.ca-list{width:150px;gap:9px}
+.ca-tick{width:12px;height:12px;border-radius:4px;background:var(--c);opacity:.85;flex-shrink:0}
+.ca-list .ca-price{width:22px;flex-shrink:0}
+.ca-review{width:150px}
+.ca-stars{display:flex;gap:3px;margin-bottom:2px}
+.ca-stars i{width:11px;height:11px;background:var(--c);flex-shrink:0;
+  clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.ca-who{margin-top:4px}
+.ca-video{width:170px}
+.ca-screen{position:relative;display:grid;place-items:center;height:74px;border-radius:8px;
+  background:color-mix(in srgb,var(--c) 82%,#111)}
+.ca-screen.tall{height:106px}
+.ca-play{width:0;height:0;border-left:14px solid #fff;border-top:9px solid transparent;border-bottom:9px solid transparent;
+  margin-left:3px}
+.ca-post{width:132px}
+.ca-react{margin-top:2px}
+.ca-pill{height:9px;width:34px;border-radius:999px;background:color-mix(in srgb,var(--c) 22%,#e3e8f2)}
+.ca-tiles{width:150px;display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.ca-sq{aspect-ratio:1;border-radius:5px;background:color-mix(in srgb,var(--c) 26%,#dfe6f3)}
+.ca-sq:nth-child(2),.ca-sq:nth-child(4){background:color-mix(in srgb,var(--c) 44%,#dfe6f3)}
+.ca-phone{width:74px;padding:7px;border-radius:12px}
+.ca-vote{width:12px;height:16px;border-radius:3px;background:var(--c);opacity:.8;flex-shrink:0;
+  clip-path:polygon(50% 0,100% 46%,66% 46%,66% 100%,34% 100%,34% 46%,0 46%)}
+.ca-stack{display:flex;flex-direction:column;gap:5px;flex:1;min-width:0}
+.ca-stack .ca-l:first-child{background:color-mix(in srgb,var(--c) 22%,#dde3ee)}
+.ca-masonry{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:158px;align-items:start}
+.ca-pin{display:block;border-radius:7px;background:color-mix(in srgb,var(--c) 26%,#dfe6f3)}
+.ca-pin.a{height:52px}.ca-pin.b{height:36px}.ca-pin.c{height:44px}
+.ca-pin.d{height:34px}.ca-pin.e{height:50px}.ca-pin.f{height:38px}
+.ca-pin.b,.ca-pin.e{background:color-mix(in srgb,var(--c) 44%,#dfe6f3)}
+
+@media(max-width:900px){.cw-card{flex-basis:calc(50% - 8px)}}
+@media(max-width:560px){
+  .cw-grid{max-width:420px}
+  .cw-card{flex-basis:100%}
+  .cw-card{padding:18px}
+  .ca{height:136px}
 }
 
 /* --- live demo --- */
