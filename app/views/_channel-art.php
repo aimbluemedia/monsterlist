@@ -46,7 +46,7 @@ case 'service': ?>
 <?php break;
 
 case 'review': ?>
-  <div class="ca-frame ca-review">
+  <div class="ca-frame ca-rev">
     <span class="ca-stars"><i></i><i></i><i></i><i></i><i></i></span>
     <span class="ca-l"></span><span class="ca-l m"></span>
     <span class="ca-row ca-who"><i class="ca-dot"></i><i class="ca-l s"></i></span>
