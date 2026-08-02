@@ -87,26 +87,21 @@
       <strong>people who have never heard of your business</strong>: our member network, Google,
       and the AI assistants your customers now ask for recommendations. One link. Free to start.</p>
 
-    <ol class="pe-loop">
-      <li>
-        <span class="pe-num">1</span>
-        <span class="pe-ill pe-ill-a"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-drop"/></svg></span>
-        <h3>Drop in one link</h3>
-        <p>A post, a product, a service, a video, a review — anything you've already published.</p>
-      </li>
-      <li>
-        <span class="pe-num">2</span>
-        <span class="pe-ill pe-ill-b"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-spark"/></svg></span>
-        <h3>AI does the promoting</h3>
-        <p>It writes the pitch, files it under the right category and pushes it to the network, search and AI assistants.</p>
-      </li>
-      <li>
-        <span class="pe-num">3</span>
-        <span class="pe-ill pe-ill-c"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-people"/></svg></span>
-        <h3>New customers find you</h3>
-        <p>Real people discover your business, click through and buy — and you see every view in your dashboard.</p>
-      </li>
-    </ol>
+    <h3 class="pe-net-h">The engine promotes <span>all of it</span></h3>
+    <div class="pe-net">
+      <?php foreach ([
+          ['blog', 'Blog Posts', '#2563eb'], ['prod', 'Products',  '#7c3aed'],
+          ['serv', 'Services',   '#0ca678'], ['star', 'Reviews',   '#f59e0b'],
+          ['yt',   'YouTube',    '#dc2626'], ['fb',   'Facebook',  '#1877f2'],
+          ['ig',   'Instagram',  '#db2777'], ['tt',   'TikTok',    '#0f172a'],
+          ['rd',   'Reddit',     '#f97316'], ['pt',   'Pinterest', '#e11d48'],
+      ] as $i => [$peId, $peLabel, $peColor]): ?>
+        <div class="pe-net-tile" style="--c:<?= $peColor ?>;--d:<?= round($i * .05, 2) ?>s">
+          <span class="pe-net-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-<?= $peId ?>"/></svg></span>
+          <b><?= e($peLabel) ?></b>
+        </div>
+      <?php endforeach; ?>
+    </div>
 
     <div class="pe-demo">
       <div class="pe-try">
@@ -147,21 +142,6 @@
           <span>AM</span><span>KT</span><span>RJ</span><span>LP</span><span>DS</span><span>BW</span>
           <em id="pe-faces-text">members ready to boost</em>
         </div>
-      </div>
-    </div>
-
-    <div class="pe-belt">
-      <span class="pe-belt-label">The engine promotes all of it</span>
-      <div class="pe-chips">
-        <?php foreach ([
-            ['blog', 'Blog Posts'], ['prod', 'Products'], ['serv', 'Services'], ['star', 'Reviews'],
-            ['yt',   'YouTube'],    ['fb',   'Facebook'], ['ig',   'Instagram'],
-            ['tt',   'TikTok'],     ['rd',   'Reddit'],   ['pt',   'Pinterest'],
-        ] as [$peId, $peLabel]): ?>
-          <span class="pe-chip">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-<?= $peId ?>"/></svg><?= e($peLabel) ?>
-          </span>
-        <?php endforeach; ?>
       </div>
     </div>
 
