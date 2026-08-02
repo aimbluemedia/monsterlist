@@ -88,49 +88,47 @@
       and the AI assistants your customers now ask for recommendations. One link. Free to start.</p>
 
     <h3 class="pe-net-h">The engine promotes <span>all of it</span></h3>
-    <div class="cw-grid">
-      <?php foreach ([
-          ['blog',      'Blog Posts', '#2563eb', 'Articles that get read',        'Your latest piece goes out to the member feed and sits on your storefront, where search engines and AI assistants read it.'],
-          ['product',   'Products',   '#7c3aed', 'Products in front of buyers',   'Every new product gets its own card in the feed, linked straight through to your store.'],
-          ['service',   'Services',   '#0ca678', 'Services people search for',    'What you offer, priced and listed in front of people already looking for it nearby.'],
-          ['review',    'Reviews',    '#f59e0b', 'Reviews put to work',           'Fresh five-star reviews resurfaced to new customers instead of buried three pages down.'],
-          ['youtube',   'YouTube',    '#dc2626', 'Videos that get watched',       'Pushed to members who actually press play — the views land on your channel, not ours.'],
-          ['facebook',  'Facebook',   '#1877f2', 'Past your followers',           'Posts and offers carried to business owners well outside the people who already follow you.'],
-          ['instagram', 'Instagram',  '#db2777', 'Seen beyond your grid',         'Reels and photos put in front of people who have never come across your profile.'],
-          ['tiktok',    'TikTok',     '#06b6d4', 'Watched all the way through',   'Short video promoted to members who watch it on the app that counts the view.'],
-          ['reddit',    'Reddit',     '#f97316', 'Threads that surface',          'Your post shown to people in your niche rather than sinking to page three.'],
-          ['pinterest', 'Pinterest',  '#e11d48', 'Pins that get saved',           'Shown to members who save them and click back through to your site.'],
-      ] as [$caKey, $caLabel, $caColor, $caHead, $caText]): ?>
-        <article class="cw-card" style="--c:<?= $caColor ?>">
-          <div class="cw-art">
-            <?php require __DIR__ . '/_channel-art.php'; ?>
-            <span class="cw-chip"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-<?= e(promo_channel_icon($caKey)) ?>"/></svg><?= e($caLabel) ?></span>
-          </div>
-          <div class="cw-body">
-            <h4><?= e($caHead) ?></h4>
-            <p><?= e($caText) ?></p>
-          </div>
-        </article>
-      <?php endforeach; ?>
+    <div class="ai-card">
+      <div class="ai-glow" aria-hidden="true"></div>
+      <div class="ai-cols">
 
-      <article class="cw-card cw-wide">
-        <div class="cw-wide-body">
-          <span class="cw-chip light">AI powered</span>
-          <h4>AI writes it, targets it, and pushes it out</h4>
-          <p>Paste one link. The AI reads the page, writes the pitch in your voice, files it under the right
-            category and city, and pushes it to the member feed, your storefront, search engines and the
-            assistants people ask for recommendations.</p>
-          <a class="cw-more" href="/signup">Start free <span>+</span></a>
+        <div class="ai-pitch">
+          <span class="ai-chip">AI powered</span>
+          <h4>One link. The AI promotes all of it.</h4>
+          <p>Paste a link and the engine takes it from there — reading the page, writing the pitch in your
+            voice, filing it under the right category and city, then pushing it out. It works the same
+            whether you are promoting a blog post, a product, a service, a fresh review or a video.
+            Nothing to write, nothing to schedule, no agency retainer.</p>
+          <a class="ai-btn" href="/signup">Start free <span>+</span></a>
         </div>
-        <div class="cw-wide-art" aria-hidden="true">
-          <div class="cw-beam"></div>
-          <div class="cw-chan">
-            <?php foreach (['blog','prod','serv','star','yt','fb','ig','tt','rd','pt'] as $wi): ?>
-              <span><svg viewBox="0 0 24 24"><use href="#ml-<?= $wi ?>"/></svg></span>
+
+        <div class="ai-col">
+          <h5>Promotes everything you publish</h5>
+          <ul class="ai-list">
+            <?php foreach ([
+                ['blog', 'Blog posts'], ['prod', 'Products'], ['serv', 'Services'], ['star', 'Reviews'],
+                ['yt', 'YouTube'], ['fb', 'Facebook'], ['ig', 'Instagram'],
+                ['tt', 'TikTok'], ['rd', 'Reddit'], ['pt', 'Pinterest'],
+            ] as [$aiIcon, $aiLabel]): ?>
+              <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-<?= $aiIcon ?>"/></svg></i><?= e($aiLabel) ?></li>
             <?php endforeach; ?>
-          </div>
+          </ul>
         </div>
-      </article>
+
+        <div class="ai-col">
+          <h5>Puts it where people look</h5>
+          <ul class="ai-list">
+            <?php foreach ([
+                ['people', 'The member network'], ['blog', 'Your storefront page'], ['sr', 'Google Search'],
+                ['sp', 'ChatGPT'], ['cl', 'Claude'], ['pp', 'Perplexity'], ['gm', 'Gemini'],
+            ] as [$aiIcon, $aiLabel]): ?>
+              <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-<?= $aiIcon ?>"/></svg></i><?= e($aiLabel) ?></li>
+            <?php endforeach; ?>
+          </ul>
+          <p class="ai-foot">Every view, click and call lands back in your dashboard.</p>
+        </div>
+
+      </div>
     </div>
 
     <div class="pe-demo">
