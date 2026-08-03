@@ -27,7 +27,7 @@
       <a class="btn btn-ghost lp-btn-big" href="/browse">Explore the directory</a>
     </div>
     <div class="lp-pills">
-      <span class="lp-pill-label">Your page gets seen on</span>
+      <span class="lp-pill-label">Your Business on Found AI Platforms</span>
       <span class="lp-pill">Google</span>
       <span class="lp-pill">ChatGPT</span>
       <span class="lp-pill">Claude</span>
