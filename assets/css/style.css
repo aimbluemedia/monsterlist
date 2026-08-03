@@ -416,26 +416,23 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 .mc-tag{flex-shrink:0;background:#111827;color:#fff;border-radius:999px;padding:5px 11px;
   font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
 
-.mc-score{display:flex;align-items:center;gap:14px;border-radius:18px;padding:14px 16px;
-  background:linear-gradient(135deg,#eef4ff,#f6f9ff)}
-.mc-num{font-size:2.7rem;font-weight:800;line-height:1;letter-spacing:-2px;color:var(--accent);
-  font-variant-numeric:tabular-nums}
-.mc-meta{flex:1;min-width:0}
-.mc-lab{display:block;font-size:.7rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase;
-  color:#5b6a85;margin-bottom:7px}
-.mc-bar{display:block;height:7px;border-radius:999px;background:#dde6f5;overflow:hidden}
-.mc-bar i{display:block;height:100%;border-radius:999px;background:var(--accent)}
-.mc-strong .mc-num{color:#0ca678}.mc-strong .mc-bar i{background:#0ca678}
-.mc-fair   .mc-num{color:#d97706}.mc-fair   .mc-bar i{background:#d97706}
+.mc-desc{margin:0 0 auto;color:var(--mute);font-size:.89rem;line-height:1.6;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 
-.mc-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;
-  font-size:.85rem;color:var(--mute)}
+.mc-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;
+  padding-top:12px;border-top:1px solid var(--border2)}
+.mc-rating{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.85rem;color:var(--mute);min-width:0}
+.mc-score{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;line-height:1.1}
+.mc-score b{font-size:1.32rem;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.mc-score small{font-size:.62rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--faint)}
+.mc-strong .mc-score b{color:#0ca678}
+.mc-fair   .mc-score b{color:#d97706}
 
 @media(max-width:900px){.mc-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){
   .sky{padding:42px 0 46px}
   .mc-grid{grid-template-columns:1fr}
-  .mc-num{font-size:2.4rem}
+  .mc-score b{font-size:1.2rem}
 }
 
 /* ===== live promotion feed ===== */

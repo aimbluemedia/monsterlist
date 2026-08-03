@@ -8,6 +8,7 @@
 // ---------------------------------------------------------------------------
 $mcScore = monster_score($b);
 $mcBand  = monster_score_band($mcScore);
+$mcText  = trim((string)($b['description'] ?? '')) ?: trim((string)($b['tagline'] ?? ''));
 ?>
 <a class="mc mc-<?= e($mcBand) ?>" href="<?= e(business_path($b)) ?>">
   <div class="mc-head">
@@ -19,20 +20,20 @@ $mcBand  = monster_score_band($mcScore);
     <?php if (!empty($mcBadge)): ?><span class="mc-tag"><?= e($mcBadge) ?></span><?php endif; ?>
   </div>
 
-  <div class="mc-score">
-    <span class="mc-num"><?= $mcScore ?></span>
-    <span class="mc-meta">
-      <span class="mc-lab">MonsterScore</span>
-      <span class="mc-bar"><i style="width:<?= $mcScore ?>%"></i></span>
-    </span>
-  </div>
+  <p class="mc-desc"><?= $mcText !== '' ? e($mcText) : 'This member has not added a description yet.' ?></p>
 
   <div class="mc-foot">
-    <?php if ((float)($b['rating'] ?? 0) > 0): ?>
-      <span><span class="stars">★</span> <?= fmt_rating($b['rating']) ?> · <?= (int)$b['review_count'] ?> review<?= (int)$b['review_count'] === 1 ? '' : 's' ?></span>
-    <?php else: ?>
-      <span class="mute">No reviews yet</span>
-    <?php endif; ?>
-    <?php if (!empty($b['verified'])): ?><span class="badge badge-verified">Verified</span><?php endif; ?>
+    <span class="mc-rating">
+      <?php if ((float)($b['rating'] ?? 0) > 0): ?>
+        <span class="stars">★</span> <?= fmt_rating($b['rating']) ?> · <?= (int)$b['review_count'] ?> review<?= (int)$b['review_count'] === 1 ? '' : 's' ?>
+      <?php else: ?>
+        <span class="mute">No reviews yet</span>
+      <?php endif; ?>
+      <?php if (!empty($b['verified'])): ?><span class="badge badge-verified">Verified</span><?php endif; ?>
+    </span>
+
+    <span class="mc-score" title="MonsterScore <?= $mcScore ?> out of 100">
+      <b><?= $mcScore ?></b><small>MonsterScore</small>
+    </span>
   </div>
 </a>
