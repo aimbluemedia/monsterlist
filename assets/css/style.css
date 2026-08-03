@@ -402,7 +402,9 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 .sky-head h2{margin:0 0 6px;font-size:clamp(1.4rem,3vw,2rem);font-weight:800;color:#0b1020}
 .sky-head span{color:#4a5a72;font-size:.95rem}
 
-.mc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+/* minmax(0,1fr): plain 1fr floors each track at the card's min-content width,
+   which the nowrap footer text pushes wide enough to overflow the row */
+.mc-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
 .mc{display:flex;flex-direction:column;gap:14px;background:#fff;border-radius:24px;padding:20px;
   box-shadow:0 14px 34px rgba(23,60,110,.13);transition:transform .18s ease,box-shadow .18s ease}
 .mc:hover{transform:translateY(-4px);box-shadow:0 22px 46px rgba(23,60,110,.2)}
@@ -421,14 +423,17 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 
 .mc-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;
   padding-top:12px;border-top:1px solid var(--border2)}
-.mc-rating{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.85rem;color:var(--mute);min-width:0}
+/* sized so "★ 5.0 · 5 reviews  VERIFIED" and the score share one line in a
+   348px column; wrapping stays enabled as a fallback for longer counts */
+.mc-rating{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:.8rem;color:var(--mute);min-width:0}
+.mc-rating .badge{font-size:.64rem;padding:3px 7px}
 .mc-score{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;line-height:1.1}
-.mc-score b{font-size:1.32rem;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
-.mc-score small{font-size:.62rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--faint)}
+.mc-score b{font-size:1.3rem;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.mc-score small{font-size:.57rem;font-weight:800;letter-spacing:.2px;text-transform:uppercase;color:var(--faint)}
 .mc-strong .mc-score b{color:#0ca678}
 .mc-fair   .mc-score b{color:#d97706}
 
-@media(max-width:900px){.mc-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){.mc-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){
   .sky{padding:42px 0 46px}
   .mc-grid{grid-template-columns:1fr}
