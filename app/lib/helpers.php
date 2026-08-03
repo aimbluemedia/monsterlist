@@ -106,6 +106,20 @@ function fmt_rating($r): string
     return number_format((float)$r, 1);
 }
 
+/**
+ * Cut text to at most $max words, appending an ellipsis when anything was
+ * dropped. Splits on any run of whitespace so newlines in member-entered
+ * descriptions count as word breaks rather than joining two words together.
+ */
+function words(string $text, int $max, string $ellipsis = '…'): string
+{
+    $text  = trim(preg_replace('/\s+/u', ' ', $text));
+    if ($text === '') return '';
+    $parts = explode(' ', $text);
+    if (count($parts) <= $max) return $text;
+    return rtrim(implode(' ', array_slice($parts, 0, $max)), " ,.;:—-") . $ellipsis;
+}
+
 function client_ip(): string
 {
     return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';

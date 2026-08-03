@@ -9,6 +9,7 @@
 $mcScore = monster_score($b);
 $mcBand  = monster_score_band($mcScore);
 $mcText  = trim((string)($b['description'] ?? '')) ?: trim((string)($b['tagline'] ?? ''));
+$mcText  = words($mcText, 20);
 ?>
 <a class="mc mc-<?= e($mcBand) ?>" href="<?= e(business_path($b)) ?>">
   <div class="mc-head">
@@ -33,7 +34,8 @@ $mcText  = trim((string)($b['description'] ?? '')) ?: trim((string)($b['tagline'
     </span>
 
     <span class="mc-score" title="MonsterScore <?= $mcScore ?> out of 100">
-      <b><?= $mcScore ?></b><small>MonsterScore</small>
+      <b><?= $mcScore ?></b>
+      <small>MonsterScore</small>
     </span>
   </div>
 </a>

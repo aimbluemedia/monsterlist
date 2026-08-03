@@ -421,23 +421,30 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 .mc-desc{margin:0 0 auto;color:var(--mute);font-size:.89rem;line-height:1.6;
   display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 
-.mc-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;
+.mc-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;
   padding-top:12px;border-top:1px solid var(--border2)}
-/* sized so "★ 5.0 · 5 reviews  VERIFIED" and the score share one line in a
-   348px column; wrapping stays enabled as a fallback for longer counts */
-.mc-rating{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:.8rem;color:var(--mute);min-width:0}
-.mc-rating .badge{font-size:.64rem;padding:3px 7px}
-.mc-score{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;line-height:1.1}
-.mc-score b{font-size:1.3rem;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
-.mc-score small{font-size:.57rem;font-weight:800;letter-spacing:.2px;text-transform:uppercase;color:var(--faint)}
-.mc-strong .mc-score b{color:#0ca678}
-.mc-fair   .mc-score b{color:#d97706}
+/* sized so "★ 5.0 · 5 reviews  VERIFIED" and the score bubble share one line
+   in a 348px column; wrapping stays enabled as a fallback for longer counts */
+.mc-rating{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:.78rem;color:var(--mute);min-width:0}
+.mc-rating .badge{font-size:.6rem;padding:3px 6px;letter-spacing:.2px}
+
+.mc-score{flex-shrink:0;display:flex;flex-direction:column;align-items:center;text-align:center;
+  background:linear-gradient(180deg,#ffe680,#ffd43b);border-radius:16px;padding:6px 10px 5px;
+  box-shadow:0 3px 10px rgba(214,158,0,.28)}
+.mc-score b{display:block;font-size:1.65rem;font-weight:800;line-height:1;letter-spacing:-1px;
+  color:#3f2d00;font-variant-numeric:tabular-nums}
+.mc-score small{display:block;margin-top:3px;font-size:.55rem;font-weight:800;letter-spacing:.2px;
+  text-transform:uppercase;color:#6b4e00}
+/* the band still shows through, as depth of yellow rather than a hue change,
+   so the bubble reads the same everywhere while a strong score still stands out */
+.mc-strong .mc-score{background:linear-gradient(180deg,#ffd84d,#f6b500)}
+.mc-fair   .mc-score{background:linear-gradient(180deg,#fff3bf,#ffe066)}
 
 @media(max-width:900px){.mc-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){
   .sky{padding:42px 0 46px}
-  .mc-grid{grid-template-columns:1fr}
-  .mc-score b{font-size:1.2rem}
+  .mc-grid{grid-template-columns:minmax(0,1fr)}
+  .mc-score b{font-size:1.5rem}
 }
 
 /* ===== live promotion feed ===== */
