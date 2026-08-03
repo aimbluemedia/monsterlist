@@ -195,39 +195,33 @@
 </section>
 
 <?php if ($featured): ?>
-<section class="section wrap">
-  <div class="section-head"><h2>Featured members</h2></div>
-  <div class="grid grid-3">
-    <?php foreach ($featured as $b): ?>
-      <a class="card listing" href="<?= e(business_path($b)) ?>">
-        <span class="avatar"><?php if (!empty($b['logo_url'])): ?><img src="<?= e($b['logo_url']) ?>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px"><?php else: ?><?= e(mb_substr($b['name'], 0, 1)) ?><?php endif; ?></span>
-        <span class="listing-body">
-          <span class="listing-title"><?= e($b['name']) ?> <span class="badge badge-featured">Featured</span></span>
-          <span class="listing-meta"><?= e($b['category_label'] ?? '') ?> · <?= e($b['city_name']) ?></span>
-          <span class="listing-meta"><span class="stars">★</span> <?= fmt_rating($b['rating']) ?> (<?= (int)$b['review_count'] ?>)</span>
-        </span>
-      </a>
-    <?php endforeach; ?>
+<section class="sky">
+  <div class="wrap">
+    <div class="sky-head">
+      <h2>Featured members</h2>
+      <span>Top of the results in their city and category</span>
+    </div>
+    <div class="mc-grid">
+      <?php foreach ($featured as $b): ?>
+        <?php $mcBadge = 'Featured'; require __DIR__ . '/_member-card.php'; ?>
+      <?php endforeach; ?>
+    </div>
   </div>
 </section>
 <?php endif; ?>
 
 <?php if ($newest): ?>
-<section class="section wrap">
-  <div class="section-head"><h2>Just joined</h2><span class="mute">Welcome our newest members</span></div>
-  <div class="grid grid-3">
-    <?php foreach ($newest as $b): ?>
-      <a class="card listing" href="<?= e(business_path($b)) ?>">
-        <span class="avatar"><?php if (!empty($b['logo_url'])): ?><img src="<?= e($b['logo_url']) ?>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px"><?php else: ?><?= e(mb_substr($b['name'], 0, 1)) ?><?php endif; ?></span>
-        <span class="listing-body">
-          <span class="listing-title"><?= e($b['name']) ?>
-            <?php if ($b['tier'] === 'pro'): ?><span class="badge badge-pro">Pro</span><?php endif; ?>
-            <?php if ($b['verified']): ?><span class="badge badge-verified">Verified</span><?php endif; ?>
-          </span>
-          <span class="listing-meta"><?= e($b['category_label'] ?? '') ?> · <?= e($b['city_name']) ?></span>
-        </span>
-      </a>
-    <?php endforeach; ?>
+<section class="sky sky-alt">
+  <div class="wrap">
+    <div class="sky-head">
+      <h2>Just joined</h2>
+      <span>Welcome our newest members</span>
+    </div>
+    <div class="mc-grid">
+      <?php foreach ($newest as $b): ?>
+        <?php $mcBadge = 'New'; require __DIR__ . '/_member-card.php'; ?>
+      <?php endforeach; ?>
+    </div>
   </div>
 </section>
 <?php endif; ?>

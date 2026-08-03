@@ -277,3 +277,45 @@ function handle_listing_images(int $bizId, array $plan, array &$errors): void
         if ($url) q('INSERT INTO gallery (business_id, url, sort) VALUES (?,?,?)', [$bizId, $url, $have + $i]);
     }
 }
+
+// ---------------------------------------------------------------------------
+// MonsterScore — how well a listing is set up to be found, 0 to 100.
+//
+// Computed from the listing row itself so it is deterministic and explainable:
+// a complete profile scores higher than a bare one, verification and real
+// reviews count for trust, and a paid tier plus linked socials widen reach.
+// Nothing here is random — the same listing always scores the same.
+// ---------------------------------------------------------------------------
+function monster_score(array $b): int
+{
+    // Completeness — is there enough on the page to rank and to convince? (45)
+    $score = 0;
+    if (!empty($b['logo_url']))  $score += 7;
+    $desc = mb_strlen(trim((string)($b['description'] ?? '')));
+    $score += $desc >= 140 ? 12 : ($desc >= 60 ? 7 : ($desc > 0 ? 3 : 0));
+    if (!empty($b['tagline']))   $score += 5;
+    if (!empty($b['phone']))     $score += 5;
+    if (!empty($b['website']))   $score += 6;
+    if (!empty($b['email']))     $score += 4;
+    if (!empty($b['address']))   $score += 6;
+
+    // Trust — verification and what customers have actually said. (35)
+    if (!empty($b['verified']))  $score += 15;
+    $reviews = (int)($b['review_count'] ?? 0);
+    $score += min(10, $reviews);
+    if ($reviews > 0) $score += (int)round((float)($b['rating'] ?? 0) / 5 * 10);
+
+    // Reach — placement and linked channels. (20)
+    $tier = $b['tier'] ?? 'free';
+    $score += $tier === 'featured' ? 12 : ($tier === 'pro' ? 8 : 0);
+    $social = json_decode((string)($b['social'] ?? ''), true);
+    if (is_array($social) && array_filter($social)) $score += 8;
+
+    return max(0, min(100, $score));
+}
+
+/** Band for colouring a score: strong | good | fair. */
+function monster_score_band(int $score): string
+{
+    return $score >= 75 ? 'strong' : ($score >= 45 ? 'good' : 'fair');
+}
