@@ -5,6 +5,15 @@ $site = setting('site_name');
 $sub  = $segments[1] ?? 'dashboard';
 $meta = ['title' => "Admin — $site", 'robots' => 'noindex'];
 
+/** Listings URL that keeps the active tab, search term and page together. */
+function listings_url(string $status, ?string $term = '', int $page = 1): string
+{
+    $qs = ['status' => $status];
+    if (($term = trim((string)$term)) !== '') $qs['q'] = $term;
+    if ($page > 1) $qs['page'] = $page;
+    return '/superadmin/listings?' . http_build_query($qs);
+}
+
 // Dedicated staff entrance — the only /superadmin route that doesn't require auth.
 if ($sub === 'login') {
     if (is_admin()) redirect('/superadmin');
@@ -112,7 +121,7 @@ if ($sub === 'dashboard') {
                 if ($url) indexnow_ping([$url]);
             }
             flash_set('success', '"' . $data['name'] . '" updated.');
-            redirect('/superadmin/listings?status=' . $back);
+            redirect(listings_url($back, $_GET['q'] ?? ''));
         }
     }
 
@@ -149,20 +158,39 @@ if ($sub === 'dashboard') {
             }
             if ($biz['city_id']) refresh_city_count((int)$biz['city_id']);
         }
-        redirect('/superadmin/listings' . (post('back') ? '?status=' . post('back') : ''));
+        redirect(listings_url(post('back') ?: 'pending', post('q')));
     }
     $status = in_array($_GET['status'] ?? 'pending', ['pending','live','rejected','all'], true) ? ($_GET['status'] ?? 'pending') : 'pending';
-    $where  = $status === 'all' ? '1=1' : 'b.status = ' . db()->quote($status);
+    $term   = trim((string)($_GET['q'] ?? ''));
+
+    $where  = [];
+    $params = [];
+    if ($status !== 'all') { $where[] = 'b.status = ?'; $params[] = $status; }
+    if ($term !== '') {
+        // Matches the owner's account email, the listing's own contact email and
+        // its website. A pasted URL is reduced to its host first, so both
+        // "https://acme.com/about" and "acme.com" find the same listing.
+        $needle = preg_replace('#^[a-z][a-z0-9+.-]*://#i', '', $term);
+        $needle = explode('/', $needle)[0];
+        $needle = preg_replace('#^www\.#i', '', $needle);
+        // % and _ are LIKE wildcards; a typed one should match itself.
+        $like = '%' . str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $needle) . '%';
+        $where[]  = '(u.email LIKE ? OR b.email LIKE ? OR b.website LIKE ?)';
+        $params[] = $like; $params[] = $like; $params[] = $like;
+    }
+    $sqlWhere = $where ? implode(' AND ', $where) : '1=1';
+
     $page   = page_param();
     $offset = ($page - 1) * 30;
-    $list = rows(
+    $joins  = 'FROM businesses b
+               LEFT JOIN users u ON u.id = b.owner_id
+               LEFT JOIN cities ci ON ci.id = b.city_id
+               LEFT JOIN categories c ON c.id = b.category_id';
+    $total = (int)scalar("SELECT COUNT(*) $joins WHERE $sqlWhere", $params);
+    $list  = rows(
         "SELECT b.*, u.email AS owner_email, ci.name AS city_name, c.label AS category_label
-         FROM businesses b
-         LEFT JOIN users u ON u.id = b.owner_id
-         LEFT JOIN cities ci ON ci.id = b.city_id
-         LEFT JOIN categories c ON c.id = b.category_id
-         WHERE $where ORDER BY b.created_at DESC LIMIT 30 OFFSET $offset");
-    view_raw('admin/listings', compact('meta', 'u', 'list', 'status', 'page'));
+         $joins WHERE $sqlWhere ORDER BY b.created_at DESC LIMIT 30 OFFSET $offset", $params);
+    view_raw('admin/listings', compact('meta', 'u', 'list', 'status', 'page', 'term', 'total'));
 
 } elseif ($sub === 'promotions') {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {

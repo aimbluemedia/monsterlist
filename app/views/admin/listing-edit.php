@@ -7,7 +7,8 @@ $selCountry = $posted ? strtoupper(post('country')) : (!empty($cityRow) ? $cityR
 $selRegion  = $posted ? post('region') : (!empty($cityRow['region_slug']) ? $cityRow['region_slug'] : '');
 $selCity    = $posted ? post('city') : (!empty($cityRow) ? $cityRow['name'] : '');
 $selOwner   = $posted ? post('owner_email') : (string)($owner['email'] ?? '');
-$listUrl    = '/superadmin/listings?status=' . e($back);
+// Carry the search term back so "Back to listings" returns to the filtered view.
+$listUrl    = e(listings_url($back, $_GET['q'] ?? ''));
 ?>
 <div class="section-head">
   <h1>Edit listing</h1>
