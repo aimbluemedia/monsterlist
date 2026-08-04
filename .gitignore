@@ -4,3 +4,6 @@ app/config.php
 uploads/*
 !uploads/.htaccess
 !uploads/.gitkeep
+
+# Recovery-tool safety gate — must never be committed or shipped
+admin-reset.allow
