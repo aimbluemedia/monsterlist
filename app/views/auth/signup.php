@@ -3,8 +3,9 @@
   <p class="mute">List your business in minutes. No credit card required.</p>
   <?php foreach ($errors as $er): ?><div class="flash flash-error"><?= e($er) ?></div><?php endforeach; ?>
   <form method="post"><?= csrf_field() ?>
-    <label>Your name</label>
-    <input type="text" name="name" value="<?= e(post('name')) ?>" required>
+    <label>Your website</label>
+    <input type="text" name="website" value="<?= e(post('website')) ?>" placeholder="yourbusiness.com" required>
+    <p class="form-note">Your business domain. Paste the full address if it's easier — we'll tidy it up.</p>
     <label>Email</label>
     <input type="email" name="email" value="<?= e(post('email')) ?>" required>
     <label>Password</label>

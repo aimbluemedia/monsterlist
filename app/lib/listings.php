@@ -254,9 +254,7 @@ function listing_form_data(array $user, array $plan, int $exceptId = 0, bool $en
         } elseif ($dupe = listing_with_domain($data['website'], $exceptId)) {
             // Naming the existing listing turns a dead end into a claim, which
             // is what an owner whose business is already listed actually needs.
-            $errors[] = $dupe['status'] === 'live'
-                ? 'That website is already listed as "' . $dupe['name'] . '". If that is your business, claim it instead of adding it again.'
-                : 'That website has already been submitted and is awaiting review. You only need to submit it once.';
+            $errors[] = domain_taken_message($dupe, (string)normalize_domain($data['website']));
         }
         if (is_blocked_email($data['email'])) {
             $errors[] = 'That contact email cannot be used on this directory.';

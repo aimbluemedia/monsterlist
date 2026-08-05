@@ -95,6 +95,46 @@ function blocklist_all(): array
 }
 
 /**
+ * Why a domain that already has a listing can't be used again, phrased for the
+ * person typing it. A rejected listing keeps blocking the domain — that is the
+ * point of rejecting it — so say so rather than claiming it is still in review.
+ */
+function domain_taken_message(array $dupe, string $domain): string
+{
+    if ($dupe['status'] === 'live') {
+        return $domain . ' is already listed as "' . $dupe['name']
+             . '". If that is your business, claim it rather than adding it again.';
+    }
+    if ($dupe['status'] === 'rejected') {
+        return $domain . ' was reviewed and not accepted for this directory. '
+             . 'If you think that was a mistake, please contact us.';
+    }
+    return $domain . ' has already been submitted and is awaiting review. You only need to submit it once.';
+}
+
+/**
+ * An existing account for this domain, or null.
+ *
+ * Matches in both directions so subdomains cannot be used to open a second
+ * account for one business: signing up as shop.acme.com collides with an
+ * existing acme.com, and vice versa. Sibling subdomains do NOT collide, so
+ * separate shops on a shared host (mystore.shopify.com vs otherstore...)
+ * are still independent.
+ */
+function account_with_domain(?string $domain): ?array
+{
+    $domain = normalize_domain($domain);
+    if ($domain === null) return null;
+    return row(
+        'SELECT id, email, website FROM users
+          WHERE website IS NOT NULL AND website <> ""
+            AND (website = ? OR ? LIKE CONCAT("%.", website) OR website LIKE CONCAT("%.", ?))
+          LIMIT 1',
+        [$domain, $domain, $domain]
+    );
+}
+
+/**
  * Everything about a listing that can be blocked: the owner account's email,
  * the listing's own contact email, and its website domain.
  */

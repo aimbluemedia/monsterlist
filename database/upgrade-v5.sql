@@ -1,0 +1,14 @@
+-- ---------------------------------------------------------------------------
+-- MonsterList upgrade v5 — website captured at signup.
+--
+-- Run this once on an existing install (phpMyAdmin → SQL tab), after
+-- upgrade-v4.sql. Fresh installs get the column from schema.sql instead.
+--
+-- Signup now asks for the business domain rather than a personal name, so the
+-- domain can be checked against the blocklist and against listings that
+-- already exist before an account is created at all.
+--
+-- Re-running this errors with "Duplicate column name 'website'", which is
+-- harmless — it just means the column is already there.
+-- ---------------------------------------------------------------------------
+ALTER TABLE users ADD COLUMN website VARCHAR(190) DEFAULT NULL AFTER name;

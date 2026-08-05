@@ -9,10 +9,12 @@ switch ($path) {
         $errors = [];
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             csrf_check();
-            $name  = mb_substr(post('name'), 0, 140);
-            $email = filter_var(post('email'), FILTER_VALIDATE_EMAIL);
-            $pass  = (string)($_POST['password'] ?? '');
-            if ($name === '')            $errors[] = 'Please enter your name.';
+            // The account is identified by its business domain, so the domain
+            // can be checked before an account exists at all.
+            $domain = normalize_domain(post('website'));
+            $email  = filter_var(post('email'), FILTER_VALIDATE_EMAIL);
+            $pass   = (string)($_POST['password'] ?? '');
+            if ($domain === null)        $errors[] = 'Please enter your website, like yourbusiness.com.';
             if (!$email)                 $errors[] = 'Please enter a valid email address.';
             if (strlen($pass) < 8)       $errors[] = 'Password must be at least 8 characters.';
             if ($email && row('SELECT id FROM users WHERE email = ?', [$email])) {
@@ -22,12 +24,24 @@ switch ($path) {
                 // someone to come back with a fresh address.
                 $errors[] = 'We can’t create an account for that email address. If you think this is a mistake, please contact us.';
             }
+            if ($domain !== null) {
+                if (is_blocked_domain($domain)) {
+                    $errors[] = 'That website can’t be registered on this directory. If you think this is a mistake, please contact us.';
+                } elseif ($acct = account_with_domain($domain)) {
+                    $errors[] = 'There is already an account for ' . $acct['website']
+                        . '. Log in instead, or use the password reset if you’ve lost access.';
+                } elseif ($dupe = listing_with_domain($domain)) {
+                    $errors[] = domain_taken_message($dupe, $domain);
+                }
+            }
             if (!$errors) {
-                q('INSERT INTO users (email, password_hash, name) VALUES (?,?,?)',
-                  [$email, password_hash($pass, PASSWORD_DEFAULT), $name]);
+                // No name field any more — the domain doubles as the display
+                // name until the member sets one in account settings.
+                q('INSERT INTO users (email, password_hash, name, website) VALUES (?,?,?,?)',
+                  [$email, password_hash($pass, PASSWORD_DEFAULT), $domain, $domain]);
                 $user = row('SELECT * FROM users WHERE email = ?', [$email]);
                 login_user($user);
-                notify_welcome($email, $name);
+                notify_welcome($email, $domain);
                 flash_set('success', 'Welcome to ' . $site . '! Create your first listing below.');
                 redirect('/account/listings/new');
             }

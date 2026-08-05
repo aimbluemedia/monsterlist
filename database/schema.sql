@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS users (
   email              VARCHAR(190) NOT NULL UNIQUE,
   password_hash      VARCHAR(255) NOT NULL,
   name               VARCHAR(140) NOT NULL,
+  website            VARCHAR(190) DEFAULT NULL,
   role               ENUM('member','admin','superadmin') NOT NULL DEFAULT 'member',
   plan               ENUM('free','pro','featured') NOT NULL DEFAULT 'free',
   status             ENUM('active','suspended') NOT NULL DEFAULT 'active',

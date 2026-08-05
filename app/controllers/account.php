@@ -88,7 +88,9 @@ if ($sub === 'dashboard') {
             redirect('/account/listings');
         }
     }
-    $biz = null;
+    // Prefill the website with the domain given at signup — it is the whole
+    // reason we asked for it, and retyping it is friction for no gain.
+    $biz = !empty($u['website']) ? ['website' => $u['website']] : null;
     $countries = all_countries();
     $usStates  = regions_of('US');
     $cats      = categories_all();
