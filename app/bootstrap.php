@@ -39,6 +39,38 @@ if (!empty($GLOBALS['config']['debug'])) {
     error_reporting(E_ALL & ~E_DEPRECATED);
 }
 
+// A release that adds a table or column 500s blankly until its upgrade SQL is
+// imported, and the raw MySQL error never reaches the person who can fix it.
+// Recognise those two errors and say which file to run instead.
+set_exception_handler(function (Throwable $e) {
+    $msg = $e->getMessage();
+    $isSchema = stripos($msg, 'Base table or view not found') !== false
+             || stripos($msg, 'Unknown column') !== false
+             || stripos($msg, "doesn't exist") !== false;
+    http_response_code(500);
+    if (!headers_sent()) header('Content-Type: text/html; charset=UTF-8');
+    if ($isSchema) {
+        echo '<h1>Database upgrade needed</h1>'
+           . '<p>The uploaded code expects a table or column this database does not have yet:</p>'
+           . '<p><code>' . htmlspecialchars($msg) . '</code></p>'
+           . '<p>Fix: in hPanel open <strong>phpMyAdmin</strong>, pick this site’s database, open the '
+           . '<strong>SQL</strong> tab, and run the <code>database/upgrade-*.sql</code> files from the '
+           . 'release zip that you have not run yet, oldest first. Re-running one you have already '
+           . 'applied is harmless — it just reports that the table or column exists.</p>';
+    } else {
+        echo '<h1>Something went wrong</h1><p>The page could not be generated.</p>';
+        if (!empty($GLOBALS['config']['debug'])) {
+            echo '<p><code>' . htmlspecialchars($msg) . '</code></p><pre>'
+               . htmlspecialchars($e->getTraceAsString()) . '</pre>';
+        } else {
+            echo '<p>Set <code>\'debug\' => true</code> in <code>app/config.php</code> to see the details, '
+               . 'or check the error log in hPanel.</p>';
+        }
+    }
+    echo str_repeat(' ', 600); // pad past 512 bytes so browsers show this, not their own error page
+    error_log('MonsterList: ' . $msg);
+});
+
 date_default_timezone_set('UTC');
 
 session_set_cookie_params([
@@ -51,19 +83,28 @@ session_set_cookie_params([
 session_name('mlsession');
 session_start();
 
-require APP_ROOT . '/lib/db.php';
-require APP_ROOT . '/lib/helpers.php';
-require APP_ROOT . '/lib/csrf.php';
-require APP_ROOT . '/lib/auth.php';
-require APP_ROOT . '/lib/seo.php';
-require APP_ROOT . '/lib/geo.php';
-require APP_ROOT . '/lib/blocklist.php';
-require APP_ROOT . '/lib/listings.php';
-require APP_ROOT . '/lib/promotions.php';
-require APP_ROOT . '/lib/plans.php';
-require APP_ROOT . '/lib/settings.php';
-require APP_ROOT . '/lib/stripe.php';
-require APP_ROOT . '/lib/mailer.php';
-require APP_ROOT . '/lib/uploads.php';
-require APP_ROOT . '/lib/notify.php';
-require APP_ROOT . '/lib/ai.php';
+// Libraries. Checked before loading: an incomplete upload — a new file left
+// behind by a partial FTP transfer — otherwise fatals on require and the
+// visitor gets a blank 500 with nothing to go on.
+$mlLibs = ['db', 'helpers', 'csrf', 'auth', 'seo', 'geo', 'blocklist', 'listings',
+           'promotions', 'plans', 'settings', 'stripe', 'mailer', 'uploads', 'notify', 'ai'];
+$mlMissing = [];
+foreach ($mlLibs as $mlLib) {
+    if (!is_file(APP_ROOT . '/lib/' . $mlLib . '.php')) $mlMissing[] = 'app/lib/' . $mlLib . '.php';
+}
+if ($mlMissing) {
+    http_response_code(500);
+    header('Content-Type: text/html; charset=UTF-8');
+    echo '<h1>Upload incomplete</h1>'
+       . '<p>MonsterList cannot start because ' . count($mlMissing)
+       . ' required file(s) are missing from the server:</p><ul><li><code>'
+       . implode('</code></li><li><code>', array_map('htmlspecialchars', $mlMissing))
+       . '</code></li></ul>'
+       . '<p>Fix: upload the missing file(s) from the release zip, keeping the same folder '
+       . 'structure. This usually means the last upload was partial — re-uploading the whole '
+       . '<code>app</code> folder is the safest repair.</p>'
+       . '<p>More checks at <code>/server-check.php</code>.</p>'
+       . str_repeat(' ', 600); // pad past 512 bytes so browsers show this, not their own error page
+    exit;
+}
+foreach ($mlLibs as $mlLib) require APP_ROOT . '/lib/' . $mlLib . '.php';

@@ -67,6 +67,27 @@ row_out('account/index.php present', is_file(__DIR__ . '/account/index.php') ? '
 ?>
 </table>
 
+<?php
+// A file left behind by a partial upload fatals on require, which shows the
+// visitor a blank 500. This check runs without loading the app, so it still
+// answers when every other page is dead.
+$libs = ['db','helpers','csrf','auth','seo','geo','blocklist','listings','promotions',
+         'plans','settings','stripe','mailer','uploads','notify','ai'];
+$missing = [];
+foreach ($libs as $l) if (!is_file(__DIR__ . '/app/lib/' . $l . '.php')) $missing[] = 'app/lib/' . $l . '.php';
+?>
+<div class="box">
+  <strong>Application files</strong>
+  <?php if (!$missing): ?>
+    <p class="ok">All <?= count($libs) ?> library files are present.</p>
+  <?php else: ?>
+    <p class="bad"><?= count($missing) ?> file(s) missing — this alone causes a blank 500 on every page.</p>
+    <ul><?php foreach ($missing as $m): ?><li><code><?= htmlspecialchars($m) ?></code></li><?php endforeach; ?></ul>
+    <p>Upload them from the release zip, keeping the folder structure. A partial FTP transfer is
+       the usual cause, so re-uploading the whole <code>app</code> folder is the safest repair.</p>
+  <?php endif; ?>
+</div>
+
 <div class="box">
   <strong>Next stops</strong>
   <ul>
