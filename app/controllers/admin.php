@@ -81,7 +81,8 @@ if ($sub === 'dashboard') {
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         csrf_check();
-        [$data, $errors] = listing_form_data($u, $staffPlan);
+        // Staff bypass the blocklist and duplicate check — they curate both.
+        [$data, $errors] = listing_form_data($u, $staffPlan, (int)$biz['id'], false);
 
         $newStatus = in_array(post('status'), ['pending','live','rejected'], true) ? post('status') : $biz['status'];
         $newTier   = in_array(post('tier'), ['free','pro','featured'], true) ? post('tier') : $biz['tier'];
@@ -142,14 +143,24 @@ if ($sub === 'dashboard') {
         if ($biz) {
             if ($action === 'approve') {
                 q('UPDATE businesses SET status = "live", verified = IF(tier != "free", 1, verified) WHERE id = ?', [$biz['id']]);
+                // Approving reverses an earlier rejection, so lift the blocks it
+                // put in place — otherwise the owner is live but locked out.
+                $lifted = listing_unblock($biz);
                 notify_listing_decision($biz, true);
                 $url = business_url_by_id((int)$biz['id']);
                 if ($url) indexnow_ping([$url]);
-                flash_set('success', '"' . $biz['name'] . '" is now live.');
+                flash_set('success', '"' . $biz['name'] . '" is now live.'
+                    . ($lifted ? ' Unblocked ' . implode(', ', $lifted) . '.' : ''));
             } elseif ($action === 'reject') {
                 q('UPDATE businesses SET status = "rejected" WHERE id = ?', [$biz['id']]);
+                // Rejecting bars the submitter from signing up again and bars
+                // the domain from being resubmitted under a different address.
+                $blocked = listing_block($biz, (int)$u['id']);
                 notify_listing_decision($biz, false);
-                flash_set('success', '"' . $biz['name'] . '" rejected.');
+                flash_set('success', '"' . $biz['name'] . '" rejected.'
+                    . ($blocked
+                        ? ' Blocked ' . implode(', ', $blocked) . ' — manage at /superadmin/blocked.'
+                        : ' Nothing to block: the listing has no owner, contact email or website.'));
             } elseif ($action === 'delete') {
                 q('DELETE FROM businesses WHERE id = ?', [$biz['id']]);
                 flash_set('success', 'Listing deleted.');
@@ -191,6 +202,30 @@ if ($sub === 'dashboard') {
         "SELECT b.*, u.email AS owner_email, ci.name AS city_name, c.label AS category_label
          $joins WHERE $sqlWhere ORDER BY b.created_at DESC LIMIT 30 OFFSET $offset", $params);
     view_raw('admin/listings', compact('meta', 'u', 'list', 'status', 'page', 'term', 'total'));
+
+} elseif ($sub === 'blocked') {
+    // Emails barred from signing up and domains barred from being listed.
+    // Rejecting a listing fills this automatically; this page is the undo.
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        csrf_check();
+        if (post('action') === 'remove') {
+            blocklist_remove((int)post('id'));
+            flash_set('success', 'Unblocked.');
+        } else {
+            $kind = post('kind') === 'domain' ? 'domain' : 'email';
+            if (blocklist_add($kind, post('value'), post('reason') ?: 'Added by staff', (int)$u['id'])) {
+                flash_set('success', 'Blocked ' . post('value') . '.');
+            } else {
+                flash_set('error', $kind === 'email'
+                    ? 'That is not a valid email address.'
+                    : 'That is not a valid domain — enter something like acme.com.');
+            }
+        }
+        redirect('/superadmin/blocked');
+    }
+    $list = blocklist_all();
+    $meta = ['title' => "Blocked — $site", 'robots' => 'noindex'];
+    view_raw('admin/blocked', compact('meta', 'u', 'list'));
 
 } elseif ($sub === 'promotions') {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {

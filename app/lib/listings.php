@@ -206,8 +206,14 @@ function resolve_city(string $countryCode, string $regionSlug, string $cityName)
     return (int)db()->lastInsertId();
 }
 
-/** Read + validate the listing form. Returns [data, errors]. */
-function listing_form_data(array $user, array $plan): array
+/**
+ * Read + validate the listing form. Returns [data, errors].
+ *
+ * $exceptId is the listing being edited, so its own website does not read as a
+ * duplicate of itself. $enforce is false for staff forms — admins curate the
+ * blocklist and must be able to edit a listing that trips it.
+ */
+function listing_form_data(array $user, array $plan, int $exceptId = 0, bool $enforce = true): array
 {
     $errors = [];
     $name = mb_substr(post('name'), 0, 180);
@@ -241,6 +247,22 @@ function listing_form_data(array $user, array $plan): array
         }
         $data['social'] = $social ? json_encode($social) : null;
     }
+
+    if ($enforce) {
+        if (is_blocked_domain($data['website'])) {
+            $errors[] = 'That website cannot be listed on this directory. If you believe this is a mistake, contact us.';
+        } elseif ($dupe = listing_with_domain($data['website'], $exceptId)) {
+            // Naming the existing listing turns a dead end into a claim, which
+            // is what an owner whose business is already listed actually needs.
+            $errors[] = $dupe['status'] === 'live'
+                ? 'That website is already listed as "' . $dupe['name'] . '". If that is your business, claim it instead of adding it again.'
+                : 'That website has already been submitted and is awaiting review. You only need to submit it once.';
+        }
+        if (is_blocked_email($data['email'])) {
+            $errors[] = 'That contact email cannot be used on this directory.';
+        }
+    }
+
     return [$data, $errors];
 }
 

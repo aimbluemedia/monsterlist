@@ -17,6 +17,10 @@ switch ($path) {
             if (strlen($pass) < 8)       $errors[] = 'Password must be at least 8 characters.';
             if ($email && row('SELECT id FROM users WHERE email = ?', [$email])) {
                 $errors[] = 'An account with that email already exists. Try logging in.';
+            } elseif ($email && is_blocked_email($email)) {
+                // Deliberately vague: spelling out "you are blocked" just tells
+                // someone to come back with a fresh address.
+                $errors[] = 'We can’t create an account for that email address. If you think this is a mistake, please contact us.';
             }
             if (!$errors) {
                 q('INSERT INTO users (email, password_hash, name) VALUES (?,?,?)',

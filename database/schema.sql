@@ -78,6 +78,17 @@ CREATE TABLE IF NOT EXISTS login_attempts (
   KEY idx_la_ip (ip, attempted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ---- Blocklist (emails barred from signup, domains barred from listings) -----
+CREATE TABLE IF NOT EXISTS blocklist (
+  id         INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  kind       ENUM('email','domain') NOT NULL,
+  value      VARCHAR(190) NOT NULL,
+  reason     VARCHAR(255) DEFAULT NULL,
+  created_by INT UNSIGNED DEFAULT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uniq_blocklist (kind, value)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ---- Subscriptions (Stripe monthly memberships) ------------------------------
 CREATE TABLE IF NOT EXISTS subscriptions (
   id                     INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,

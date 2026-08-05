@@ -100,7 +100,7 @@ if ($sub === 'dashboard') {
     $errors = [];
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         csrf_check();
-        [$data, $errors] = listing_form_data($u, $plan);
+        [$data, $errors] = listing_form_data($u, $plan, (int)$biz['id']);
         if (!$errors) {
             $slug = unique_business_slug($data['name'], (int)$data['city_id'], (int)$biz['id']);
             // Edits go back to moderation only if core public fields changed

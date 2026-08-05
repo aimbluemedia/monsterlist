@@ -57,6 +57,7 @@ require APP_ROOT . '/lib/csrf.php';
 require APP_ROOT . '/lib/auth.php';
 require APP_ROOT . '/lib/seo.php';
 require APP_ROOT . '/lib/geo.php';
+require APP_ROOT . '/lib/blocklist.php';
 require APP_ROOT . '/lib/listings.php';
 require APP_ROOT . '/lib/promotions.php';
 require APP_ROOT . '/lib/plans.php';
