@@ -1,8 +1,12 @@
 <?php
 $editing = $biz !== null;
+// $prefill seeds a NEW listing (e.g. the domain given at signup) without making
+// the form think it is editing — $biz stays null so the heading, button, AI-fill
+// block and image sections all keep their new-listing behaviour.
+$prefill = $prefill ?? [];
 $v = fn(string $field, $default = '') => post($field) !== '' && $_SERVER['REQUEST_METHOD'] === 'POST'
     ? post($field)
-    : ($editing ? (string)($biz[$field] ?? $default) : $default);
+    : ($editing ? (string)($biz[$field] ?? $default) : (string)($prefill[$field] ?? $default));
 $social = $editing ? (json_decode((string)$biz['social'], true) ?: []) : [];
 $selCountry = $_SERVER['REQUEST_METHOD'] === 'POST' ? strtoupper(post('country')) : (!empty($cityRow) ? $cityRow['country_code'] : 'US');
 $selRegion  = $_SERVER['REQUEST_METHOD'] === 'POST' ? post('region') : (!empty($cityRow['region_slug']) ? $cityRow['region_slug'] : '');

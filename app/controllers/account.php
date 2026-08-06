@@ -89,12 +89,14 @@ if ($sub === 'dashboard') {
         }
     }
     // Prefill the website with the domain given at signup — it is the whole
-    // reason we asked for it, and retyping it is friction for no gain.
-    $biz = !empty($u['website']) ? ['website' => $u['website']] : null;
+    // reason we asked for it, and retyping it is friction for no gain. This is
+    // NOT $biz: a non-null $biz flips the shared form into edit mode.
+    $biz     = null;
+    $prefill = !empty($u['website']) ? ['website' => $u['website']] : [];
     $countries = all_countries();
     $usStates  = regions_of('US');
     $cats      = categories_all();
-    view('account/listing-form', compact('meta', 'u', 'plan', 'errors', 'biz', 'countries', 'usStates', 'cats'));
+    view('account/listing-form', compact('meta', 'u', 'plan', 'errors', 'biz', 'prefill', 'countries', 'usStates', 'cats'));
 
 } elseif ($sub === 'listings' && $act === 'edit') {
     $biz = own_business((int)($_GET['id'] ?? 0), (int)$u['id']);

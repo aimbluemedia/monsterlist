@@ -41,7 +41,10 @@ switch ($path) {
                   [$email, password_hash($pass, PASSWORD_DEFAULT), $domain, $domain]);
                 $user = row('SELECT * FROM users WHERE email = ?', [$email]);
                 login_user($user);
-                notify_welcome($email, $domain);
+                // Best-effort: the account exists and the member is signed in,
+                // so a notification problem must not fail the request.
+                try { notify_welcome($email, $domain); }
+                catch (Throwable $e) { error_log('MonsterList: welcome email failed — ' . $e->getMessage()); }
                 flash_set('success', 'Welcome to ' . $site . '! Create your first listing below.');
                 redirect('/account/listings/new');
             }
