@@ -58,12 +58,16 @@ set_exception_handler(function (Throwable $e) {
            . 'release zip that you have not run yet, oldest first. Re-running one you have already '
            . 'applied is harmless — it just reports that the table or column exists.</p>';
     } else {
-        // Class and location are safe to show and usually identify the fault on
-        // their own; the message can carry credentials (PDO connection errors
-        // quote the DSN), so it stays behind the debug flag.
         echo '<h1>Something went wrong</h1><p>The page could not be generated.</p>'
            . '<p><code>' . htmlspecialchars(get_class($e)) . '</code> in <code>'
            . htmlspecialchars(basename($e->getFile())) . ':' . (int)$e->getLine() . '</code></p>';
+        // A PDOException that reaches here is always a statement error: the
+        // only PDO call that can quote the DSN (and therefore the password) is
+        // the connection in db(), which handles its own failure and exits. So
+        // this message is safe to show, and it is the one worth showing.
+        if ($e instanceof PDOException) {
+            echo '<p><code>' . htmlspecialchars($msg) . '</code></p>';
+        }
         if (!empty($GLOBALS['config']['debug'])) {
             echo '<p><code>' . htmlspecialchars($msg) . '</code></p><pre>'
                . htmlspecialchars($e->getTraceAsString()) . '</pre>';

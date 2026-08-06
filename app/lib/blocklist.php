@@ -53,6 +53,25 @@ function is_blocked_email(?string $email): bool
 }
 
 /**
+ * A host and every parent it could be a subdomain of:
+ * "shop.acme.co.uk" -> ["shop.acme.co.uk", "acme.co.uk", "co.uk"].
+ *
+ * Building these in PHP keeps the lookup a plain IN () of equalities. The
+ * alternative — CONCAT/LIKE against every stored row — cannot use the index,
+ * and putting a placeholder on the left of LIKE is exactly the kind of thing
+ * MySQL and MariaDB disagree about under native prepared statements.
+ */
+function domain_candidates(string $domain): array
+{
+    $parts = explode('.', $domain);
+    $out   = [];
+    for ($i = 0, $n = count($parts) - 1; $i < $n; $i++) {
+        $out[] = implode('.', array_slice($parts, $i));
+    }
+    return $out ?: [$domain];
+}
+
+/**
  * Blocked if the exact host is listed, or if it is a subdomain of a listed
  * host — blocking "acme.com" also stops "shop.acme.com".
  */
@@ -60,9 +79,11 @@ function is_blocked_domain(?string $domain): bool
 {
     $domain = normalize_domain($domain);
     if ($domain === null) return false;
+    $cands = domain_candidates($domain);
+    $in    = implode(',', array_fill(0, count($cands), '?'));
     return (bool)scalar(
-        'SELECT 1 FROM blocklist WHERE kind = "domain" AND (value = ? OR ? LIKE CONCAT("%.", value)) LIMIT 1',
-        [$domain, $domain]
+        "SELECT 1 FROM blocklist WHERE kind = 'domain' AND value IN ($in) LIMIT 1",
+        $cands
     );
 }
 
@@ -125,12 +146,19 @@ function account_with_domain(?string $domain): ?array
 {
     $domain = normalize_domain($domain);
     if ($domain === null) return null;
+    // Exact match or an ancestor of the new domain, via plain equality...
+    $cands = domain_candidates($domain);
+    $in    = implode(',', array_fill(0, count($cands), '?'));
+    // ...or an existing account that is itself a subdomain of the new domain.
+    // Only this side needs LIKE, with the placeholder in its normal position.
+    $params   = $cands;
+    $params[] = '%.' . str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $domain);
     return row(
-        'SELECT id, email, website FROM users
-          WHERE website IS NOT NULL AND website <> ""
-            AND (website = ? OR ? LIKE CONCAT("%.", website) OR website LIKE CONCAT("%.", ?))
-          LIMIT 1',
-        [$domain, $domain, $domain]
+        "SELECT id, email, website FROM users
+          WHERE website IS NOT NULL AND website <> ''
+            AND (website IN ($in) OR website LIKE ?)
+          LIMIT 1",
+        $params
     );
 }
 

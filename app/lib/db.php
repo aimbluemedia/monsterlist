@@ -31,12 +31,23 @@ function db(): PDO
     return $pdo;
 }
 
-/** Run a prepared statement, return the PDOStatement. */
+/**
+ * Run a prepared statement, return the PDOStatement.
+ *
+ * A failure is re-thrown with the statement attached. PDO's own message names
+ * the fault but not the query, and "PDOException in db.php:38" is true of every
+ * query in the application, which makes a live site impossible to diagnose.
+ */
 function q(string $sql, array $params = []): PDOStatement
 {
-    $st = db()->prepare($sql);
-    $st->execute($params);
-    return $st;
+    try {
+        $st = db()->prepare($sql);
+        $st->execute($params);
+        return $st;
+    } catch (PDOException $e) {
+        $flat = trim(preg_replace('/\s+/', ' ', $sql));
+        throw new PDOException($e->getMessage() . ' — SQL: ' . $flat, 0, $e);
+    }
 }
 
 /** First row or null. */
