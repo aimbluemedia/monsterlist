@@ -52,7 +52,10 @@ if ($sub === 'dashboard') {
         exit;
     }
 
-    $url = trim((string)post('url'));
+    // The field is read-only in the browser, which is presentation, not
+    // enforcement. When the account has a registered domain that is the only
+    // site we will read, whatever the request body says.
+    $url = !empty($u['website']) ? (string)$u['website'] : trim((string)post('url'));
     if ($url === '') { echo json_encode(['ok' => false, 'error' => 'Please enter your website address.']); exit; }
 
     $fields = ai_extract_listing($url, $aiError);

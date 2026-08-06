@@ -18,18 +18,35 @@ $selCity    = $_SERVER['REQUEST_METHOD'] === 'POST' ? post('city') : (!empty($ci
     <h1><?= $editing ? 'Edit listing' : 'New listing' ?></h1>
     <?php foreach ($errors as $er): ?><div class="flash flash-error"><?= e($er) ?></div><?php endforeach; ?>
 
+    <?php
+    // The website is fixed to the domain the account was registered with, so
+    // there is nothing to type and nothing to point somewhere else.
+    $aiUrl  = (string)($prefill['website'] ?? '');
+    $aiLock = $aiUrl !== '';
+    // Collapse the long form until AI has filled it — but never when the member
+    // is already correcting a rejected submission, and never without JS.
+    $aiCollapse = !$errors && $_SERVER['REQUEST_METHOD'] !== 'POST';
+    ?>
     <?php if (!$editing && ai_configured()): ?>
-      <div class="card card-pad" id="ai-fill-card" style="margin-bottom:16px;background:var(--accent-soft);border-color:var(--accent)">
-        <h3>Let AI fill this out for you</h3>
-        <p class="mute" style="margin:4px 0 10px">Paste your website address — we'll read it and pre-fill the form. You review everything before submitting.</p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <input type="text" id="ai-url" placeholder="https://yourbusiness.com" style="flex:1;min-width:220px" data-csrf="<?= e(csrf_token()) ?>">
-          <button type="button" class="btn btn-primary" id="ai-fill-btn">Fill the form</button>
+      <div class="card card-pad aifill-card" id="ai-fill-card" data-collapse="<?= $aiCollapse ? '1' : '0' ?>">
+        <h3>Create your profile with AI</h3>
+        <p class="mute" style="margin:4px 0 14px">We'll read <?= $aiLock ? '<strong>' . e($aiUrl) . '</strong>' : 'your website' ?> and write your listing for you. You review everything before it's submitted.</p>
+        <div class="aifill-row">
+          <input type="text" id="ai-url" value="<?= e($aiUrl) ?>"
+                 placeholder="https://yourbusiness.com"
+                 <?= $aiLock ? 'readonly aria-readonly="true" title="This is the website your account was registered with"' : '' ?>
+                 data-csrf="<?= e(csrf_token()) ?>">
+          <button type="button" class="btn btn-primary btn-xl" id="ai-fill-btn">Create Profile with AI</button>
         </div>
         <p class="form-note" id="ai-status" style="min-height:1.2em"></p>
+        <?php if ($aiCollapse): ?>
+          <p class="form-note" id="ai-manual-wrap" hidden>
+            Prefer to type it yourself? <a href="#" id="ai-manual">Fill in the form manually</a>.
+          </p>
+        <?php endif; ?>
       </div>
     <?php endif; ?>
-    <form method="post" enctype="multipart/form-data" class="card card-pad"><?= csrf_field() ?>
+    <form method="post" enctype="multipart/form-data" class="card card-pad" id="listing-form"><?= csrf_field() ?>
       <h3>Basics</h3>
       <div class="form-grid">
         <div>

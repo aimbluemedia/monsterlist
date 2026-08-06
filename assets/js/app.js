@@ -12,7 +12,29 @@ document.addEventListener('DOMContentLoaded', function () {
   if (aiBtn) {
     var aiUrl = document.getElementById('ai-url');
     var aiStatus = document.getElementById('ai-status');
-    var form = document.querySelector('form.card');
+    var aiCard = document.getElementById('ai-fill-card');
+    var form = document.getElementById('listing-form') || document.querySelector('form.card');
+
+    // Hide the long form until there is something in it worth reviewing. Done
+    // here rather than in CSS so that a visitor without JS — who could never
+    // reveal it again — still gets the whole form.
+    var manualWrap = document.getElementById('ai-manual-wrap');
+    var revealForm = function () {
+      form.hidden = false;
+      if (manualWrap) manualWrap.hidden = true;
+    };
+    if (aiCard && aiCard.getAttribute('data-collapse') === '1') {
+      form.hidden = true;
+      if (manualWrap) manualWrap.hidden = false;
+      var manualLink = document.getElementById('ai-manual');
+      if (manualLink) {
+        manualLink.addEventListener('click', function (e) {
+          e.preventDefault();
+          revealForm();
+          form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      }
+    }
 
     var setField = function (name, value) {
       if (value === undefined || value === null || value === '') return;
@@ -36,7 +58,12 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(function (r) { return r.json(); })
         .then(function (res) {
           aiBtn.disabled = false;
-          if (!res.ok) { aiStatus.textContent = res.error || 'Something went wrong.'; return; }
+          if (!res.ok) {
+            // Show the form so a failed read is a detour, not a dead end.
+            revealForm();
+            aiStatus.textContent = (res.error || 'Something went wrong.') + ' Fill the form in below instead.';
+            return;
+          }
           var f = res.fields;
           setField('name', f.name);
           setField('tagline', f.tagline);
@@ -53,11 +80,14 @@ document.addEventListener('DOMContentLoaded', function () {
           if (f.social) {
             Object.keys(f.social).forEach(function (net) { setField('social_' + net, f.social[net]); });
           }
+          revealForm();
           aiStatus.textContent = '✓ Done! Highlighted fields were filled by AI — please review them, then submit.';
+          form.scrollIntoView({ behavior: 'smooth', block: 'start' });
         })
         .catch(function () {
           aiBtn.disabled = false;
-          aiStatus.textContent = 'Network error — please try again.';
+          revealForm();
+          aiStatus.textContent = 'Network error — please try again, or fill the form in below.';
         });
     };
     aiBtn.addEventListener('click', runFill);

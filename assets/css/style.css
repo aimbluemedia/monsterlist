@@ -174,6 +174,24 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 .table-wrap .table{min-width:960px}
 .trunc{display:inline-block;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
 
+/* new-listing AI panel — the primary action on the page, so it gets the weight.
+   Named aifill-*, not ai-*: .ai-card is already the homepage's white-on-blue
+   gradient panel, and reusing it here painted dark text onto a blue card. */
+.aifill-card{margin-bottom:16px;background:var(--accent-soft);border-color:var(--accent)}
+.aifill-row{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch}
+.aifill-row input{flex:1;min-width:220px;font-size:1rem}
+/* the domain is fixed to the one the account was registered with */
+.aifill-row input[readonly]{background:#eef2f9;color:var(--mute);cursor:not-allowed;border-style:dashed}
+.aifill-row input[readonly]:focus{outline:none;border-color:var(--border)}
+.aifill-card a{color:var(--accent);font-weight:700;text-decoration:underline}
+.btn-xl{padding:15px 30px;font-size:1.05rem;border-radius:12px;font-weight:800;
+  box-shadow:0 8px 20px rgba(37,99,235,.28)}
+.btn-xl:disabled{opacity:.6;cursor:progress;box-shadow:none}
+@media(max-width:620px){
+  .aifill-row input{min-width:0;width:100%}
+  .btn-xl{width:100%}
+}
+
 .block-add{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .block-add select{width:auto}
 .block-add input{flex:1;min-width:180px;padding:8px 11px}
