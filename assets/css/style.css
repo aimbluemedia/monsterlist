@@ -178,8 +178,10 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
    Named aifill-*, not ai-*: .ai-card is already the homepage's white-on-blue
    gradient panel, and reusing it here painted dark text onto a blue card. */
 .aifill-card{margin-bottom:16px;background:var(--accent-soft);border-color:var(--accent)}
-.aifill-row{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch}
-.aifill-row input{flex:1;min-width:220px;font-size:1rem}
+/* stacked: domain on its own line, button beneath it and left-aligned */
+.aifill-row{display:flex;flex-direction:column;align-items:flex-start;gap:12px}
+.aifill-row input{width:100%;font-size:1rem}
+.aifill-row .btn{align-self:flex-start}
 /* the domain is fixed to the one the account was registered with */
 .aifill-row input[readonly]{background:#eef2f9;color:var(--mute);cursor:not-allowed;border-style:dashed}
 .aifill-row input[readonly]:focus{outline:none;border-color:var(--border)}
