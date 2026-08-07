@@ -94,6 +94,30 @@ document.addEventListener('DOMContentLoaded', function () {
     aiUrl.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); runFill(); } });
   }
 
+  // Wizard step 1: cap how many service bubbles can be picked. The server caps
+  // it too — this just stops the member choosing ten and losing three silently.
+  var bubbleWrap = document.querySelector('.wz-bubbles');
+  if (bubbleWrap) {
+    var max = parseInt(bubbleWrap.getAttribute('data-max'), 10) || 7;
+    var boxes = Array.prototype.slice.call(bubbleWrap.querySelectorAll('input[type=checkbox]'));
+    var counter = document.getElementById('wz-count');
+
+    var sync = function () {
+      var picked = boxes.filter(function (b) { return b.checked; }).length;
+      var full = picked >= max;
+      boxes.forEach(function (b) {
+        b.disabled = full && !b.checked;
+        b.parentNode.classList.toggle('wz-full', b.disabled);
+      });
+      if (counter) {
+        counter.textContent = picked + ' of ' + max + ' selected' +
+          (full ? ' — deselect one to swap it out.' : '');
+      }
+    };
+    boxes.forEach(function (b) { b.addEventListener('change', sync); });
+    sync();
+  }
+
   // Homepage graphic: count the numbers up once, when it scrolls into view.
   // The final value is already in the markup, so no-JS and reduced-motion
   // visitors simply see it sitting there.

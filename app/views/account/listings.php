@@ -24,6 +24,7 @@
                   <a href="<?= e(business_path($l)) ?>" style="color:var(--accent);font-weight:700">View</a> ·
                 <?php endif; ?>
                 <a href="/account/listings/edit?id=<?= (int)$l['id'] ?>" style="color:var(--accent);font-weight:700">Edit</a> ·
+                <a href="/account/listings/services?id=<?= (int)$l['id'] ?>" style="color:var(--accent);font-weight:700" title="Services, social links and review profiles">Profile setup</a> ·
                 <form method="post" action="/account/listings/delete" style="display:inline"><?= csrf_field() ?>
                   <input type="hidden" name="id" value="<?= (int)$l['id'] ?>">
                   <button class="btn btn-sm" style="background:none;border:none;color:var(--red);font-weight:700;cursor:pointer;padding:0" data-confirm="Delete this listing permanently?">Delete</button>

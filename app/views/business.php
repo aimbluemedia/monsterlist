@@ -75,9 +75,21 @@ $enhanced = in_array($b['tier'], ['pro', 'featured'], true);
       <?php endif; ?>
 
       <?php if ($services): ?>
+        <?php
+        // The setup wizard stores a bare name; the pro storefront editor can add
+        // a description and price. Show the plain ones as tags and keep the
+        // detailed ones as rows, rather than a list of half-empty rows.
+        $svcTags = array_filter($services, fn($s) => !$s['description'] && !$s['price']);
+        $svcRows = array_filter($services, fn($s) => $s['description'] || $s['price']);
+        ?>
         <div class="card card-pad" style="margin-bottom:14px">
           <h3>Services</h3>
-          <?php foreach ($services as $s): ?>
+          <?php if ($svcTags): ?>
+            <div class="svc-tags">
+              <?php foreach ($svcTags as $s): ?><span class="svc-tag"><?= e($s['name']) ?></span><?php endforeach; ?>
+            </div>
+          <?php endif; ?>
+          <?php foreach ($svcRows as $s): ?>
             <div class="info-row"><span><strong><?= e($s['name']) ?></strong><?php if ($s['description']): ?> <span class="mute">— <?= e($s['description']) ?></span><?php endif; ?></span><span class="mute"><?= e($s['price']) ?></span></div>
           <?php endforeach; ?>
         </div>
@@ -138,6 +150,19 @@ $enhanced = in_array($b['tier'], ['pro', 'featured'], true);
           <h3>Hours</h3>
           <?php foreach ($hours as $h): ?>
             <div class="info-row"><span class="mute"><?= e($h['d'] ?? '') ?></span><span><?= !empty($h['open']) ? e($h['h'] ?? '') : 'Closed' ?></span></div>
+          <?php endforeach; ?>
+        </div>
+      <?php endif; ?>
+
+      <?php
+      // Links to the business's profiles elsewhere. We point at them; we never
+      // copy the reviews themselves, which would misrepresent both sites.
+      $revLinks = array_filter(wizard_links($b['review_links'] ?? null));
+      if ($revLinks): ?>
+        <div class="card card-pad" style="margin-bottom:14px">
+          <h3>Reviewed elsewhere</h3>
+          <?php foreach (wizard_reviews() as $key => [$label, $_]): if (empty($revLinks[$key])) continue; ?>
+            <div class="info-row"><span class="mute"><?= e($label) ?></span><a href="<?= e($revLinks[$key]) ?>" target="_blank" rel="noopener nofollow" style="color:var(--accent);font-weight:700">Read reviews ↗</a></div>
           <?php endforeach; ?>
         </div>
       <?php endif; ?>

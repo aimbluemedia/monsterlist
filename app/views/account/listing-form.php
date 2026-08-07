@@ -133,7 +133,7 @@ $selCity    = $_SERVER['REQUEST_METHOD'] === 'POST' ? post('city') : (!empty($ci
         <label>Video URL (YouTube, Vimeo…)</label>
         <input type="text" name="video_url" value="<?= e($v('video_url')) ?>">
         <div class="form-grid">
-          <?php foreach (['facebook','instagram','tiktok','youtube','pinterest','linkedin','x'] as $net): ?>
+          <?php foreach (['facebook','instagram','tiktok','youtube','pinterest','linkedin','reddit','x'] as $net): ?>
             <div>
               <label><?= e(ucfirst($net)) ?></label>
               <input type="text" name="social_<?= $net ?>" value="<?= e($_SERVER['REQUEST_METHOD'] === 'POST' ? post('social_' . $net) : ($social[$net] ?? '')) ?>" placeholder="https://…">

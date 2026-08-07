@@ -241,7 +241,7 @@ function listing_form_data(array $user, array $plan, int $exceptId = 0, bool $en
     if ($plan['enhanced']) {
         $data['video_url'] = clean_url(post('video_url'));
         $social = [];
-        foreach (['facebook','instagram','tiktok','youtube','pinterest','linkedin','x'] as $net) {
+        foreach (['facebook','instagram','tiktok','youtube','pinterest','linkedin','reddit','x'] as $net) {
             $v = clean_url(post('social_' . $net));
             if ($v) $social[$net] = $v;
         }

@@ -64,6 +64,9 @@ if ($sub === 'dashboard') {
         exit;
     }
     $_SESSION['ai_fills'][] = time();
+    // Hold the suggested services for the wizard's next step. They are not form
+    // fields, so they would otherwise be thrown away on submit.
+    $_SESSION['ai_services'] = $fields['services'] ?? [];
     echo json_encode(['ok' => true, 'fields' => $fields], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     exit;
 
@@ -87,8 +90,8 @@ if ($sub === 'dashboard') {
             $imgErrors = [];
             handle_listing_images($bizId, $plan, $imgErrors);
             foreach ($imgErrors as $ie) flash_set('error', $ie);
-            flash_set('success', 'Listing submitted! It will appear publicly once approved by our team (usually within 24 hours).');
-            redirect('/account/listings');
+            flash_set('success', 'Listing saved. Three quick steps to finish your profile — skip any of them.');
+            redirect(wizard_url('services', $bizId));
         }
     }
     // Prefill the website with the domain given at signup — it is the whole
@@ -134,6 +137,49 @@ if ($sub === 'dashboard') {
     $cats      = categories_all();
     $cityRow   = $biz['city_id'] ? city_full((int)$biz['city_id']) : null;
     view('account/listing-form', compact('meta', 'u', 'plan', 'errors', 'biz', 'countries', 'usStates', 'cats', 'gallery', 'cityRow'));
+
+} elseif ($sub === 'listings' && in_array($act, ['services', 'social', 'reviews'], true)) {
+    // Setup wizard, run once after a listing is created and reachable again
+    // later from "My listings". Every step can be skipped.
+    $biz = own_business((int)($_GET['id'] ?? 0), (int)$u['id']);
+    if (!$biz) not_found();
+    $step = $act;
+    $next = wizard_next($step);
+    $done = $next === null ? '/account/listings' : wizard_url($next, (int)$biz['id']);
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        csrf_check();
+        if (post('action') !== 'skip') {
+            if ($step === 'services') {
+                // Selected bubbles and typed-in boxes are the same list.
+                $picked = array_merge((array)($_POST['services'] ?? []), (array)($_POST['custom'] ?? []));
+                $n = wizard_save_services((int)$biz['id'], $picked);
+                flash_set('success', $n ? "Saved $n service" . ($n === 1 ? '' : 's') . '.' : 'No services saved.');
+            } else {
+                $isSocial = $step === 'social';
+                $n = wizard_save_links(
+                    (int)$biz['id'],
+                    $isSocial ? 'social' : 'review_links',
+                    $isSocial ? wizard_socials() : wizard_reviews(),
+                    (array)($_POST['links'] ?? [])
+                );
+                flash_set('success', $n
+                    ? "Saved $n link" . ($n === 1 ? '' : 's') . '.'
+                    : ($isSocial ? 'No social links saved.' : 'No review links saved.'));
+            }
+        }
+        if ($next === null) {
+            flash_set('success', 'Profile complete! Your listing appears publicly once approved — usually within 24 hours.');
+        }
+        redirect($done);
+    }
+
+    $suggestions = $step === 'services' ? wizard_take_suggestions((int)$biz['id']) : [];
+    $existing    = $step === 'services'
+        ? array_column(rows('SELECT name FROM services WHERE business_id = ? ORDER BY id', [$biz['id']]), 'name')
+        : wizard_links($biz[$step === 'social' ? 'social' : 'review_links'] ?? null);
+    $meta = ['title' => ucfirst($step) . " — $site", 'robots' => 'noindex'];
+    view('account/wizard-' . $step, compact('meta', 'u', 'plan', 'biz', 'step', 'suggestions', 'existing', 'done'));
 
 } elseif ($sub === 'listings' && $act === 'delete' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_check();

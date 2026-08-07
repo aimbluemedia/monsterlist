@@ -97,7 +97,7 @@ function website_to_context(string $html, string $url): string
     if (preg_match_all('#href=["\']([^"\']+)["\']#i', $html, $m)) {
         $links = [];
         foreach (array_unique($m[1]) as $href) {
-            if (preg_match('#^(?:https?:)?//(?:www\.)?(facebook|instagram|tiktok|youtube|pinterest|linkedin|x|twitter)\.com/[^"\']+#i', $href)
+            if (preg_match('#^(?:https?:)?//(?:www\.)?(facebook|instagram|tiktok|youtube|pinterest|linkedin|reddit|x|twitter)\.com/[^"\']+#i', $href)
                 || str_starts_with($href, 'tel:') || str_starts_with($href, 'mailto:')) {
                 $links[] = $href;
             }
@@ -131,19 +131,27 @@ function ai_listing_schema(array $categoryIds): array
             'phone'        => $nullableStr + ['description' => 'Primary phone number as published'],
             'email'        => $nullableStr + ['description' => 'Public contact email'],
             'founded'      => ['type' => ['integer', 'null'], 'description' => 'Year founded, if stated'],
+            'services'     => [
+                'type'  => 'array',
+                'items' => ['type' => 'string'],
+                'maxItems' => 10,
+                'description' => 'Up to 10 short names of services or offerings this business actually provides, '
+                               . 'each 1-4 words, title case, taken from their own wording. Empty array if the '
+                               . 'page does not say what they offer.',
+            ],
             'social'       => [
                 'type' => 'object',
                 'properties' => [
                     'facebook'  => $nullableStr, 'instagram' => $nullableStr, 'tiktok'   => $nullableStr,
                     'youtube'   => $nullableStr, 'pinterest' => $nullableStr, 'linkedin' => $nullableStr,
-                    'x'         => $nullableStr,
+                    'reddit'    => $nullableStr, 'x'         => $nullableStr,
                 ],
-                'required' => ['facebook', 'instagram', 'tiktok', 'youtube', 'pinterest', 'linkedin', 'x'],
+                'required' => ['facebook', 'instagram', 'tiktok', 'youtube', 'pinterest', 'linkedin', 'reddit', 'x'],
                 'additionalProperties' => false,
             ],
         ],
         'required' => ['name', 'tagline', 'description', 'category_id', 'country_code',
-                       'us_state', 'city', 'address', 'phone', 'email', 'founded', 'social'],
+                       'us_state', 'city', 'address', 'phone', 'email', 'founded', 'services', 'social'],
         'additionalProperties' => false,
     ];
 }
@@ -243,8 +251,19 @@ function ai_postprocess(array $f, string $sourceUrl): array
     $founded = (int)($f['founded'] ?? 0);
     $out['founded'] = ($founded >= 1800 && $founded <= (int)date('Y')) ? $founded : '';
 
+    // Short, de-duplicated service names for the wizard's suggestion bubbles.
+    $out['services'] = [];
+    foreach ((array)($f['services'] ?? []) as $svc) {
+        $svc = trim(preg_replace('/\s+/u', ' ', (string)$svc));
+        if ($svc === '') continue;
+        $svc = mb_substr($svc, 0, 80);
+        if (in_array(mb_strtolower($svc), array_map('mb_strtolower', $out['services']), true)) continue;
+        $out['services'][] = $svc;
+        if (count($out['services']) >= 10) break;
+    }
+
     $out['social'] = [];
-    foreach (['facebook','instagram','tiktok','youtube','pinterest','linkedin','x'] as $net) {
+    foreach (['facebook','instagram','tiktok','youtube','pinterest','linkedin','reddit','x'] as $net) {
         $v = $f['social'][$net] ?? null;
         $clean = $v ? clean_url((string)$v) : null;
         if ($clean) $out['social'][$net] = $clean;

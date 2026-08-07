@@ -126,6 +126,7 @@ CREATE TABLE IF NOT EXISTS businesses (
   lng          DOUBLE DEFAULT NULL,
   hours        TEXT,                                   -- JSON [{d,h,open}]
   social       TEXT,                                   -- JSON {facebook,instagram,...}
+  review_links TEXT,                                   -- JSON {google,yelp,trustpilot,...}
   video_url    VARCHAR(255) DEFAULT NULL,              -- pro+: featured video embed
   logo_url     VARCHAR(255) DEFAULT NULL,              -- uploaded logo
   rating       DECIMAL(2,1) NOT NULL DEFAULT 0.0,

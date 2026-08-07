@@ -1,0 +1,16 @@
+-- ---------------------------------------------------------------------------
+-- MonsterList upgrade v6 — listing setup wizard (services, social, reviews).
+--
+-- Run this once on an existing install (phpMyAdmin → SQL tab), after
+-- upgrade-v5.sql. Fresh installs get this from schema.sql instead.
+--
+-- Only one change is needed: the wizard's services step reuses the existing
+-- `services` table, and the social step reuses the existing `social` JSON
+-- column. The review step needs somewhere to put links to the business's
+-- profiles on Google, Yelp, Trustpilot and so on, stored as JSON the same way
+-- the social links are.
+--
+-- Re-running this errors with "Duplicate column name 'review_links'", which is
+-- harmless — it just means the column is already there.
+-- ---------------------------------------------------------------------------
+ALTER TABLE businesses ADD COLUMN review_links TEXT DEFAULT NULL AFTER social;
