@@ -131,13 +131,17 @@ function ai_listing_schema(array $categoryIds): array
             'phone'        => $nullableStr + ['description' => 'Primary phone number as published'],
             'email'        => $nullableStr + ['description' => 'Public contact email'],
             'founded'      => ['type' => ['integer', 'null'], 'description' => 'Year founded, if stated'],
+            // No maxItems: the structured-output schema subset rejects array
+            // size constraints ("For 'array' type, property 'maxItems' is not
+            // supported"). The limit is stated in the description and enforced
+            // in ai_postprocess(), which is the real guarantee anyway.
             'services'     => [
                 'type'  => 'array',
                 'items' => ['type' => 'string'],
-                'maxItems' => 10,
-                'description' => 'Up to 10 short names of services or offerings this business actually provides, '
-                               . 'each 1-4 words, title case, taken from their own wording. Empty array if the '
-                               . 'page does not say what they offer.',
+                'description' => 'At most 10 short names of services or offerings this business actually '
+                               . 'provides, each 1-4 words, title case, taken from their own wording. Return '
+                               . 'an empty array if the page does not say what they offer. Never list more '
+                               . 'than 10 — extras are discarded.',
             ],
             'social'       => [
                 'type' => 'object',
