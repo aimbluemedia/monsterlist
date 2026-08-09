@@ -250,8 +250,62 @@ if ($sub === 'dashboard') {
     $stats['logos']    = (int)scalar("SELECT COUNT(*) FROM businesses WHERE logo_url IS NOT NULL AND logo_url != ''");
     $stats['services'] = (int)scalar('SELECT COUNT(DISTINCT business_id) FROM services');
 
+    // Listing inspector. "The storefront isn't showing X" has two very
+    // different causes — nothing is stored, or something is stored and a rule
+    // hides it — and they look identical from the public page. This says which,
+    // per card, for one listing, with the stored value in view.
+    $probe   = trim((string)($_GET['listing'] ?? ''));
+    $found   = null;
+    $matches = [];
+    $cards   = [];
+    if ($probe !== '') {
+        // "#12" or a bare number is an exact id. Otherwise every match is
+        // listed rather than one silently chosen — demo data alone has four
+        // listings called "Granite Works", and inspecting the wrong one while
+        // believing it is the right one is the exact mistake this page exists
+        // to prevent.
+        $byId = ltrim($probe, '#');
+        if (ctype_digit($byId)) {
+            $found = row('SELECT * FROM businesses WHERE id = ?', [(int)$byId]);
+        } else {
+            $like    = '%' . str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $probe) . '%';
+            $matches = rows('SELECT * FROM businesses WHERE name LIKE ? OR website LIKE ? OR slug LIKE ?
+                             ORDER BY id LIMIT 25', [$like, $like, $like]);
+            if (count($matches) === 1) { $found = $matches[0]; $matches = []; }
+        }
+    }
+    if ($found) {
+        $enh      = tier_enhanced($found['tier']);
+        $paid     = 'the tier is ' . $found['tier'] . ' — phone, email, logo, photos and video are paid features';
+        $socialJs = json_decode((string)$found['social'], true);
+        $socialJs = is_array($socialJs) ? array_filter($socialJs) : [];
+        $revJs    = column_exists('businesses', 'review_links')
+            ? array_filter(wizard_links($found['review_links'] ?? null)) : [];
+        $svc      = (int)scalar('SELECT COUNT(*) FROM services WHERE business_id = ?', [$found['id']]);
+        $pics     = (int)scalar('SELECT COUNT(*) FROM gallery WHERE business_id = ?', [$found['id']]);
+        $revs     = (int)scalar("SELECT COUNT(*) FROM reviews WHERE business_id = ? AND status = 'live'", [$found['id']]);
+
+        $card = function (string $name, bool $shown, string $why, string $value = '') use (&$cards) {
+            $cards[] = ['name' => $name, 'shown' => $shown, 'why' => $why, 'value' => $value];
+        };
+        $card('Social', (bool)$socialJs,
+            $socialJs ? count($socialJs) . ' link(s) stored' : 'nothing stored in the social column',
+            (string)$found['social']);
+        $card('Reviewed elsewhere', (bool)$revJs,
+            !column_exists('businesses', 'review_links') ? 'the review_links column does not exist — import upgrade-v6.sql'
+                : ($revJs ? count($revJs) . ' link(s) stored' : 'nothing stored in the review_links column'),
+            (string)($found['review_links'] ?? ''));
+        $card('Services', $svc > 0, $svc > 0 ? "$svc service(s) stored" : 'no services stored');
+        $card('Reviews', $revs > 0, $revs > 0 ? "$revs live review(s)" : 'no live reviews — the card is left out');
+        $card('Logo', $enh && $found['logo_url'], !$found['logo_url'] ? 'no logo uploaded' : ($enh ? 'uploaded' : $paid), (string)$found['logo_url']);
+        $card('Contact · phone', $enh && $found['phone'], !$found['phone'] ? 'no phone stored' : ($enh ? 'stored' : $paid), (string)$found['phone']);
+        $card('Contact · email', $enh && $found['email'], !$found['email'] ? 'no public email stored' : ($enh ? 'stored' : $paid), (string)$found['email']);
+        $card('Photos', $enh && $pics > 0, $pics === 0 ? 'no photos uploaded' : ($enh ? "$pics photo(s)" : $paid));
+        $card('Video', $enh && $found['video_url'], !$found['video_url'] ? 'no video URL stored' : ($enh ? 'stored' : $paid), (string)$found['video_url']);
+    }
+
     $meta = ['title' => "Diagnostics — $site", 'robots' => 'noindex'];
-    view_raw('admin/diagnostics', compact('meta', 'u', 'checks', 'schemaOk', 'stats'));
+    view_raw('admin/diagnostics', compact('meta', 'u', 'checks', 'schemaOk', 'stats', 'probe', 'found', 'matches', 'cards'));
 
 } elseif ($sub === 'blocked') {
     // Emails barred from signing up and domains barred from being listed.
