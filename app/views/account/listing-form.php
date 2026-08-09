@@ -138,17 +138,36 @@ $selCity    = $_SERVER['REQUEST_METHOD'] === 'POST' ? post('city') : (!empty($ci
         <p class="form-note">Add up to <?= max(0, 6 - count($gallery ?? [])) ?> more photos, 5 MB each. They're resized automatically.</p>
         <label>Video URL (YouTube, Vimeo…)</label>
         <input type="text" name="video_url" value="<?= e($v('video_url')) ?>">
-        <div class="form-grid">
-          <?php // social_nets() is the shared list — a form that renders fewer
-                // fields than the save path writes silently drops the rest.
-                foreach (social_nets() as $net => $netLabel): ?>
-            <div>
-              <label><?= e($netLabel) ?></label>
-              <input type="text" name="social_<?= e($net) ?>" value="<?= e($_SERVER['REQUEST_METHOD'] === 'POST' ? post('social_' . $net) : ($social[$net] ?? '')) ?>" placeholder="https://…">
-            </div>
-          <?php endforeach; ?>
-        </div>
       <?php endif; ?>
+
+      <?php
+      // Social and review profiles are on every plan — the setup wizard asks
+      // every member for them, so every member has to be able to change them
+      // afterwards. social_nets() and wizard_reviews() are the shared lists: a
+      // form that renders fewer fields than the save path writes drops the rest.
+      $revLinks = $editing ? wizard_links($biz['review_links'] ?? null) : [];
+      ?>
+      <h3 style="margin-top:24px">Social profiles</h3>
+      <p class="form-note" style="margin-bottom:2px">Paste the address of each profile you have. Leave the rest blank.</p>
+      <div class="form-grid">
+        <?php foreach (social_nets() as $net => $netLabel): ?>
+          <div>
+            <label><?= e($netLabel) ?></label>
+            <input type="text" name="social_<?= e($net) ?>" value="<?= e($_SERVER['REQUEST_METHOD'] === 'POST' ? post('social_' . $net) : ($social[$net] ?? '')) ?>" placeholder="https://…">
+          </div>
+        <?php endforeach; ?>
+      </div>
+
+      <h3 style="margin-top:24px">Review profiles</h3>
+      <p class="form-note" style="margin-bottom:2px">Shown on your listing as “Reviewed elsewhere”. We link out — we never copy the reviews.</p>
+      <div class="form-grid">
+        <?php foreach (wizard_reviews() as $site => [$revLabel, $revPlaceholder]): ?>
+          <div>
+            <label><?= e($revLabel) ?></label>
+            <input type="text" name="review_<?= e($site) ?>" value="<?= e($_SERVER['REQUEST_METHOD'] === 'POST' ? post('review_' . $site) : ($revLinks[$site] ?? '')) ?>" placeholder="<?= e($revPlaceholder) ?>">
+          </div>
+        <?php endforeach; ?>
+      </div>
 
       <button class="btn btn-primary" style="margin-top:22px"><?= $editing ? 'Save changes' : 'Submit listing for review' ?></button>
       <?php if (!$editing): ?><p class="form-note">New listings are reviewed by our team before going live — usually within 24 hours.</p><?php endif; ?>

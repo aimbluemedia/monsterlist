@@ -33,8 +33,24 @@ $enhanced = tier_enhanced($b['tier']);
     <?php if ($b['tagline']): ?><p class="mute" style="margin-top:10px"><?= e($b['tagline']) ?></p><?php endif; ?>
   </section>
 
-  <div class="two-col section" style="padding-top:0">
-    <div>
+  <?php
+  // Same score, same maths and the same yellow bubble as the member cards on
+  // the homepage — this is the listing's own copy of it, at full size.
+  //
+  // It sits first in the source so that on a phone, where the two columns
+  // collapse into one, it lands directly above Quick facts. On a wide screen
+  // the grid puts it back at the top of the sidebar, above Contact.
+  $msScore = monster_score($b);
+  ?>
+  <div class="two-col store-col section" style="padding-top:0">
+    <div class="card card-pad sf-score ms-card ms-<?= e(monster_score_band($msScore)) ?>">
+      <h3>MonsterScore</h3>
+      <div class="ms-bubble"><b><?= $msScore ?></b><small>out of 100</small></div>
+      <p class="ms-note mute">How complete and trusted this listing is — profile detail,
+        verification, reviews and linked channels.</p>
+    </div>
+
+    <div class="sf-main">
       <div class="card card-pad" style="margin-bottom:14px">
         <h3>Quick facts</h3>
         <div class="info-row"><span class="mute">Business</span><span><?= e($b['name']) ?></span></div>
@@ -104,9 +120,13 @@ $enhanced = tier_enhanced($b['tier']);
         </div>
       <?php endif; ?>
 
+      <?php // With no reviews there is nothing to show, so the card is left out
+            // entirely rather than published as an empty "Reviews (0)". Anyone
+            // logged in can still post the first one from a listing that has
+            // reviews; a listing with none points at "Reviewed elsewhere".
+            if ($reviews): ?>
       <div class="card card-pad" id="reviews">
         <h3>Reviews (<?= (int)$b['review_count'] ?>)</h3>
-        <?php if (!$reviews): ?><p class="mute">No reviews yet — be the first.</p><?php endif; ?>
         <?php foreach ($reviews as $r): ?>
           <div class="review">
             <div class="review-head">
@@ -134,21 +154,10 @@ $enhanced = tier_enhanced($b['tier']);
           <p class="mute" style="margin-top:12px"><a href="/login" style="color:var(--accent);font-weight:700">Log in</a> to write a review.</p>
         <?php endif; ?>
       </div>
+      <?php endif; ?>
     </div>
 
     <aside>
-      <?php
-      // Same score, same maths and the same yellow bubble as the member cards
-      // on the homepage — this is the listing's own copy of it, at full size.
-      $msScore = monster_score($b);
-      ?>
-      <div class="card card-pad ms-card ms-<?= e(monster_score_band($msScore)) ?>" style="margin-bottom:14px">
-        <h3>MonsterScore</h3>
-        <div class="ms-bubble"><b><?= $msScore ?></b><small>out of 100</small></div>
-        <p class="ms-note mute">How complete and trusted this listing is — profile detail,
-          verification, reviews and linked channels.</p>
-      </div>
-
       <div class="card card-pad" style="margin-bottom:14px">
         <h3>Contact</h3>
         <?php // Phone and public email are paid features — the website link and
@@ -181,7 +190,10 @@ $enhanced = tier_enhanced($b['tier']);
         </div>
       <?php endif; ?>
 
-      <?php if ($enhanced && $social): ?>
+      <?php // Social and review profiles are collected from every member in the
+            // setup wizard, so they show on every tier — a link the member typed
+            // in that never appears anywhere would just be a dead end.
+            if ($social): ?>
         <div class="card card-pad" style="margin-bottom:14px">
           <h3>Social</h3>
           <?php $netLabels = social_nets();

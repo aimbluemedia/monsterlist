@@ -14,10 +14,11 @@
           <li><?= (int)$p['max_listings'] ?> listing<?= $p['max_listings'] > 1 ? 's' : '' ?></li>
           <li>Appears in search &amp; city pages</li>
           <li>Link to your website</li>
+          <li>Social profiles &amp; review-site links</li>
           <?php if ($p['enhanced']): ?>
             <li>Phone &amp; public email on your listing</li>
             <li>Your logo and a photo gallery</li>
-            <li>Video and social links</li>
+            <li>Video</li>
             <li>Verified badge</li>
           <?php else: ?>
             <li class="no">No phone or public email</li>

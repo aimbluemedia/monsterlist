@@ -265,29 +265,34 @@ function listing_form_data(array $user, array $plan, int $exceptId = 0, bool $en
         $data['phone']     = mb_substr(post('phone'), 0, 40);
         $data['email']     = filter_var(post('email'), FILTER_VALIDATE_EMAIL) ?: null;
         $data['video_url'] = clean_url(post('video_url'));
-        $social = [];
-        foreach (array_keys(social_nets()) as $net) {
-            $v = clean_url(post('social_' . $net));
-            if ($v) $social[$net] = $v;
-        }
-        $data['social'] = $social ? json_encode($social) : null;
     }
 
-    // Review-profile links are only set when the form actually rendered those
-    // fields. Writing them unconditionally would let a form that omits them
-    // (the member listing form) silently wipe what the setup wizard collected.
-    $reviewKeys = array_keys(wizard_reviews());
-    $hasReviewFields = false;
-    foreach ($reviewKeys as $site) {
-        if (array_key_exists('review_' . $site, $_POST)) { $hasReviewFields = true; break; }
-    }
-    if ($hasReviewFields) {
-        $reviews = [];
-        foreach ($reviewKeys as $site) {
-            $v = clean_url(post('review_' . $site));
-            if ($v) $reviews[$site] = $v;
+    // Social and review links belong to every tier — the setup wizard collects
+    // them from everyone. They are only written when the form actually rendered
+    // the fields, though: writing them unconditionally would let a form that
+    // omits them silently wipe what the wizard collected.
+    $posted_any = function (array $keys, string $prefix): bool {
+        foreach ($keys as $k) {
+            if (array_key_exists($prefix . $k, $_POST)) return true;
         }
-        $data['review_links'] = $reviews ? json_encode($reviews) : null;
+        return false;
+    };
+    $collect = function (array $keys, string $prefix): ?string {
+        $out = [];
+        foreach ($keys as $k) {
+            $v = clean_url(post($prefix . $k));
+            if ($v) $out[$k] = mb_substr($v, 0, 255);
+        }
+        return $out ? json_encode($out) : null;
+    };
+
+    $netKeys = array_keys(social_nets());
+    if ($posted_any($netKeys, 'social_')) {
+        $data['social'] = $collect($netKeys, 'social_');
+    }
+    $reviewKeys = array_keys(wizard_reviews());
+    if ($posted_any($reviewKeys, 'review_')) {
+        $data['review_links'] = $collect($reviewKeys, 'review_');
     }
 
     if ($enforce) {

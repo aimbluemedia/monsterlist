@@ -81,11 +81,12 @@ if ($sub === 'dashboard') {
         [$data, $errors] = listing_form_data($u, $plan);
         if (!$errors) {
             $slug = unique_business_slug($data['name'], (int)$data['city_id']);
-            q('INSERT INTO businesses (owner_id, name, slug, category_id, city_id, tier, status, tagline, description, phone, website, email, address, founded, video_url, social)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+            q('INSERT INTO businesses (owner_id, name, slug, category_id, city_id, tier, status, tagline, description, phone, website, email, address, founded, video_url, social, review_links)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
               [$u['id'], $data['name'], $slug, $data['category_id'], $data['city_id'], $u['plan'], 'pending',
                $data['tagline'], $data['description'], $data['phone'] ?? null, $data['website'], $data['email'] ?? null,
-               $data['address'], $data['founded'], $data['video_url'] ?? null, $data['social'] ?? null]);
+               $data['address'], $data['founded'], $data['video_url'] ?? null, $data['social'] ?? null,
+               $data['review_links'] ?? null]);
             $bizId = (int)db()->lastInsertId();
             $imgErrors = [];
             handle_listing_images($bizId, $plan, $imgErrors);
@@ -115,7 +116,7 @@ if ($sub === 'dashboard') {
             $slug = unique_business_slug($data['name'], (int)$data['city_id'], (int)$biz['id']);
             // Edits go back to moderation only if core public fields changed
             $needsReview = $data['name'] !== $biz['name'] || $data['description'] !== (string)$biz['description'];
-            q('UPDATE businesses SET name=?, slug=?, category_id=?, city_id=?, tagline=?, description=?, phone=?, website=?, email=?, address=?, founded=?, video_url=?, social=?, status=?
+            q('UPDATE businesses SET name=?, slug=?, category_id=?, city_id=?, tagline=?, description=?, phone=?, website=?, email=?, address=?, founded=?, video_url=?, social=?, review_links=?, status=?
                WHERE id=? AND owner_id=?',
               [$data['name'], $slug, $data['category_id'], $data['city_id'], $data['tagline'], $data['description'],
                // Paid-only fields are absent from $data on a free plan — keep
@@ -124,6 +125,7 @@ if ($sub === 'dashboard') {
                $data['phone'] ?? $biz['phone'], $data['website'], $data['email'] ?? $biz['email'],
                $data['address'], $data['founded'],
                $data['video_url'] ?? $biz['video_url'], $data['social'] ?? $biz['social'],
+               $data['review_links'] ?? $biz['review_links'],
                $needsReview && $biz['status'] === 'live' ? 'pending' : $biz['status'],
                $biz['id'], $u['id']]);
             $imgErrors = [];

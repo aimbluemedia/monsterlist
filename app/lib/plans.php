@@ -23,7 +23,7 @@ function plans(): array
             'enhanced'     => true,
             'featured'     => false,
             'analytics'    => true,
-            'blurb'        => 'A full storefront: phone and public email, logo, photo gallery, video, social links, verified badge and analytics.',
+            'blurb'        => 'A full storefront: phone and public email, logo, photo gallery, video, verified badge and analytics.',
         ],
         'featured' => [
             'label'        => 'Featured',
