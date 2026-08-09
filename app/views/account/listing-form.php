@@ -148,14 +148,6 @@ $selCity    = $_SERVER['REQUEST_METHOD'] === 'POST' ? post('city') : (!empty($ci
             </div>
           <?php endforeach; ?>
         </div>
-      <?php else: ?>
-        <div class="card card-pad" style="margin-top:24px;background:var(--accent-soft);border-color:var(--accent)">
-          <strong>Want a phone number, contact email and photos on your listing?</strong>
-          <p class="mute" style="margin:6px 0 10px">Free listings show your name, description, category, location and
-            website link. Pro adds your phone and public email, your logo, a photo gallery, video, social links
-            and analytics.</p>
-          <a class="btn btn-primary btn-sm" href="/pricing">See plans</a>
-        </div>
       <?php endif; ?>
 
       <button class="btn btn-primary" style="margin-top:22px"><?= $editing ? 'Save changes' : 'Submit listing for review' ?></button>
