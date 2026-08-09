@@ -22,6 +22,29 @@ function wizard_steps(): array
     ];
 }
 
+/**
+ * Every social / content link a listing can carry, in display order.
+ *
+ * One list, used by the member form, the staff form and the AI post-processor.
+ * It used to be spelled out in four files, and adding Reddit meant editing all
+ * four — which is exactly how one of them got missed.
+ */
+function social_nets(): array
+{
+    return [
+        'facebook'  => 'Facebook',
+        'instagram' => 'Instagram',
+        'tiktok'    => 'TikTok',
+        'youtube'   => 'YouTube',
+        'pinterest' => 'Pinterest',
+        'linkedin'  => 'LinkedIn',
+        'x'         => 'X',
+        'reddit'    => 'Reddit',
+        'threads'   => 'Threads',
+        'blog'      => 'Blog',
+    ];
+}
+
 /** Networks on the social step, in the order the member asked for them. */
 function wizard_socials(): array
 {

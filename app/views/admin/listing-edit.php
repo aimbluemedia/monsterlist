@@ -3,6 +3,7 @@ require __DIR__ . '/_top.php';
 $posted = $_SERVER['REQUEST_METHOD'] === 'POST';
 $v = fn(string $field, $default = '') => $posted ? post($field) : (string)($biz[$field] ?? $default);
 $social     = json_decode((string)$biz['social'], true) ?: [];
+$revLinks   = wizard_links($biz['review_links'] ?? null);
 $selCountry = $posted ? strtoupper(post('country')) : (!empty($cityRow) ? $cityRow['country_code'] : 'US');
 $selRegion  = $posted ? post('region') : (!empty($cityRow['region_slug']) ? $cityRow['region_slug'] : '');
 $selCity    = $posted ? post('city') : (!empty($cityRow) ? $cityRow['name'] : '');
@@ -18,9 +19,9 @@ $listUrl    = e(listings_url($back, $_GET['q'] ?? ''));
 
 <form method="post" enctype="multipart/form-data"><?= csrf_field() ?>
 
-  <div class="card card-pad" style="margin-bottom:14px">
+  <div class="card card-pad ed-card">
     <h3>Moderation</h3>
-    <p class="mute" style="font-size:.85rem;margin-top:0">Staff edits save straight through — the listing is not sent back for review.</p>
+    <p class="mute ed-note">Staff edits save straight through — the listing is not sent back for review.</p>
     <div class="form-grid">
       <div>
         <label>Status</label>
@@ -45,7 +46,7 @@ $listUrl    = e(listings_url($back, $_GET['q'] ?? ''));
     <label style="font-weight:500"><input type="checkbox" name="verified" value="1" style="width:auto" <?= ($posted ? !empty($_POST['verified']) : $biz['verified']) ? 'checked' : '' ?>> Verified business</label>
   </div>
 
-  <div class="card card-pad">
+  <div class="card card-pad ed-card">
     <h3>Basics</h3>
     <div class="form-grid">
       <div>
@@ -66,8 +67,14 @@ $listUrl    = e(listings_url($back, $_GET['q'] ?? ''));
     <input type="text" name="tagline" value="<?= e($v('tagline')) ?>" maxlength="255">
     <label>Description</label>
     <textarea name="description" rows="5" maxlength="5000"><?= e($v('description')) ?></textarea>
+    <div class="form-grid">
+      <div><label>Website</label><input type="text" name="website" value="<?= e($v('website')) ?>" placeholder="https://…"></div>
+      <div><label>Year founded</label><input type="number" name="founded" value="<?= e($v('founded')) ?>" min="1800" max="<?= date('Y') ?>"></div>
+    </div>
+  </div>
 
-    <h3 style="margin-top:24px">Location</h3>
+  <div class="card card-pad ed-card">
+    <h3>Location</h3>
     <div class="form-grid">
       <div>
         <label>Country *</label>
@@ -97,16 +104,50 @@ $listUrl    = e(listings_url($back, $_GET['q'] ?? ''));
         <input type="text" name="address" value="<?= e($v('address')) ?>" maxlength="255">
       </div>
     </div>
+  </div>
 
-    <h3 style="margin-top:24px">Contact</h3>
+  <div class="card card-pad ed-card">
+    <h3>Social media</h3>
+    <p class="mute ed-note">Ten channels, two columns of five. Leave any blank.</p>
+    <div class="form-grid">
+      <?php foreach (social_nets() as $net => $label): ?>
+        <div>
+          <label><?= e($label) ?></label>
+          <input type="text" name="social_<?= e($net) ?>"
+                 value="<?= e($posted ? post('social_' . $net) : ($social[$net] ?? '')) ?>" placeholder="https://…">
+        </div>
+      <?php endforeach; ?>
+    </div>
+  </div>
+
+  <div class="card card-pad ed-card">
+    <h3>Reviews</h3>
+    <p class="mute ed-note">Links to this business's profiles on review sites. Shown on the storefront as
+      “Reviewed elsewhere” — we link out, we never copy the reviews.</p>
+    <div class="form-grid">
+      <?php foreach (wizard_reviews() as $site => [$label, $placeholder]): ?>
+        <div>
+          <label><?= e($label) ?></label>
+          <input type="text" name="review_<?= e($site) ?>"
+                 value="<?= e($posted ? post('review_' . $site) : ($revLinks[$site] ?? '')) ?>"
+                 placeholder="<?= e($placeholder) ?>">
+        </div>
+      <?php endforeach; ?>
+    </div>
+  </div>
+
+  <div class="card card-pad ed-card ed-premium">
+    <h3>Premium <span class="badge badge-pro">Pro</span></h3>
+    <p class="mute ed-note">Only shown on the storefront for listings on a paid tier.
+      Set the tier at the top of this page.</p>
+
+    <h4 class="ed-sub">Contact</h4>
     <div class="form-grid">
       <div><label>Phone</label><input type="text" name="phone" value="<?= e($v('phone')) ?>" maxlength="40"></div>
       <div><label>Public email</label><input type="email" name="email" value="<?= e($v('email')) ?>"></div>
-      <div><label>Website</label><input type="text" name="website" value="<?= e($v('website')) ?>" placeholder="https://…"></div>
-      <div><label>Year founded</label><input type="number" name="founded" value="<?= e($v('founded')) ?>" min="1800" max="<?= date('Y') ?>"></div>
     </div>
 
-    <h3 style="margin-top:24px">Logo</h3>
+    <h4 class="ed-sub">Logo</h4>
     <?php if ($biz['logo_url']): ?>
       <p><img src="<?= e($biz['logo_url']) ?>" alt="Current logo" style="width:72px;height:72px;object-fit:cover;border-radius:12px;border:1px solid var(--border)">
       <label style="display:inline;font-weight:500;margin-left:10px"><input type="checkbox" name="remove_logo" value="1" style="width:auto"> Remove current logo</label></p>
@@ -114,7 +155,7 @@ $listUrl    = e(listings_url($back, $_GET['q'] ?? ''));
     <input type="file" name="logo" accept="image/jpeg,image/png,image/webp,image/gif">
     <p class="form-note">JPG, PNG, WebP or GIF up to 5 MB.</p>
 
-    <h3 style="margin-top:24px">Storefront extras</h3>
+    <h4 class="ed-sub">Storefront extras</h4>
     <label>Photo gallery (up to 6 photos)</label>
     <?php if (!empty($gallery)): ?>
       <div class="gallery-grid" style="margin-bottom:10px">
@@ -128,19 +169,11 @@ $listUrl    = e(listings_url($back, $_GET['q'] ?? ''));
     <?php endif; ?>
     <input type="file" name="gallery[]" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
     <p class="form-note">Add up to <?= max(0, 6 - count($gallery ?? [])) ?> more photos, 5 MB each.</p>
-    <label>Video URL</label>
-    <input type="text" name="video_url" value="<?= e($v('video_url')) ?>">
-    <div class="form-grid">
-      <?php foreach (['facebook','instagram','tiktok','youtube','pinterest','linkedin','x'] as $net): ?>
-        <div>
-          <label><?= e(ucfirst($net)) ?></label>
-          <input type="text" name="social_<?= $net ?>" value="<?= e($posted ? post('social_' . $net) : ($social[$net] ?? '')) ?>" placeholder="https://…">
-        </div>
-      <?php endforeach; ?>
-    </div>
+  </div>
 
-    <button class="btn btn-primary" style="margin-top:22px">Save changes</button>
-    <a class="btn btn-ghost" style="margin-top:22px" href="<?= $listUrl ?>">Cancel</a>
+  <div class="ed-actions">
+    <button class="btn btn-primary">Save changes</button>
+    <a class="btn btn-ghost" href="<?= $listUrl ?>">Cancel</a>
   </div>
 </form>
 <?php require __DIR__ . '/_bottom.php'; ?>

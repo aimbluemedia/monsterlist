@@ -241,11 +241,28 @@ function listing_form_data(array $user, array $plan, int $exceptId = 0, bool $en
     if ($plan['enhanced']) {
         $data['video_url'] = clean_url(post('video_url'));
         $social = [];
-        foreach (['facebook','instagram','tiktok','youtube','pinterest','linkedin','reddit','x'] as $net) {
+        foreach (array_keys(social_nets()) as $net) {
             $v = clean_url(post('social_' . $net));
             if ($v) $social[$net] = $v;
         }
         $data['social'] = $social ? json_encode($social) : null;
+    }
+
+    // Review-profile links are only set when the form actually rendered those
+    // fields. Writing them unconditionally would let a form that omits them
+    // (the member listing form) silently wipe what the setup wizard collected.
+    $reviewKeys = array_keys(wizard_reviews());
+    $hasReviewFields = false;
+    foreach ($reviewKeys as $site) {
+        if (array_key_exists('review_' . $site, $_POST)) { $hasReviewFields = true; break; }
+    }
+    if ($hasReviewFields) {
+        $reviews = [];
+        foreach ($reviewKeys as $site) {
+            $v = clean_url(post('review_' . $site));
+            if ($v) $reviews[$site] = $v;
+        }
+        $data['review_links'] = $reviews ? json_encode($reviews) : null;
     }
 
     if ($enforce) {

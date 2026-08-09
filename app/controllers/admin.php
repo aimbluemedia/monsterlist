@@ -73,7 +73,11 @@ if ($sub === 'dashboard') {
     $biz = row('SELECT * FROM businesses WHERE id = ?', [(int)($_GET['id'] ?? 0)]);
     if (!$biz) not_found();
 
-    $back   = in_array($_GET['back'] ?? 'pending', ['pending','live','rejected','all'], true) ? $_GET['back'] : 'pending';
+    // Read the default first: the old form tested the ?? expression but then
+    // returned $_GET['back'], which is null when the parameter is absent —
+    // opening this page without &back= threw a TypeError in listings_url().
+    $back = (string)($_GET['back'] ?? 'pending');
+    if (!in_array($back, ['pending', 'live', 'rejected', 'all'], true)) $back = 'pending';
     $errors = [];
 
     // Staff get the full field set regardless of what the owner is paying for.
@@ -102,11 +106,13 @@ if ($sub === 'dashboard') {
         if (!$errors) {
             $slug = unique_business_slug($data['name'], (int)$data['city_id'], (int)$biz['id']);
             q('UPDATE businesses SET name=?, slug=?, category_id=?, city_id=?, tagline=?, description=?, phone=?,
-                      website=?, email=?, address=?, founded=?, video_url=?, social=?, status=?, tier=?, verified=?, owner_id=?
+                      website=?, email=?, address=?, founded=?, video_url=?, social=?, review_links=?,
+                      status=?, tier=?, verified=?, owner_id=?
                WHERE id=?',
               [$data['name'], $slug, $data['category_id'], $data['city_id'], $data['tagline'], $data['description'],
                $data['phone'], $data['website'], $data['email'], $data['address'], $data['founded'],
                $data['video_url'] ?? $biz['video_url'], $data['social'] ?? $biz['social'],
+               array_key_exists('review_links', $data) ? $data['review_links'] : $biz['review_links'],
                $newStatus, $newTier, $verified, $ownerId, $biz['id']]);
 
             $imgErrors = [];

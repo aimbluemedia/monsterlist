@@ -133,10 +133,12 @@ $selCity    = $_SERVER['REQUEST_METHOD'] === 'POST' ? post('city') : (!empty($ci
         <label>Video URL (YouTube, Vimeo…)</label>
         <input type="text" name="video_url" value="<?= e($v('video_url')) ?>">
         <div class="form-grid">
-          <?php foreach (['facebook','instagram','tiktok','youtube','pinterest','linkedin','reddit','x'] as $net): ?>
+          <?php // social_nets() is the shared list — a form that renders fewer
+                // fields than the save path writes silently drops the rest.
+                foreach (social_nets() as $net => $netLabel): ?>
             <div>
-              <label><?= e(ucfirst($net)) ?></label>
-              <input type="text" name="social_<?= $net ?>" value="<?= e($_SERVER['REQUEST_METHOD'] === 'POST' ? post('social_' . $net) : ($social[$net] ?? '')) ?>" placeholder="https://…">
+              <label><?= e($netLabel) ?></label>
+              <input type="text" name="social_<?= e($net) ?>" value="<?= e($_SERVER['REQUEST_METHOD'] === 'POST' ? post('social_' . $net) : ($social[$net] ?? '')) ?>" placeholder="https://…">
             </div>
           <?php endforeach; ?>
         </div>

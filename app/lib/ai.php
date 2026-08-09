@@ -277,7 +277,7 @@ function ai_postprocess(array $f, string $sourceUrl): array
     }
 
     $out['social'] = [];
-    foreach (['facebook','instagram','tiktok','youtube','pinterest','linkedin','reddit','x'] as $net) {
+    foreach (array_keys(social_nets()) as $net) {   // one shared list; absent keys are simply skipped
         $v = $f['social'][$net] ?? null;
         $clean = $v ? clean_url((string)$v) : null;
         if ($clean) $out['social'][$net] = $clean;

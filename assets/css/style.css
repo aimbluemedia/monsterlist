@@ -199,6 +199,14 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 .svc-tag{display:inline-block;padding:6px 13px;border-radius:999px;background:var(--accent-soft);
   color:var(--accent);font-weight:700;font-size:.85rem}
 
+/* staff listing editor — one card per section */
+.ed-card{margin-bottom:16px}
+.ed-card > h3{margin-top:0}
+.ed-note{font-size:.85rem;margin:0 0 4px}
+.ed-sub{font-size:.95rem;font-weight:700;margin:22px 0 0;padding-top:16px;border-top:1px solid var(--border2)}
+.ed-premium{border-color:var(--accent);box-shadow:0 4px 18px rgba(37,99,235,.09)}
+.ed-actions{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 24px}
+
 /* ===== listing setup wizard ===== */
 .wz-crumb{margin:0 0 14px;font-size:.9rem;color:var(--mute)}
 .wz-crumb a{color:var(--accent);font-weight:600}
