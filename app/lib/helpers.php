@@ -78,6 +78,12 @@ function view_raw(string $template, array $data = []): void
 /** One-shot flash messages. */
 function flash_set(string $type, string $msg): void
 {
+    // Queue each distinct message once. A double-clicked submit button fires
+    // two POSTs, and without this the identical message is shown twice on the
+    // page they both redirect to.
+    foreach ($_SESSION['flash'] ?? [] as $existing) {
+        if ($existing['type'] === $type && $existing['msg'] === $msg) return;
+    }
     $_SESSION['flash'][] = ['type' => $type, 'msg' => $msg];
 }
 

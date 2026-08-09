@@ -149,12 +149,16 @@ if ($sub === 'dashboard') {
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         csrf_check();
+        // Build one message for the whole step. Two flash_set calls on the last
+        // step stacked "Saved 2 links." above "Profile complete!", which reads
+        // as the page repeating itself.
+        $said = '';
         if (post('action') !== 'skip') {
             if ($step === 'services') {
                 // Selected bubbles and typed-in boxes are the same list.
                 $picked = array_merge((array)($_POST['services'] ?? []), (array)($_POST['custom'] ?? []));
                 $n = wizard_save_services((int)$biz['id'], $picked);
-                flash_set('success', $n ? "Saved $n service" . ($n === 1 ? '' : 's') . '.' : 'No services saved.');
+                $said = $n ? "Saved $n service" . ($n === 1 ? '' : 's') . '.' : 'No services saved.';
             } else {
                 $isSocial = $step === 'social';
                 $n = wizard_save_links(
@@ -163,14 +167,15 @@ if ($sub === 'dashboard') {
                     $isSocial ? wizard_socials() : wizard_reviews(),
                     (array)($_POST['links'] ?? [])
                 );
-                flash_set('success', $n
+                $said = $n
                     ? "Saved $n link" . ($n === 1 ? '' : 's') . '.'
-                    : ($isSocial ? 'No social links saved.' : 'No review links saved.'));
+                    : ($isSocial ? 'No social links saved.' : 'No review links saved.');
             }
         }
         if ($next === null) {
-            flash_set('success', 'Profile complete! Your listing appears publicly once approved — usually within 24 hours.');
+            $said = trim($said . ' Profile complete! Your listing appears publicly once approved — usually within 24 hours.');
         }
+        if ($said !== '') flash_set('success', $said);
         redirect($done);
     }
 
