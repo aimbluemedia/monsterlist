@@ -116,7 +116,11 @@ function website_to_context(string $html, string $url): string
 /** JSON schema Claude's answer must match (structured outputs). */
 function ai_listing_schema(array $categoryIds): array
 {
-    $nullableStr = ['type' => ['string', 'null']];
+    // A nullable field is a union type, and structured outputs allow at most 16
+    // of those per schema. Keep nullables for the fields where null is
+    // meaningful, and use the empty string for the long tail (the socials).
+    $nullableStr  = ['type' => ['string', 'null']];
+    $emptyableStr = ['type' => 'string', 'description' => 'Full profile URL, or an empty string if the site does not link to one'];
     return [
         'type' => 'object',
         'properties' => [
@@ -143,12 +147,18 @@ function ai_listing_schema(array $categoryIds): array
                                . 'an empty array if the page does not say what they offer. Never list more '
                                . 'than 10 — extras are discarded.',
             ],
+            // Plain strings, not nullable ones. Structured outputs cap a schema
+            // at 16 union-typed parameters ("too many parameters with union
+            // types … limit: 16"), and every nullable field is a union — the
+            // 9 above plus 8 socials came to 17 and the whole request was
+            // rejected. Empty string means "not found"; clean_url() maps "" to
+            // null in ai_postprocess(), so nothing downstream changes.
             'social'       => [
                 'type' => 'object',
                 'properties' => [
-                    'facebook'  => $nullableStr, 'instagram' => $nullableStr, 'tiktok'   => $nullableStr,
-                    'youtube'   => $nullableStr, 'pinterest' => $nullableStr, 'linkedin' => $nullableStr,
-                    'reddit'    => $nullableStr, 'x'         => $nullableStr,
+                    'facebook'  => $emptyableStr, 'instagram' => $emptyableStr, 'tiktok'   => $emptyableStr,
+                    'youtube'   => $emptyableStr, 'pinterest' => $emptyableStr, 'linkedin' => $emptyableStr,
+                    'reddit'    => $emptyableStr, 'x'         => $emptyableStr,
                 ],
                 'required' => ['facebook', 'instagram', 'tiktok', 'youtube', 'pinterest', 'linkedin', 'reddit', 'x'],
                 'additionalProperties' => false,
