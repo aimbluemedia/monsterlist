@@ -72,6 +72,34 @@ $enhanced = tier_enhanced($b['tier']);
         </div>
       <?php endif; ?>
 
+      <?php // Social and review profiles are collected from every member in the
+            // setup wizard, so they show on every tier — a link the member typed
+            // in that never appears anywhere would just be a dead end. They sit
+            // under About, in the main column, because they are things to read
+            // about the business rather than ways to contact it.
+            if ($social): ?>
+        <div class="card card-pad" style="margin-bottom:14px">
+          <h3>Social</h3>
+          <?php $netLabels = social_nets();
+                foreach ($social as $net => $url): if (!$url) continue; ?>
+            <div class="info-row"><span class="mute"><?= e($netLabels[$net] ?? ucfirst($net)) ?></span><a href="<?= e($url) ?>" target="_blank" rel="noopener nofollow" style="color:var(--accent);font-weight:700">Open ↗</a></div>
+          <?php endforeach; ?>
+        </div>
+      <?php endif; ?>
+
+      <?php
+      // Links to the business's profiles elsewhere. We point at them; we never
+      // copy the reviews themselves, which would misrepresent both sites.
+      $revLinks = array_filter(wizard_links($b['review_links'] ?? null));
+      if ($revLinks): ?>
+        <div class="card card-pad" style="margin-bottom:14px">
+          <h3>Reviewed elsewhere</h3>
+          <?php foreach (wizard_reviews() as $key => [$label, $_]): if (empty($revLinks[$key])) continue; ?>
+            <div class="info-row"><span class="mute"><?= e($label) ?></span><a href="<?= e($revLinks[$key]) ?>" target="_blank" rel="noopener nofollow" style="color:var(--accent);font-weight:700">Read reviews ↗</a></div>
+          <?php endforeach; ?>
+        </div>
+      <?php endif; ?>
+
       <?php if ($enhanced && $gallery): ?>
         <div class="card card-pad" style="margin-bottom:14px">
           <h3>Photos</h3>
@@ -173,32 +201,6 @@ $enhanced = tier_enhanced($b['tier']);
           <h3>Hours</h3>
           <?php foreach ($hours as $h): ?>
             <div class="info-row"><span class="mute"><?= e($h['d'] ?? '') ?></span><span><?= !empty($h['open']) ? e($h['h'] ?? '') : 'Closed' ?></span></div>
-          <?php endforeach; ?>
-        </div>
-      <?php endif; ?>
-
-      <?php
-      // Links to the business's profiles elsewhere. We point at them; we never
-      // copy the reviews themselves, which would misrepresent both sites.
-      $revLinks = array_filter(wizard_links($b['review_links'] ?? null));
-      if ($revLinks): ?>
-        <div class="card card-pad" style="margin-bottom:14px">
-          <h3>Reviewed elsewhere</h3>
-          <?php foreach (wizard_reviews() as $key => [$label, $_]): if (empty($revLinks[$key])) continue; ?>
-            <div class="info-row"><span class="mute"><?= e($label) ?></span><a href="<?= e($revLinks[$key]) ?>" target="_blank" rel="noopener nofollow" style="color:var(--accent);font-weight:700">Read reviews ↗</a></div>
-          <?php endforeach; ?>
-        </div>
-      <?php endif; ?>
-
-      <?php // Social and review profiles are collected from every member in the
-            // setup wizard, so they show on every tier — a link the member typed
-            // in that never appears anywhere would just be a dead end.
-            if ($social): ?>
-        <div class="card card-pad" style="margin-bottom:14px">
-          <h3>Social</h3>
-          <?php $netLabels = social_nets();
-                foreach ($social as $net => $url): if (!$url) continue; ?>
-            <div class="info-row"><span class="mute"><?= e($netLabels[$net] ?? ucfirst($net)) ?></span><a href="<?= e($url) ?>" target="_blank" rel="noopener nofollow" style="color:var(--accent);font-weight:700">Open ↗</a></div>
           <?php endforeach; ?>
         </div>
       <?php endif; ?>
