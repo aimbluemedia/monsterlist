@@ -45,7 +45,14 @@ function social_nets(): array
     ];
 }
 
-/** Networks on the social step, in the order the member asked for them. */
+/**
+ * Networks on the social step: ten slots, two columns of five, with "Other"
+ * last so anything we have not named still has somewhere to go.
+ *
+ * The keys are a subset of social_nets(), which is what the storefront and the
+ * staff editor read — a key here that is missing there would save and then
+ * never appear.
+ */
 function wizard_socials(): array
 {
     return [
@@ -56,6 +63,9 @@ function wizard_socials(): array
         'reddit'    => ['Reddit',    'https://reddit.com/r/yourcommunity'],
         'pinterest' => ['Pinterest', 'https://pinterest.com/yourprofile'],
         'linkedin'  => ['LinkedIn',  'https://linkedin.com/company/yourcompany'],
+        'x'         => ['X',         'https://x.com/yourhandle'],
+        'blog'      => ['Blog',      'https://yourbusiness.com/blog'],
+        'other'     => ['Other',     'https://any-other-profile.com/yourpage'],
     ];
 }
 
