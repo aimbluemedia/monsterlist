@@ -20,7 +20,7 @@
       <div class="grid" style="margin-top:16px">
         <?php foreach ($list as $b): ?>
           <a class="card listing" href="<?= e(business_path($b)) ?>">
-            <span class="avatar"><?php if (!empty($b['logo_url'])): ?><img src="<?= e($b['logo_url']) ?>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px"><?php else: ?><?= e(mb_substr($b['name'], 0, 1)) ?><?php endif; ?></span>
+            <span class="avatar"><?php if ($logo = listing_logo($b)): ?><img src="<?= e($logo) ?>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px"><?php else: ?><?= e(mb_substr($b['name'], 0, 1)) ?><?php endif; ?></span>
             <span class="listing-body">
               <span class="listing-title">
                 <?= e($b['name']) ?>

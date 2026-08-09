@@ -101,21 +101,27 @@ $selCity    = $_SERVER['REQUEST_METHOD'] === 'POST' ? post('city') : (!empty($ci
 
       <h3 style="margin-top:24px">Contact</h3>
       <div class="form-grid">
-        <div><label>Phone</label><input type="text" name="phone" value="<?= e($v('phone')) ?>" maxlength="40"></div>
-        <div><label>Public email</label><input type="email" name="email" value="<?= e($v('email')) ?>"></div>
         <div><label>Website</label><input type="text" name="website" value="<?= e($v('website')) ?>" placeholder="https://…"></div>
         <div><label>Year founded</label><input type="number" name="founded" value="<?= e($v('founded')) ?>" min="1800" max="<?= date('Y') ?>"></div>
       </div>
 
-      <h3 style="margin-top:24px">Logo</h3>
-      <?php if ($editing && $biz['logo_url']): ?>
-        <p><img src="<?= e($biz['logo_url']) ?>" alt="Current logo" style="width:72px;height:72px;object-fit:cover;border-radius:12px;border:1px solid var(--border)">
-        <label style="display:inline;font-weight:500;margin-left:10px"><input type="checkbox" name="remove_logo" value="1" style="width:auto"> Remove current logo</label></p>
-      <?php endif; ?>
-      <input type="file" name="logo" accept="image/jpeg,image/png,image/webp,image/gif">
-      <p class="form-note">JPG, PNG, WebP or GIF up to 5 MB. Shown on your listing card and storefront.</p>
+      <?php // Phone, public email and images are paid features. The fields are
+            // not rendered at all on the Free plan — the save path ignores them
+            // too, so this is the honest view of it rather than a disabled tease.
+            if ($plan['enhanced']): ?>
+        <div class="form-grid">
+          <div><label>Phone</label><input type="text" name="phone" value="<?= e($v('phone')) ?>" maxlength="40"></div>
+          <div><label>Public email</label><input type="email" name="email" value="<?= e($v('email')) ?>"></div>
+        </div>
 
-      <?php if ($plan['enhanced']): ?>
+        <h3 style="margin-top:24px">Logo <span class="badge badge-pro">Pro</span></h3>
+        <?php if ($editing && $biz['logo_url']): ?>
+          <p><img src="<?= e($biz['logo_url']) ?>" alt="Current logo" style="width:72px;height:72px;object-fit:cover;border-radius:12px;border:1px solid var(--border)">
+          <label style="display:inline;font-weight:500;margin-left:10px"><input type="checkbox" name="remove_logo" value="1" style="width:auto"> Remove current logo</label></p>
+        <?php endif; ?>
+        <input type="file" name="logo" accept="image/jpeg,image/png,image/webp,image/gif">
+        <p class="form-note">JPG, PNG, WebP or GIF up to 5 MB. Shown on your listing card and storefront.</p>
+
         <h3 style="margin-top:24px">Storefront extras <span class="badge badge-pro">Pro</span></h3>
         <label>Photo gallery (up to 6 photos)</label>
         <?php if (!empty($gallery)): ?>
@@ -144,8 +150,10 @@ $selCity    = $_SERVER['REQUEST_METHOD'] === 'POST' ? post('city') : (!empty($ci
         </div>
       <?php else: ?>
         <div class="card card-pad" style="margin-top:24px;background:var(--accent-soft);border-color:var(--accent)">
-          <strong>Want photos, video and social links on your listing?</strong>
-          <p class="mute" style="margin:6px 0 10px">Pro members get a full storefront plus analytics.</p>
+          <strong>Want a phone number, contact email and photos on your listing?</strong>
+          <p class="mute" style="margin:6px 0 10px">Free listings show your name, description, category, location and
+            website link. Pro adds your phone and public email, your logo, a photo gallery, video, social links
+            and analytics.</p>
           <a class="btn btn-primary btn-sm" href="/pricing">See plans</a>
         </div>
       <?php endif; ?>

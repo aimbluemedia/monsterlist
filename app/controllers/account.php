@@ -84,7 +84,7 @@ if ($sub === 'dashboard') {
             q('INSERT INTO businesses (owner_id, name, slug, category_id, city_id, tier, status, tagline, description, phone, website, email, address, founded, video_url, social)
                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
               [$u['id'], $data['name'], $slug, $data['category_id'], $data['city_id'], $u['plan'], 'pending',
-               $data['tagline'], $data['description'], $data['phone'], $data['website'], $data['email'],
+               $data['tagline'], $data['description'], $data['phone'] ?? null, $data['website'], $data['email'] ?? null,
                $data['address'], $data['founded'], $data['video_url'] ?? null, $data['social'] ?? null]);
             $bizId = (int)db()->lastInsertId();
             $imgErrors = [];
@@ -118,7 +118,11 @@ if ($sub === 'dashboard') {
             q('UPDATE businesses SET name=?, slug=?, category_id=?, city_id=?, tagline=?, description=?, phone=?, website=?, email=?, address=?, founded=?, video_url=?, social=?, status=?
                WHERE id=? AND owner_id=?',
               [$data['name'], $slug, $data['category_id'], $data['city_id'], $data['tagline'], $data['description'],
-               $data['phone'], $data['website'], $data['email'], $data['address'], $data['founded'],
+               // Paid-only fields are absent from $data on a free plan — keep
+               // whatever is stored rather than blanking it, so an upgrade
+               // brings the old phone and email back instead of nothing.
+               $data['phone'] ?? $biz['phone'], $data['website'], $data['email'] ?? $biz['email'],
+               $data['address'], $data['founded'],
                $data['video_url'] ?? $biz['video_url'], $data['social'] ?? $biz['social'],
                $needsReview && $biz['status'] === 'live' ? 'pending' : $biz['status'],
                $biz['id'], $u['id']]);

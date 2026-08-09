@@ -13,9 +13,15 @@
         <ul>
           <li><?= (int)$p['max_listings'] ?> listing<?= $p['max_listings'] > 1 ? 's' : '' ?></li>
           <li>Appears in search &amp; city pages</li>
+          <li>Link to your website</li>
           <?php if ($p['enhanced']): ?>
-            <li>Full storefront: photos, video, social links</li>
+            <li>Phone &amp; public email on your listing</li>
+            <li>Your logo and a photo gallery</li>
+            <li>Video and social links</li>
             <li>Verified badge</li>
+          <?php else: ?>
+            <li class="no">No phone or public email</li>
+            <li class="no">No logo or photos</li>
           <?php endif; ?>
           <?php if ($p['analytics']): ?><li>Views &amp; clicks analytics</li><?php endif; ?>
           <?php if ($p['featured']): ?><li>Priority placement — homepage + top of city &amp; category pages</li><?php endif; ?>

@@ -49,7 +49,7 @@
             <?php if ($p['blurb']): ?><p class="pf-blurb mute"><?= e($p['blurb']) ?></p><?php endif; ?>
 
             <div class="pf-by">
-              <span class="avatar pf-avatar"><?php if (!empty($p['logo_url'])): ?><img src="<?= e($p['logo_url']) ?>" alt=""><?php else: ?><?= e(mb_substr($p['business_name'], 0, 1)) ?><?php endif; ?></span>
+              <span class="avatar pf-avatar"><?php if ($logo = listing_logo($p)): ?><img src="<?= e($logo) ?>" alt=""><?php else: ?><?= e(mb_substr($p['business_name'], 0, 1)) ?><?php endif; ?></span>
               <span class="pf-by-text">
                 <b><?= e($p['business_name']) ?><?php if ($p['verified']): ?> <span class="badge badge-verified">Verified</span><?php endif; ?></b>
                 <small><?= e($p['category_label'] ?? 'Local business') ?><?= $p['city_name'] ? ' · ' . e($p['city_name']) : '' ?></small>

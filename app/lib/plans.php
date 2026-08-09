@@ -9,10 +9,12 @@ function plans(): array
             'label'        => 'Free',
             'price'        => 0,
             'max_listings' => 1,
-            'enhanced'     => false,  // gallery, video, social links, long description
+            // 'enhanced' is the paid-features gate: phone, public email, logo,
+            // photo gallery, video, social links and the long description.
+            'enhanced'     => false,
             'featured'     => false,  // priority placement
             'analytics'    => false,
-            'blurb'        => 'Get found. One basic listing with contact info, category and location.',
+            'blurb'        => 'Get found. One listing with your description, category, location and a link to your website.',
         ],
         'pro' => [
             'label'        => 'Pro',
@@ -21,7 +23,7 @@ function plans(): array
             'enhanced'     => true,
             'featured'     => false,
             'analytics'    => true,
-            'blurb'        => 'A full storefront: photo gallery, video, social links, verified badge and analytics.',
+            'blurb'        => 'A full storefront: phone and public email, logo, photo gallery, video, social links, verified badge and analytics.',
         ],
         'featured' => [
             'label'        => 'Featured',

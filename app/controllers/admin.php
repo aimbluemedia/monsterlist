@@ -110,7 +110,10 @@ if ($sub === 'dashboard') {
                       status=?, tier=?, verified=?, owner_id=?
                WHERE id=?',
               [$data['name'], $slug, $data['category_id'], $data['city_id'], $data['tagline'], $data['description'],
-               $data['phone'], $data['website'], $data['email'], $data['address'], $data['founded'],
+               // $staffPlan is enhanced, so these are always present — the
+               // fallback keeps this honest if that ever changes.
+               $data['phone'] ?? $biz['phone'], $data['website'], $data['email'] ?? $biz['email'],
+               $data['address'], $data['founded'],
                $data['video_url'] ?? $biz['video_url'], $data['social'] ?? $biz['social'],
                array_key_exists('review_links', $data) ? $data['review_links'] : $biz['review_links'],
                $newStatus, $newTier, $verified, $ownerId, $biz['id']]);

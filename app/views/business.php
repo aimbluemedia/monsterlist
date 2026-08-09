@@ -1,7 +1,7 @@
 <?php
 $social   = json_decode((string)$b['social'], true) ?: [];
 $hours    = json_decode((string)$b['hours'], true) ?: [];
-$enhanced = in_array($b['tier'], ['pro', 'featured'], true);
+$enhanced = tier_enhanced($b['tier']);
 ?>
 <div class="wrap">
   <nav class="crumbs">
@@ -14,7 +14,7 @@ $enhanced = in_array($b['tier'], ['pro', 'featured'], true);
 
   <section class="store-hero">
     <div class="store-title">
-      <span class="avatar" style="width:64px;height:64px;font-size:1.6rem;border-radius:14px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;overflow:hidden"><?php if (!empty($b['logo_url'])): ?><img src="<?= e($b['logo_url']) ?>" alt="<?= e($b['name']) ?> logo" style="width:100%;height:100%;object-fit:cover"><?php else: ?><?= e(mb_substr($b['name'], 0, 1)) ?><?php endif; ?></span>
+      <span class="avatar" style="width:64px;height:64px;font-size:1.6rem;border-radius:14px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;overflow:hidden"><?php if ($logo = listing_logo($b)): ?><img src="<?= e($logo) ?>" alt="<?= e($b['name']) ?> logo" style="width:100%;height:100%;object-fit:cover"><?php else: ?><?= e(mb_substr($b['name'], 0, 1)) ?><?php endif; ?></span>
       <div>
         <h1 style="margin:0"><?= e($b['name']) ?>
           <?php if ($b['tier'] === 'featured'): ?><span class="badge badge-featured">Featured</span><?php endif; ?>
@@ -139,9 +139,11 @@ $enhanced = in_array($b['tier'], ['pro', 'featured'], true);
     <aside>
       <div class="card card-pad" style="margin-bottom:14px">
         <h3>Contact</h3>
-        <?php if ($b['phone']): ?><div class="info-row"><span class="mute">Phone</span><a href="tel:<?= e($b['phone']) ?>" style="font-weight:700"><?= e($b['phone']) ?></a></div><?php endif; ?>
+        <?php // Phone and public email are paid features — the website link and
+              // address stay on every tier so a free listing is still reachable. ?>
+        <?php if ($enhanced && $b['phone']): ?><div class="info-row"><span class="mute">Phone</span><a href="tel:<?= e($b['phone']) ?>" style="font-weight:700"><?= e($b['phone']) ?></a></div><?php endif; ?>
         <?php if ($b['website']): ?><div class="info-row"><span class="mute">Website</span><a href="/out/<?= (int)$b['id'] ?>" rel="nofollow" target="_blank" style="color:var(--accent);font-weight:700">Visit site ↗</a></div><?php endif; ?>
-        <?php if ($b['email']): ?><div class="info-row"><span class="mute">Email</span><a href="mailto:<?= e($b['email']) ?>" style="font-weight:700"><?= e($b['email']) ?></a></div><?php endif; ?>
+        <?php if ($enhanced && $b['email']): ?><div class="info-row"><span class="mute">Email</span><a href="mailto:<?= e($b['email']) ?>" style="font-weight:700"><?= e($b['email']) ?></a></div><?php endif; ?>
         <?php if ($b['address']): ?><div class="info-row"><span class="mute">Address</span><span style="text-align:right"><?= e($b['address']) ?></span></div><?php endif; ?>
       </div>
 

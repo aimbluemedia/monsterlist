@@ -127,6 +127,28 @@ function search_businesses(string $qstr, int $page = 1, int $perPage = 20): arra
     );
 }
 
+/**
+ * Does this tier include the premium storefront? Phone, public email, logo,
+ * photo gallery, video and social links are all paid features — free listings
+ * carry the name, description, category, location and website only.
+ */
+function tier_enhanced(?string $tier): bool
+{
+    return in_array((string)$tier, ['pro', 'featured'], true);
+}
+
+/**
+ * A listing's logo, or null when its tier does not include one.
+ *
+ * Every card and avatar goes through this rather than reading logo_url direct,
+ * so a listing that was uploaded a logo on Pro and then downgraded stops
+ * showing it everywhere at once instead of in the places someone remembered.
+ */
+function listing_logo(array $b): ?string
+{
+    return tier_enhanced($b['tier'] ?? 'free') && !empty($b['logo_url']) ? (string)$b['logo_url'] : null;
+}
+
 /** Canonical storefront path. Accepts a row that includes city fields. */
 function business_path(array $b): string
 {
@@ -232,13 +254,16 @@ function listing_form_data(array $user, array $plan, int $exceptId = 0, bool $en
         'city_id'     => $cityId,
         'tagline'     => mb_substr(post('tagline'), 0, 255),
         'description' => mb_substr(post('description'), 0, $maxDesc),
-        'phone'       => mb_substr(post('phone'), 0, 40),
         'website'     => clean_url(post('website')),
-        'email'       => filter_var(post('email'), FILTER_VALIDATE_EMAIL) ?: null,
         'address'     => mb_substr(post('address'), 0, 255),
         'founded'     => (int)post('founded') ?: null,
     ];
+    // Everything below is a paid feature. The keys are left out entirely rather
+    // than set to null, so callers can tell "the form did not offer this" from
+    // "the member cleared it" and leave existing values alone on a downgrade.
     if ($plan['enhanced']) {
+        $data['phone']     = mb_substr(post('phone'), 0, 40);
+        $data['email']     = filter_var(post('email'), FILTER_VALIDATE_EMAIL) ?: null;
         $data['video_url'] = clean_url(post('video_url'));
         $social = [];
         foreach (array_keys(social_nets()) as $net) {
@@ -273,7 +298,7 @@ function listing_form_data(array $user, array $plan, int $exceptId = 0, bool $en
             // is what an owner whose business is already listed actually needs.
             $errors[] = domain_taken_message($dupe, (string)normalize_domain($data['website']));
         }
-        if (is_blocked_email($data['email'])) {
+        if (is_blocked_email($data['email'] ?? null)) {
             $errors[] = 'That contact email cannot be used on this directory.';
         }
     }
@@ -281,12 +306,18 @@ function listing_form_data(array $user, array $plan, int $exceptId = 0, bool $en
     return [$data, $errors];
 }
 
-/** Handle logo + gallery uploads and removals for a saved listing. */
+/**
+ * Handle logo + gallery uploads and removals for a saved listing.
+ *
+ * Images are a paid feature — a free plan gets neither a logo nor a gallery, so
+ * there is nothing here to do and an upload posted by hand is ignored.
+ */
 function handle_listing_images(int $bizId, array $plan, array &$errors): void
 {
+    if (!$plan['enhanced']) return;
     $biz = row('SELECT logo_url FROM businesses WHERE id = ?', [$bizId]);
 
-    // logo (all plans)
+    // logo
     if (!empty($_POST['remove_logo']) && $biz['logo_url']) {
         delete_upload($biz['logo_url']);
         q('UPDATE businesses SET logo_url = NULL WHERE id = ?', [$bizId]);
@@ -299,8 +330,7 @@ function handle_listing_images(int $bizId, array $plan, array &$errors): void
         }
     }
 
-    // gallery (enhanced plans only)
-    if (!$plan['enhanced']) return;
+    // gallery
     foreach ((array)($_POST['remove_gallery'] ?? []) as $gid) {
         $g = row('SELECT * FROM gallery WHERE id = ? AND business_id = ?', [(int)$gid, $bizId]);
         if ($g) { delete_upload($g['url']); q('DELETE FROM gallery WHERE id = ?', [$g['id']]); }

@@ -13,7 +13,7 @@ $mcText  = words($mcText, 20);
 ?>
 <a class="mc mc-<?= e($mcBand) ?>" href="<?= e(business_path($b)) ?>">
   <div class="mc-head">
-    <span class="mc-avatar"><?php if (!empty($b['logo_url'])): ?><img src="<?= e($b['logo_url']) ?>" alt=""><?php else: ?><?= e(mb_substr($b['name'], 0, 1)) ?><?php endif; ?></span>
+    <span class="mc-avatar"><?php if ($logo = listing_logo($b)): ?><img src="<?= e($logo) ?>" alt=""><?php else: ?><?= e(mb_substr($b['name'], 0, 1)) ?><?php endif; ?></span>
     <span class="mc-id">
       <b><?= e($b['name']) ?></b>
       <small><?= e($b['category_label'] ?? 'Local business') ?><?= !empty($b['city_name']) ? ' · ' . e($b['city_name']) : '' ?></small>
