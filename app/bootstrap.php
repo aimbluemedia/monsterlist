@@ -13,6 +13,11 @@ if (PHP_VERSION_ID < 70400) {
     exit;
 }
 
+// Build number of this upload. Shown in the control panel under Diagnostics so
+// "is my change live?" is a question the site answers itself, rather than one
+// you have to work out from what a page looks like. Bumped with each release.
+define('ML_BUILD', 'v59');
+
 define('APP_ROOT', __DIR__);
 define('BASE_ROOT', dirname(__DIR__));
 if (!defined('WEB_ROOT')) define('WEB_ROOT', BASE_ROOT); // CLI scripts: webroot = repo root

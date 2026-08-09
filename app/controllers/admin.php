@@ -212,6 +212,47 @@ if ($sub === 'dashboard') {
          $joins WHERE $sqlWhere ORDER BY b.created_at DESC LIMIT 30 OFFSET $offset", $params);
     view_raw('admin/listings', compact('meta', 'u', 'list', 'status', 'page', 'term', 'total'));
 
+} elseif ($sub === 'diagnostics') {
+    // Answers the two questions that follow every upload: is this build live,
+    // and has the database caught up with it? Plus a count of what listings
+    // actually hold, so "the storefront isn't showing X" can be traced to
+    // missing data rather than guessed at from the outside.
+    $checks = [];
+    $checks[] = [
+        'label'  => 'Blocklist table',
+        'ok'     => table_exists('blocklist'),
+        'fix'    => 'Import database/upgrade-v4.sql',
+        'detail' => 'Rejected emails and domains. Without it, Reject cannot block a re-signup.',
+    ];
+    $checks[] = [
+        'label'  => 'users.website',
+        'ok'     => column_exists('users', 'website'),
+        'fix'    => 'Import database/upgrade-v5.sql',
+        'detail' => 'The domain given at sign-up, used to pre-fill the listing and drive AI fill.',
+    ];
+    $checks[] = [
+        'label'  => 'businesses.review_links',
+        'ok'     => column_exists('businesses', 'review_links'),
+        'fix'    => 'Import database/upgrade-v6.sql',
+        'detail' => 'Review-site profiles from the setup wizard. Without it the “Reviewed elsewhere” card can never appear, and saving a listing fails.',
+    ];
+
+    $schemaOk = true;
+    foreach ($checks as $c) { if (!$c['ok']) $schemaOk = false; }
+
+    // What listings actually hold. A zero here explains an absent card far
+    // faster than reading the storefront template does.
+    $stats = ['live' => (int)scalar("SELECT COUNT(*) FROM businesses WHERE status = 'live'")];
+    $stats['social'] = (int)scalar("SELECT COUNT(*) FROM businesses WHERE social IS NOT NULL AND social NOT IN ('', '[]', '{}')");
+    $stats['reviews'] = column_exists('businesses', 'review_links')
+        ? (int)scalar("SELECT COUNT(*) FROM businesses WHERE review_links IS NOT NULL AND review_links NOT IN ('', '[]', '{}')")
+        : null;
+    $stats['logos']    = (int)scalar("SELECT COUNT(*) FROM businesses WHERE logo_url IS NOT NULL AND logo_url != ''");
+    $stats['services'] = (int)scalar('SELECT COUNT(DISTINCT business_id) FROM services');
+
+    $meta = ['title' => "Diagnostics — $site", 'robots' => 'noindex'];
+    view_raw('admin/diagnostics', compact('meta', 'u', 'checks', 'schemaOk', 'stats'));
+
 } elseif ($sub === 'blocked') {
     // Emails barred from signing up and domains barred from being listed.
     // Rejecting a listing fills this automatically; this page is the undo.

@@ -9,8 +9,9 @@ $saNav = [
     ['/superadmin/reviews',    'Reviews',    true],
     ['/superadmin/categories', 'Categories', true],
     ['/superadmin/blocked',    'Blocked',    true],
-    ['/superadmin/admins',     'Admins',     is_superadmin()],
-    ['/superadmin/settings',   'Settings',   is_superadmin()],
+    ['/superadmin/admins',      'Admins',      is_superadmin()],
+    ['/superadmin/settings',    'Settings',    is_superadmin()],
+    ['/superadmin/diagnostics', 'Diagnostics', is_superadmin()],
 ];
 ?>
 <!DOCTYPE html>

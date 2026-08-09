@@ -69,3 +69,30 @@ function scalar(string $sql, array $params = [])
     $v = q($sql, $params)->fetchColumn();
     return $v === false ? null : $v;
 }
+
+/**
+ * Does a table exist in the current database?
+ *
+ * Used by the diagnostics page to tell "this release's SQL has not been run"
+ * apart from "the feature is broken" — the two look identical from a browser.
+ * Results are memoised: a schema does not change inside one request.
+ */
+function table_exists(string $table): bool
+{
+    static $seen = [];
+    if (isset($seen[$table])) return $seen[$table];
+    $n = scalar('SELECT COUNT(*) FROM information_schema.TABLES
+                 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?', [$table]);
+    return $seen[$table] = ((int)$n > 0);
+}
+
+/** Does a column exist on a table? */
+function column_exists(string $table, string $column): bool
+{
+    static $seen = [];
+    $key = $table . '.' . $column;
+    if (isset($seen[$key])) return $seen[$key];
+    $n = scalar('SELECT COUNT(*) FROM information_schema.COLUMNS
+                 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?', [$table, $column]);
+    return $seen[$key] = ((int)$n > 0);
+}
