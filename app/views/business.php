@@ -137,6 +137,18 @@ $enhanced = tier_enhanced($b['tier']);
     </div>
 
     <aside>
+      <?php
+      // Same score, same maths and the same yellow bubble as the member cards
+      // on the homepage — this is the listing's own copy of it, at full size.
+      $msScore = monster_score($b);
+      ?>
+      <div class="card card-pad ms-card ms-<?= e(monster_score_band($msScore)) ?>" style="margin-bottom:14px">
+        <h3>MonsterScore</h3>
+        <div class="ms-bubble"><b><?= $msScore ?></b><small>out of 100</small></div>
+        <p class="ms-note mute">How complete and trusted this listing is — profile detail,
+          verification, reviews and linked channels.</p>
+      </div>
+
       <div class="card card-pad" style="margin-bottom:14px">
         <h3>Contact</h3>
         <?php // Phone and public email are paid features — the website link and

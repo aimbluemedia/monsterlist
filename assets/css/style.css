@@ -543,6 +543,21 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
   .mc-score b{font-size:1.5rem}
 }
 
+/* ===== storefront MonsterScore ===== */
+.ms-card{text-align:center}
+.ms-card h3{margin-bottom:14px}
+.ms-bubble{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
+  min-width:120px;padding:16px 24px 13px;border-radius:22px;
+  background:linear-gradient(180deg,#ffe680,#ffd43b);box-shadow:0 6px 18px rgba(214,158,0,.3)}
+.ms-bubble b{font-size:3rem;font-weight:800;line-height:1;letter-spacing:-2px;
+  color:#3f2d00;font-variant-numeric:tabular-nums}
+.ms-bubble small{margin-top:6px;font-size:.62rem;font-weight:800;letter-spacing:.4px;
+  text-transform:uppercase;color:#6b4e00}
+/* the band shows as depth of yellow, matching the member cards */
+.ms-strong .ms-bubble{background:linear-gradient(180deg,#ffd84d,#f6b500)}
+.ms-fair   .ms-bubble{background:linear-gradient(180deg,#fff3bf,#ffe066)}
+.ms-note{margin:12px 0 0;font-size:.82rem;line-height:1.5}
+
 /* ===== live promotion feed ===== */
 .pf-head{text-align:center;max-width:680px;margin:0 auto 22px}
 .pf-head h1{margin:14px 0 8px}
