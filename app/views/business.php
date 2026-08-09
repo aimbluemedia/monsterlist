@@ -170,8 +170,9 @@ $enhanced = in_array($b['tier'], ['pro', 'featured'], true);
       <?php if ($enhanced && $social): ?>
         <div class="card card-pad" style="margin-bottom:14px">
           <h3>Social</h3>
-          <?php foreach ($social as $net => $url): if (!$url) continue; ?>
-            <div class="info-row"><span class="mute"><?= e(ucfirst($net)) ?></span><a href="<?= e($url) ?>" target="_blank" rel="noopener nofollow" style="color:var(--accent);font-weight:700">Open ↗</a></div>
+          <?php $netLabels = social_nets();
+                foreach ($social as $net => $url): if (!$url) continue; ?>
+            <div class="info-row"><span class="mute"><?= e($netLabels[$net] ?? ucfirst($net)) ?></span><a href="<?= e($url) ?>" target="_blank" rel="noopener nofollow" style="color:var(--accent);font-weight:700">Open ↗</a></div>
           <?php endforeach; ?>
         </div>
       <?php endif; ?>

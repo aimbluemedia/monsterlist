@@ -40,8 +40,8 @@ function social_nets(): array
         'linkedin'  => 'LinkedIn',
         'x'         => 'X',
         'reddit'    => 'Reddit',
-        'threads'   => 'Threads',
         'blog'      => 'Blog',
+        'other'     => 'Other',
     ];
 }
 
@@ -72,6 +72,7 @@ function wizard_reviews(): array
         'g2'          => ['G2',                      'https://g2.com/products/your-product/reviews'],
         'capterra'    => ['Capterra',                'https://capterra.com/p/your-product'],
         'trustradius' => ['TrustRadius',             'https://trustradius.com/products/your-product/reviews'],
+        'other'       => ['Other',                   'https://any-other-review-site.com/your-profile'],
     ];
 }
 
