@@ -16,7 +16,7 @@ if (PHP_VERSION_ID < 70400) {
 // Build number of this upload. Shown in the control panel under Diagnostics so
 // "is my change live?" is a question the site answers itself, rather than one
 // you have to work out from what a page looks like. Bumped with each release.
-define('ML_BUILD', 'v60');
+define('ML_BUILD', 'v61');
 
 define('APP_ROOT', __DIR__);
 define('BASE_ROOT', dirname(__DIR__));

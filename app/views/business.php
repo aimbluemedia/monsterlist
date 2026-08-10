@@ -72,33 +72,41 @@ $enhanced = tier_enhanced($b['tier']);
         </div>
       <?php endif; ?>
 
-      <?php // Social and review profiles are collected from every member in the
-            // setup wizard, so they show on every tier — a link the member typed
-            // in that never appears anywhere would just be a dead end. They sit
-            // under About, in the main column, because they are things to read
-            // about the business rather than ways to contact it.
-            if ($social): ?>
-        <div class="card card-pad" style="margin-bottom:14px">
-          <h3>Social</h3>
+      <?php
+      // Social and review profiles sit under About, in the main column, because
+      // they are things to read about the business rather than ways to contact
+      // it. Both cards are always rendered, on every tier: the storefront should
+      // show the same shape for every listing, and an empty one is a standing
+      // invitation to the owner to fill it in rather than a gap they never see.
+      $revLinks = array_filter(wizard_links($b['review_links'] ?? null));
+      $addPrompt = !$b['owner_id']
+          ? ' <a href="/claim/' . (int)$b['id'] . '" style="color:var(--accent);font-weight:700">Claim this listing</a> to add them.'
+          : '';
+      ?>
+      <div class="card card-pad" style="margin-bottom:14px">
+        <h3>Social</h3>
+        <?php if ($social): ?>
           <?php $netLabels = social_nets();
                 foreach ($social as $net => $url): if (!$url) continue; ?>
             <div class="info-row"><span class="mute"><?= e($netLabels[$net] ?? ucfirst($net)) ?></span><a href="<?= e($url) ?>" target="_blank" rel="noopener nofollow" style="color:var(--accent);font-weight:700">Open ↗</a></div>
           <?php endforeach; ?>
-        </div>
-      <?php endif; ?>
+        <?php else: ?>
+          <p class="mute" style="margin:0">No social profiles linked yet.<?= $addPrompt ?></p>
+        <?php endif; ?>
+      </div>
 
-      <?php
-      // Links to the business's profiles elsewhere. We point at them; we never
-      // copy the reviews themselves, which would misrepresent both sites.
-      $revLinks = array_filter(wizard_links($b['review_links'] ?? null));
-      if ($revLinks): ?>
-        <div class="card card-pad" style="margin-bottom:14px">
-          <h3>Reviewed elsewhere</h3>
+      <?php // Links to the business's profiles elsewhere. We point at them; we
+            // never copy the reviews themselves, which would misrepresent both sites. ?>
+      <div class="card card-pad" style="margin-bottom:14px">
+        <h3>Reviewed elsewhere</h3>
+        <?php if ($revLinks): ?>
           <?php foreach (wizard_reviews() as $key => [$label, $_]): if (empty($revLinks[$key])) continue; ?>
             <div class="info-row"><span class="mute"><?= e($label) ?></span><a href="<?= e($revLinks[$key]) ?>" target="_blank" rel="noopener nofollow" style="color:var(--accent);font-weight:700">Read reviews ↗</a></div>
           <?php endforeach; ?>
-        </div>
-      <?php endif; ?>
+        <?php else: ?>
+          <p class="mute" style="margin:0">No review profiles linked yet.<?= $addPrompt ?></p>
+        <?php endif; ?>
+      </div>
 
       <?php if ($enhanced && $gallery): ?>
         <div class="card card-pad" style="margin-bottom:14px">
