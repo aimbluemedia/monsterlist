@@ -204,6 +204,27 @@ $enhanced = tier_enhanced($b['tier']);
         <?php if ($b['website']): ?><div class="info-row"><span class="mute">Website</span><a href="/out/<?= (int)$b['id'] ?>" rel="nofollow" target="_blank" style="color:var(--accent);font-weight:700">Visit site ↗</a></div><?php endif; ?>
         <?php if ($enhanced && $b['email']): ?><div class="info-row"><span class="mute">Email</span><a href="mailto:<?= e($b['email']) ?>" style="font-weight:700"><?= e($b['email']) ?></a></div><?php endif; ?>
         <?php if ($b['address']): ?><div class="info-row"><span class="mute">Address</span><span style="text-align:right"><?= e($b['address']) ?></span></div><?php endif; ?>
+
+        <?php
+        // Live counters, straight from listing_events — the same numbers the
+        // owner sees in their analytics, shown publicly as proof the listing is
+        // doing something. Views count this page load; clicks count every time
+        // someone took the website link out through /out/{id}.
+        $sfViews  = (int)($eventTotals['view'] ?? 0);
+        $sfClicks = (int)($eventTotals['click'] ?? 0);
+        ?>
+        <div class="sf-stats<?= $b['website'] ? '' : ' sf-stats-one' ?>">
+          <div class="sf-stat">
+            <b><?= number_format($sfViews) ?></b>
+            <small>Storefront visit<?= $sfViews === 1 ? '' : 's' ?></small>
+          </div>
+          <?php if ($b['website']): ?>
+            <div class="sf-stat">
+              <b><?= number_format($sfClicks) ?></b>
+              <small>Website click<?= $sfClicks === 1 ? '' : 's' ?></small>
+            </div>
+          <?php endif; ?>
+        </div>
       </div>
 
       <?php if ($hours): ?>

@@ -179,6 +179,23 @@ function track_event(int $businessId, string $event): void
        ON DUPLICATE KEY UPDATE count = count + 1', [$businessId, $event]);
 }
 
+/**
+ * Lifetime totals per event for one listing: ['view' => n, 'click' => n, 'call' => n].
+ *
+ * listing_events stores a row per business/event/day, so this is a rollup of
+ * every day the listing has existed. Missing events read as 0 rather than being
+ * absent, so callers never have to guard the key.
+ */
+function listing_event_totals(int $businessId): array
+{
+    $totals = ['view' => 0, 'click' => 0, 'call' => 0];
+    foreach (rows('SELECT event, SUM(count) AS n FROM listing_events
+                   WHERE business_id = ? GROUP BY event', [$businessId]) as $r) {
+        if (isset($totals[$r['event']])) $totals[$r['event']] = (int)$r['n'];
+    }
+    return $totals;
+}
+
 /** Recompute a business's cached rating after a review change. */
 function refresh_rating(int $businessId): void
 {

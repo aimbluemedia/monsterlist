@@ -69,6 +69,10 @@ function render_storefront(array $country, ?array $region, array $city, string $
     }
 
     track_event((int)$b['id'], 'view');
+    // Read the totals AFTER recording this visit, so the number on the page
+    // includes the load that is rendering it — a counter that lags by one looks
+    // broken to the one person most likely to be watching it: the owner.
+    $eventTotals = listing_event_totals((int)$b['id']);
 
     $cityFull = $city + [
         'country_code' => $country['code'],
@@ -97,7 +101,7 @@ function render_storefront(array $country, ?array $region, array $city, string $
         'og'          => ['type' => 'business.business'],
         'jsonld'      => [jsonld_local_business($b, $cityFull, $path), jsonld_breadcrumbs($crumbs)],
     ];
-    view('business', compact('meta', 'country', 'region', 'city', 'b', 'gallery', 'services', 'products', 'reviews', 'crumbs', 'path'));
+    view('business', compact('meta', 'country', 'region', 'city', 'b', 'gallery', 'services', 'products', 'reviews', 'crumbs', 'path', 'eventTotals'));
 }
 
 // ---------- route by segment count ----------
