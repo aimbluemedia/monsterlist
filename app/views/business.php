@@ -210,22 +210,31 @@ $enhanced = tier_enhanced($b['tier']);
         <small>Storefront visit<?= $sfViews === 1 ? '' : 's' ?></small>
       </div>
 
+      <?php // The website link lives here rather than in Contact: the count and
+            // the thing being counted belong together, and this is the one action
+            // the page most wants a visitor to take. ?>
       <?php if ($b['website']): ?>
         <div class="card card-pad sf-stat-card">
           <b><?= number_format($sfClicks) ?></b>
-          <small>Website visit<?= $sfClicks === 1 ? '' : 's' ?></small>
+          <small>Visit<?= $sfClicks === 1 ? '' : 's' ?></small>
+          <a class="btn btn-primary btn-block sf-stat-btn" href="/out/<?= (int)$b['id'] ?>"
+             rel="nofollow" target="_blank">View Website</a>
         </div>
       <?php endif; ?>
 
-      <div class="card card-pad" style="margin-bottom:14px">
-        <h3>Contact</h3>
-        <?php // Phone and public email are paid features — the website link and
-              // address stay on every tier so a free listing is still reachable. ?>
-        <?php if ($enhanced && $b['phone']): ?><div class="info-row"><span class="mute">Phone</span><a href="tel:<?= e($b['phone']) ?>" style="font-weight:700"><?= e($b['phone']) ?></a></div><?php endif; ?>
-        <?php if ($b['website']): ?><div class="info-row"><span class="mute">Website</span><a href="/out/<?= (int)$b['id'] ?>" rel="nofollow" target="_blank" style="color:var(--accent);font-weight:700">Visit site ↗</a></div><?php endif; ?>
-        <?php if ($enhanced && $b['email']): ?><div class="info-row"><span class="mute">Email</span><a href="mailto:<?= e($b['email']) ?>" style="font-weight:700"><?= e($b['email']) ?></a></div><?php endif; ?>
-        <?php if ($b['address']): ?><div class="info-row"><span class="mute">Address</span><span style="text-align:right"><?= e($b['address']) ?></span></div><?php endif; ?>
-      </div>
+      <?php
+      // Phone and public email are paid features; the address is on every tier.
+      // With none of the three there is nothing to put in a Contact card, so it
+      // is left out rather than published empty.
+      $hasContact = ($enhanced && ($b['phone'] || $b['email'])) || $b['address'];
+      if ($hasContact): ?>
+        <div class="card card-pad" style="margin-bottom:14px">
+          <h3>Contact</h3>
+          <?php if ($enhanced && $b['phone']): ?><div class="info-row"><span class="mute">Phone</span><a href="tel:<?= e($b['phone']) ?>" style="font-weight:700"><?= e($b['phone']) ?></a></div><?php endif; ?>
+          <?php if ($enhanced && $b['email']): ?><div class="info-row"><span class="mute">Email</span><a href="mailto:<?= e($b['email']) ?>" style="font-weight:700"><?= e($b['email']) ?></a></div><?php endif; ?>
+          <?php if ($b['address']): ?><div class="info-row"><span class="mute">Address</span><span style="text-align:right"><?= e($b['address']) ?></span></div><?php endif; ?>
+        </div>
+      <?php endif; ?>
 
       <?php if ($hours): ?>
         <div class="card card-pad" style="margin-bottom:14px">

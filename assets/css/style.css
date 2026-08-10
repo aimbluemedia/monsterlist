@@ -553,6 +553,8 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
   letter-spacing:-2px;color:var(--accent);font-variant-numeric:tabular-nums}
 .sf-stat-card small{display:block;margin-top:8px;font-size:.72rem;font-weight:800;
   letter-spacing:.5px;text-transform:uppercase;color:#3f63a8}
+/* the action the count is counting, directly under it */
+.sf-stat-btn{margin-top:14px}
 
 /* ===== storefront MonsterScore =====
    The score card is written first in the storefront's markup so that on a
