@@ -544,20 +544,15 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 }
 
 /* ===== storefront activity counters =====
-   Two tiles under the contact details: page loads, and click-throughs to the
-   business's own site. Quiet by default — they are proof the listing is doing
-   something, not the point of the page. */
-.sf-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;
-  margin-top:14px;padding-top:14px;border-top:1px solid var(--border2)}
-/* one tile (no website link) fills the row rather than sitting in a half. The
-   class comes from PHP rather than :has(), so it holds in older browsers too. */
-.sf-stats-one{grid-template-columns:minmax(0,1fr)}
-.sf-stat{background:var(--bg);border:1px solid var(--border2);border-radius:10px;
-  padding:10px 8px;text-align:center}
-.sf-stat b{display:block;font-size:1.5rem;font-weight:800;line-height:1.1;
-  letter-spacing:-.5px;color:var(--ink);font-variant-numeric:tabular-nums}
-.sf-stat small{display:block;margin-top:3px;font-size:.68rem;font-weight:700;
-  letter-spacing:.3px;text-transform:uppercase;color:var(--faint)}
+   One card each, above Contact: page loads, and click-throughs to the business's
+   own site. Big centred number on light blue — the same shape as the MonsterScore
+   card above them, so the sidebar reads as a column of single facts. */
+.sf-stat-card{background:var(--accent-soft);border-color:#cfdffb;text-align:center;
+  margin-bottom:14px;padding:20px}
+.sf-stat-card b{display:block;font-size:2.8rem;font-weight:800;line-height:1;
+  letter-spacing:-2px;color:var(--accent);font-variant-numeric:tabular-nums}
+.sf-stat-card small{display:block;margin-top:8px;font-size:.72rem;font-weight:800;
+  letter-spacing:.5px;text-transform:uppercase;color:#3f63a8}
 
 /* ===== storefront MonsterScore =====
    The score card is written first in the storefront's markup so that on a
