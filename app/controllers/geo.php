@@ -96,7 +96,13 @@ function render_storefront(array $country, ?array $region, array $city, string $
     $where = $city['name'] . ($region ? ', ' . $region['name'] : '') . ', ' . $country['name'];
     $meta = [
         'title'       => $b['name'] . " — " . ($b['category_label'] ?: 'Local business') . " in $where | $site",
-        'description' => $b['tagline'] ?: mb_substr((string)$b['description'], 0, 160) ?: "{$b['name']} in $where. Contact details, reviews and more on $site.",
+        // The About text first — it is what the business actually says about
+        // itself, and it is what a searcher is deciding on. Trimmed to whole
+        // words inside the ~160 characters a result snippet shows. The tagline
+        // is the fallback, and a generated line the last resort.
+        'description' => meta_excerpt((string)$b['description'], 160)
+            ?: $b['tagline']
+            ?: "{$b['name']} in $where. Contact details, reviews and more on $site.",
         'canonical'   => site_url($path),
         'og'          => ['type' => 'business.business'],
         'jsonld'      => [jsonld_local_business($b, $cityFull, $path), jsonld_breadcrumbs($crumbs)],

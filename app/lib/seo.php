@@ -65,7 +65,7 @@ function jsonld_local_business(array $b, array $city, string $path): array
         '@type'      => 'LocalBusiness',
         '@id'        => site_url($path),
         'name'       => $b['name'],
-        'description'=> $b['tagline'] ?: mb_substr((string)$b['description'], 0, 200),
+        'description'=> meta_excerpt((string)$b['description'], 200) ?: $b['tagline'],
         'url'        => $b['website'] ?: site_url($path),
         'telephone'  => $b['phone'],
         'priceRange' => '$$',

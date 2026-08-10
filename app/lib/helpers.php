@@ -126,6 +126,45 @@ function words(string $text, int $max, string $ellipsis = '…'): string
     return rtrim(implode(' ', array_slice($parts, 0, $max)), " ,.;:—-") . $ellipsis;
 }
 
+/**
+ * Trim text to a character budget without cutting a word in half.
+ *
+ * Meta descriptions are measured in characters — search engines cut around 160
+ * — but readers see words, and "…relaxation methods to create p" is what a hard
+ * mb_substr() produces. Back off to the last space instead, drop any dangling
+ * punctuation, and mark the cut.
+ *
+ * A whole sentence that already fits is returned untouched, ellipsis and all
+ * absent, so short descriptions read as themselves rather than as excerpts.
+ */
+function meta_excerpt(string $text, int $max = 160, string $ellipsis = '…'): string
+{
+    $text = trim(preg_replace('/\s+/u', ' ', strip_tags($text)));
+    if ($text === '' || mb_strlen($text) <= $max) return $text;
+
+    // Reserve a character for the ellipsis so the result still fits the budget.
+    $cut   = mb_substr($text, 0, $max - mb_strlen($ellipsis));
+    $space = mb_strrpos($cut, ' ');
+    // No space at all (one very long word) — keep the hard cut rather than
+    // returning nothing.
+    if ($space !== false && $space > 0) $cut = mb_substr($cut, 0, $space);
+    $cut = rtrim($cut, " ,.;:!?—–-");
+
+    // Ending on "…techniques. The…" reads as a mistake. If the last word is one
+    // that only exists to introduce the next one, drop it too.
+    $orphans = ['a', 'an', 'the', 'and', 'or', 'but', 'of', 'to', 'in', 'on', 'at',
+                'for', 'with', 'from', 'by', 'as', 'is', 'are', 'that', 'this', 'our'];
+    $lastSpace = mb_strrpos($cut, ' ');
+    if ($lastSpace !== false) {
+        $lastWord = mb_strtolower(mb_substr($cut, $lastSpace + 1));
+        if (in_array($lastWord, $orphans, true)) {
+            $cut = rtrim(mb_substr($cut, 0, $lastSpace), " ,.;:!?—–-");
+        }
+    }
+
+    return $cut . $ellipsis;
+}
+
 function client_ip(): string
 {
     return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
