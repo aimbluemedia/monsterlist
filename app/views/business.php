@@ -214,27 +214,27 @@ $enhanced = tier_enhanced($b['tier']);
             // the thing being counted belong together, and this is the one action
             // the page most wants a visitor to take. ?>
       <?php if ($b['website']): ?>
-        <div class="card card-pad sf-stat-card">
-          <b><?= number_format($sfClicks) ?></b>
-          <small>Visit<?= $sfClicks === 1 ? '' : 's' ?></small>
-          <a class="btn btn-primary btn-block sf-stat-btn" href="/out/<?= (int)$b['id'] ?>"
-             rel="nofollow" target="_blank">View Website</a>
+        <div class="card card-pad sf-stat-card sf-stat-slim">
+          <p class="sf-slim-line"><b><?= number_format($sfClicks) ?></b> - View<?= $sfClicks === 1 ? '' : 's' ?></p>
+          <a class="btn btn-primary sf-stat-btn" href="/out/<?= (int)$b['id'] ?>"
+             rel="nofollow" target="_blank">Visit Website</a>
         </div>
       <?php endif; ?>
 
-      <?php
-      // Phone and public email are paid features; the address is on every tier.
-      // With none of the three there is nothing to put in a Contact card, so it
-      // is left out rather than published empty.
-      $hasContact = ($enhanced && ($b['phone'] || $b['email'])) || $b['address'];
-      if ($hasContact): ?>
-        <div class="card card-pad" style="margin-bottom:14px">
-          <h3>Contact</h3>
-          <?php if ($enhanced && $b['phone']): ?><div class="info-row"><span class="mute">Phone</span><a href="tel:<?= e($b['phone']) ?>" style="font-weight:700"><?= e($b['phone']) ?></a></div><?php endif; ?>
-          <?php if ($enhanced && $b['email']): ?><div class="info-row"><span class="mute">Email</span><a href="mailto:<?= e($b['email']) ?>" style="font-weight:700"><?= e($b['email']) ?></a></div><?php endif; ?>
-          <?php if ($b['address']): ?><div class="info-row"><span class="mute">Address</span><span style="text-align:right"><?= e($b['address']) ?></span></div><?php endif; ?>
+      <div class="card card-pad" style="margin-bottom:14px">
+        <h3>Contact</h3>
+        <?php // Phone and public email are paid features. ?>
+        <?php if ($enhanced && $b['phone']): ?><div class="info-row"><span class="mute">Phone</span><a href="tel:<?= e($b['phone']) ?>" style="font-weight:700"><?= e($b['phone']) ?></a></div><?php endif; ?>
+        <?php if ($enhanced && $b['email']): ?><div class="info-row"><span class="mute">Email</span><a href="mailto:<?= e($b['email']) ?>" style="font-weight:700"><?= e($b['email']) ?></a></div><?php endif; ?>
+        <?php // Location, largest first: the country a visitor is scanning for,
+              // then the state, then the street. Non-US countries have no region
+              // level, so that line is simply absent rather than blank. ?>
+        <div class="sf-loc">
+          <b><?= e($country['name']) ?></b>
+          <?php if ($region): ?><span><?= e($region['name']) ?></span><?php endif; ?>
+          <?php if ($b['address']): ?><small><?= e($b['address']) ?></small><?php endif; ?>
         </div>
-      <?php endif; ?>
+      </div>
 
       <?php if ($hours): ?>
         <div class="card card-pad" style="margin-bottom:14px">
