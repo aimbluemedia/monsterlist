@@ -234,7 +234,7 @@ if ($sub === 'dashboard') {
         'label'  => 'businesses.review_links',
         'ok'     => column_exists('businesses', 'review_links'),
         'fix'    => 'Import database/upgrade-v6.sql',
-        'detail' => 'Review-site profiles from the setup wizard. Without it the “Reviewed elsewhere” card can never appear, and saving a listing fails.',
+        'detail' => 'Review-site profiles from the setup wizard. Without it the “Our Reviews” card can never appear, and saving a listing fails.',
     ];
 
     $schemaOk = true;
@@ -288,10 +288,10 @@ if ($sub === 'dashboard') {
         $card = function (string $name, bool $shown, string $why, string $value = '') use (&$cards) {
             $cards[] = ['name' => $name, 'shown' => $shown, 'why' => $why, 'value' => $value];
         };
-        $card('Social', (bool)$socialJs,
+        $card('Social Media', (bool)$socialJs,
             $socialJs ? count($socialJs) . ' link(s) stored' : 'nothing stored in the social column',
             (string)$found['social']);
-        $card('Reviewed elsewhere', (bool)$revJs,
+        $card('Our Reviews', (bool)$revJs,
             !column_exists('businesses', 'review_links') ? 'the review_links column does not exist — import upgrade-v6.sql'
                 : ($revJs ? count($revJs) . ' link(s) stored' : 'nothing stored in the review_links column'),
             (string)($found['review_links'] ?? ''));

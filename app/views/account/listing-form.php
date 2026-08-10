@@ -159,7 +159,7 @@ $selCity    = $_SERVER['REQUEST_METHOD'] === 'POST' ? post('city') : (!empty($ci
       </div>
 
       <h3 style="margin-top:24px">Review profiles</h3>
-      <p class="form-note" style="margin-bottom:2px">Shown on your listing as “Reviewed elsewhere”. We link out — we never copy the reviews.</p>
+      <p class="form-note" style="margin-bottom:2px">Shown on your listing as “Our Reviews”. We link out — we never copy the reviews.</p>
       <div class="form-grid">
         <?php foreach (wizard_reviews() as $site => [$revLabel, $revPlaceholder]): ?>
           <div>

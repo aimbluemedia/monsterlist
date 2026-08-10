@@ -123,7 +123,7 @@ $listUrl    = e(listings_url($back, $_GET['q'] ?? ''));
   <div class="card card-pad ed-card">
     <h3>Reviews</h3>
     <p class="mute ed-note">Links to this business's profiles on review sites. Shown on the storefront as
-      “Reviewed elsewhere” — we link out, we never copy the reviews.</p>
+      “Our Reviews” — we link out, we never copy the reviews.</p>
     <div class="form-grid">
       <?php foreach (wizard_reviews() as $site => [$label, $placeholder]): ?>
         <div>

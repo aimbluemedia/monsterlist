@@ -72,19 +72,41 @@ $enhanced = tier_enhanced($b['tier']);
         </div>
       <?php endif; ?>
 
+      <?php if ($services): ?>
+        <?php
+        // The setup wizard stores a bare name; the pro storefront editor can add
+        // a description and price. Show the plain ones as tags and keep the
+        // detailed ones as rows, rather than a list of half-empty rows.
+        $svcTags = array_filter($services, fn($s) => !$s['description'] && !$s['price']);
+        $svcRows = array_filter($services, fn($s) => $s['description'] || $s['price']);
+        ?>
+        <div class="card card-pad" style="margin-bottom:14px">
+          <h3>Services</h3>
+          <?php if ($svcTags): ?>
+            <div class="svc-tags">
+              <?php foreach ($svcTags as $s): ?><span class="svc-tag"><?= e($s['name']) ?></span><?php endforeach; ?>
+            </div>
+          <?php endif; ?>
+          <?php foreach ($svcRows as $s): ?>
+            <div class="info-row"><span><strong><?= e($s['name']) ?></strong><?php if ($s['description']): ?> <span class="mute">— <?= e($s['description']) ?></span><?php endif; ?></span><span class="mute"><?= e($s['price']) ?></span></div>
+          <?php endforeach; ?>
+        </div>
+      <?php endif; ?>
+
       <?php
-      // Social and review profiles sit under About, in the main column, because
-      // they are things to read about the business rather than ways to contact
-      // it. Both cards are always rendered, on every tier: the storefront should
-      // show the same shape for every listing, and an empty one is a standing
-      // invitation to the owner to fill it in rather than a gap they never see.
+      // Social and review profiles sit under About and Services, in the main
+      // column, because they are things to read about the business rather than
+      // ways to contact it. Both cards are always rendered, on every tier: the
+      // storefront should show the same shape for every listing, and an empty
+      // one is a standing invitation to the owner to fill it in rather than a
+      // gap they never see.
       $revLinks = array_filter(wizard_links($b['review_links'] ?? null));
       $addPrompt = !$b['owner_id']
           ? ' <a href="/claim/' . (int)$b['id'] . '" style="color:var(--accent);font-weight:700">Claim this listing</a> to add them.'
           : '';
       ?>
       <div class="card card-pad" style="margin-bottom:14px">
-        <h3>Social</h3>
+        <h3>Social Media</h3>
         <?php if ($social): ?>
           <?php $netLabels = social_nets();
                 foreach ($social as $net => $url): if (!$url) continue; ?>
@@ -98,7 +120,7 @@ $enhanced = tier_enhanced($b['tier']);
       <?php // Links to the business's profiles elsewhere. We point at them; we
             // never copy the reviews themselves, which would misrepresent both sites. ?>
       <div class="card card-pad" style="margin-bottom:14px">
-        <h3>Reviewed elsewhere</h3>
+        <h3>Our Reviews</h3>
         <?php if ($revLinks): ?>
           <?php foreach (wizard_reviews() as $key => [$label, $_]): if (empty($revLinks[$key])) continue; ?>
             <div class="info-row"><span class="mute"><?= e($label) ?></span><a href="<?= e($revLinks[$key]) ?>" target="_blank" rel="noopener nofollow" style="color:var(--accent);font-weight:700">Read reviews ↗</a></div>
@@ -126,26 +148,6 @@ $enhanced = tier_enhanced($b['tier']);
         </div>
       <?php endif; ?>
 
-      <?php if ($services): ?>
-        <?php
-        // The setup wizard stores a bare name; the pro storefront editor can add
-        // a description and price. Show the plain ones as tags and keep the
-        // detailed ones as rows, rather than a list of half-empty rows.
-        $svcTags = array_filter($services, fn($s) => !$s['description'] && !$s['price']);
-        $svcRows = array_filter($services, fn($s) => $s['description'] || $s['price']);
-        ?>
-        <div class="card card-pad" style="margin-bottom:14px">
-          <h3>Services</h3>
-          <?php if ($svcTags): ?>
-            <div class="svc-tags">
-              <?php foreach ($svcTags as $s): ?><span class="svc-tag"><?= e($s['name']) ?></span><?php endforeach; ?>
-            </div>
-          <?php endif; ?>
-          <?php foreach ($svcRows as $s): ?>
-            <div class="info-row"><span><strong><?= e($s['name']) ?></strong><?php if ($s['description']): ?> <span class="mute">— <?= e($s['description']) ?></span><?php endif; ?></span><span class="mute"><?= e($s['price']) ?></span></div>
-          <?php endforeach; ?>
-        </div>
-      <?php endif; ?>
 
       <?php if ($products): ?>
         <div class="card card-pad" style="margin-bottom:14px">
@@ -159,7 +161,7 @@ $enhanced = tier_enhanced($b['tier']);
       <?php // With no reviews there is nothing to show, so the card is left out
             // entirely rather than published as an empty "Reviews (0)". Anyone
             // logged in can still post the first one from a listing that has
-            // reviews; a listing with none points at "Reviewed elsewhere".
+            // reviews; a listing with none points at "Our Reviews".
             if ($reviews): ?>
       <div class="card card-pad" id="reviews">
         <h3>Reviews (<?= (int)$b['review_count'] ?>)</h3>
