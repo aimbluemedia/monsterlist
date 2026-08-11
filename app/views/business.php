@@ -215,9 +215,9 @@ $enhanced = tier_enhanced($b['tier']);
             // the page most wants a visitor to take. ?>
       <?php if ($b['website']): ?>
         <div class="card card-pad sf-stat-card sf-stat-slim">
-          <p class="sf-slim-line"><b><?= number_format($sfClicks) ?></b> - View<?= $sfClicks === 1 ? '' : 's' ?></p>
           <a class="btn btn-primary sf-stat-btn" href="/out/<?= (int)$b['id'] ?>"
              rel="nofollow" target="_blank">Visit Website</a>
+          <p class="sf-slim-line"><b><?= number_format($sfClicks) ?></b> - View<?= $sfClicks === 1 ? '' : 's' ?></p>
         </div>
       <?php endif; ?>
 

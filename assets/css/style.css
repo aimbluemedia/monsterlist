@@ -561,10 +561,10 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
    the count breaks onto its own line instead of reading as one sentence */
 .sf-stat-slim .sf-slim-line b{display:inline;font-size:inherit;line-height:inherit;
   letter-spacing:normal;color:inherit;font-weight:800;font-variant-numeric:tabular-nums}
-/* the action the count is counting, directly under it. Not full width — 10px of
+/* the action first, the count it produced underneath. Not full width — 10px of
    padding either side sizes the button to its label, and the card's text-align
    centres it. */
-.sf-stat-btn{margin-top:12px;padding-left:10px;padding-right:10px}
+.sf-stat-btn{margin-bottom:10px;padding-left:10px;padding-right:10px}
 
 /* Contact location, largest first: country, state, street. */
 .sf-loc{margin-top:10px}
