@@ -165,6 +165,40 @@ function meta_excerpt(string $text, int $max = 160, string $ellipsis = '…'): s
     return $cut . $ellipsis;
 }
 
+/**
+ * Cap text at a length, but finish the sentence rather than stopping mid-word.
+ *
+ * A plain mb_substr() at 300 is why a listing's About text could end
+ * "…relaxation methods to create p". Going a little over the limit is better
+ * than that: this finds the first sentence ending at or after $soft and cuts
+ * just past it, so what is stored always reads as finished prose.
+ *
+ * $hard is the point where we stop waiting for a full stop — text with no
+ * sentence punctuation would otherwise never be capped at all. There, it falls
+ * back to a whole-word cut.
+ */
+function sentence_cap(string $text, int $soft, int $hard = 0): string
+{
+    $text = trim($text);
+    $hard = $hard ?: $soft * 2;
+    if ($text === '' || mb_strlen($text) <= $soft) return $text;
+
+    // Byte offset of the soft limit, since preg offsets are in bytes even with /u.
+    $from = strlen(mb_substr($text, 0, $soft));
+
+    // A full stop, question or exclamation mark — with any closing quote or
+    // bracket — that is followed by whitespace or the end of the text. The
+    // lookahead is what stops "ibzzz.com" and "3.5" from counting as sentences.
+    if (preg_match('/[.!?]["\'\)\]\x{201D}\x{2019}]*(?=\s|$)/u', $text, $m, PREG_OFFSET_CAPTURE, $from)) {
+        $end = $m[0][1] + strlen($m[0][0]);
+        $out = rtrim(substr($text, 0, $end));
+        if (mb_strlen($out) <= $hard) return $out;
+    }
+
+    // No sentence ending within reach: trim to whole words at the ceiling.
+    return meta_excerpt($text, $hard);
+}
+
 function client_ip(): string
 {
     return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';

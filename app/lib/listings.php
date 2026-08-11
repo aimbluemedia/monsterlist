@@ -264,13 +264,16 @@ function listing_form_data(array $user, array $plan, int $exceptId = 0, bool $en
     $cityId = resolve_city(strtoupper(post('country')), post('region'), post('city'));
     if (!$cityId) $errors[] = 'Please choose a valid country' . (strtoupper(post('country')) === 'US' ? ', state' : '') . ' and city.';
 
+    // A length guide, not a guillotine: the description is cut at the end of the
+    // sentence that crosses the limit, so what is stored always reads as
+    // finished prose. See sentence_cap().
     $maxDesc = $plan['enhanced'] ? 5000 : 300;
     $data = [
         'name'        => $name,
         'category_id' => $catId,
         'city_id'     => $cityId,
         'tagline'     => mb_substr(post('tagline'), 0, 255),
-        'description' => mb_substr(post('description'), 0, $maxDesc),
+        'description' => sentence_cap(post('description'), $maxDesc),
         'website'     => clean_url(post('website')),
         'address'     => mb_substr(post('address'), 0, 255),
         'founded'     => (int)post('founded') ?: null,

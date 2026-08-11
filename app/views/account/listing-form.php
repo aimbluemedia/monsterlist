@@ -65,8 +65,11 @@ $selCity    = $_SERVER['REQUEST_METHOD'] === 'POST' ? post('city') : (!empty($ci
       </div>
       <label>Tagline</label>
       <input type="text" name="tagline" value="<?= e($v('tagline')) ?>" maxlength="255" placeholder="One line that sells your business">
-      <label>Description <?= $plan['enhanced'] ? '' : '(300 characters on the Free plan — upgrade for more)' ?></label>
-      <textarea name="description" rows="5" maxlength="<?= $plan['enhanced'] ? 5000 : 300 ?>"><?= e($v('description')) ?></textarea>
+      <?php // maxlength is the ceiling, not the guide: a browser-enforced 300
+            // stops the member mid-sentence, and the server rounds up to the end
+            // of the sentence anyway. The guide is in the label instead. ?>
+      <label>Description <?= $plan['enhanced'] ? '' : '(around 300 characters on the Free plan — we keep whole sentences)' ?></label>
+      <textarea name="description" rows="5" maxlength="<?= $plan['enhanced'] ? 10000 : 600 ?>"><?= e($v('description')) ?></textarea>
 
       <h3 style="margin-top:24px">Location</h3>
       <div class="form-grid">
