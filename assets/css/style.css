@@ -110,15 +110,29 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 .review-head{display:flex;justify-content:space-between;font-size:.88rem}
 
 /* pricing */
-.plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:stretch}
-@media(max-width:820px){.plans{grid-template-columns:1fr}}
+/* Free on top across the full width, the two paid plans side by side below it. */
+.plans{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:stretch}
+.plan-wide{grid-column:1 / -1;text-align:center}
+/* a full-width card would leave its feature list stranded in a tall left
+   column, so lay the ticks out in a row instead */
+.plan-wide ul{display:flex;flex-wrap:wrap;justify-content:center;gap:2px 22px;margin:14px 0 18px}
+.plan-wide li{padding:4px 0}
+.plan-wide .btn{max-width:280px;margin:0 auto}
+@media(max-width:820px){
+  .plans{grid-template-columns:1fr}
+  .plan-wide{grid-column:auto;text-align:left}
+  .plan-wide ul{display:block;margin:14px 0 20px}
+  .plan-wide .btn{max-width:none}
+}
 .plan{padding:26px;display:flex;flex-direction:column}
 .plan.popular{border-color:var(--accent);box-shadow:0 4px 20px rgba(37,99,235,.12)}
 .plan .price{font-size:2rem;font-weight:800;margin:8px 0}
 .plan .price small{font-size:.9rem;color:var(--mute);font-weight:600}
 .plan ul{list-style:none;padding:0;margin:14px 0 20px;flex:1}
-.plan li{padding:6px 0;font-size:.92rem}
-.plan li::before{content:"✓";color:var(--green);font-weight:800;margin-right:8px}
+/* flex rather than an inline marker, so a feature that wraps to a second line
+   stays indented under the first instead of sliding back under the tick */
+.plan li{display:flex;gap:8px;align-items:flex-start;padding:6px 0;font-size:.92rem}
+.plan li::before{content:"✓";color:var(--green);font-weight:800;flex-shrink:0}
 /* A feature the plan does not include — say so plainly rather than omit it. */
 .plan li.no{color:var(--mute)}
 .plan li.no::before{content:"—";color:var(--mute)}
