@@ -30,7 +30,9 @@
           <?php if ($p['featured']): ?><li>Priority placement — homepage + top of city &amp; category pages</li><?php endif; ?>
         </ul>
         <?php if ($key === 'free'): ?>
-          <a class="btn btn-ghost btn-block" href="/signup">Start free</a>
+          <?php // Primary, not ghost: this is the highlighted card, and a ghost
+                // button on it would be the weakest call to action on the page. ?>
+          <a class="btn btn-primary btn-block btn-xl" href="/signup">Start free</a>
         <?php else: ?>
           <form method="post" action="/stripe/checkout"><?= csrf_field() ?>
             <input type="hidden" name="plan" value="<?= e($key) ?>">
