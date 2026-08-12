@@ -9,7 +9,14 @@
       <?php // Free spans the full width on top; the two paid plans share the row
             // below it, so the choice reads as "start here" then "or upgrade to". ?>
       <div class="card plan <?= $key === 'pro' ? 'popular' : '' ?><?= $key === 'free' ? ' plan-wide' : '' ?>">
-        <h3><?= e($p['label']) ?><?= $key === 'pro' ? ' · Most popular' : '' ?></h3>
+        <?php // The free card leads with the offer rather than the plan name —
+              // "Free" is what the price already says. ?>
+        <?php if ($key === 'free'): ?>
+          <h3>Add Your Business FREE</h3>
+          <p class="plan-sub">No Credit Card Needed</p>
+        <?php else: ?>
+          <h3><?= e($p['label']) ?><?= $key === 'pro' ? ' · Most popular' : '' ?></h3>
+        <?php endif; ?>
         <div class="price">$<?= number_format($p['price'], 0) ?><small>/month</small></div>
         <p class="mute"><?= e($p['blurb']) ?></p>
         <ul>

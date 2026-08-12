@@ -131,8 +131,11 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 .plan-wide{grid-column:1 / -1;text-align:center;padding:38px 26px;
   background:var(--accent-soft);border-color:var(--accent);
   box-shadow:0 6px 26px rgba(37,99,235,.14)}
-.plan-wide h3{font-size:1.5rem}
-.plan-wide .price{font-size:3.1rem;margin:10px 0 4px}
+/* clamped rather than fixed: "Add Your Business FREE" is a long headline and
+   has to hold together down to a phone without wrapping awkwardly */
+.plan-wide h3{font-size:clamp(1.5rem,3.4vw,2.1rem);margin-bottom:6px}
+.plan-sub{margin:0;font-size:.95rem;font-weight:600;color:var(--mute)}
+.plan-wide .price{font-size:3.1rem;margin:12px 0 4px}
 .plan-wide > p.mute{font-size:1.05rem;max-width:640px;margin-left:auto;margin-right:auto}
 /* a full-width card would leave its feature list stranded in a tall left
    column, so lay the ticks out in a row instead */
