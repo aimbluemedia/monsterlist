@@ -584,10 +584,16 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
   color:var(--accent);font-variant-numeric:tabular-nums}
 .tk-hero small{display:block;margin-top:8px;font-size:.75rem;font-weight:800;letter-spacing:.5px;
   text-transform:uppercase;color:#3f63a8}
-/* the running balance in the member nav */
-.tk-pill{display:inline-block;background:var(--accent);color:#fff;border-radius:999px;
-  padding:1px 8px;font-size:.72rem;font-weight:800;margin-left:4px;vertical-align:middle}
-.side-nav a.active .tk-pill{background:#fff;color:var(--accent)}
+/* The running balance under the member nav, on every page of the account area. */
+.tk-side{display:block;text-align:center;margin-top:16px;background:var(--accent-soft);
+  border-color:var(--accent);padding:18px 14px}
+.tk-side:hover{box-shadow:0 4px 18px rgba(37,99,235,.16)}
+.tk-side b{display:block;font-size:2.6rem;font-weight:800;line-height:1;letter-spacing:-1.5px;
+  color:var(--accent);font-variant-numeric:tabular-nums}
+.tk-side small{display:block;margin-top:6px;font-size:.7rem;font-weight:800;letter-spacing:.5px;
+  text-transform:uppercase;color:#3f63a8}
+.tk-side-note{display:block;margin-top:10px;padding-top:10px;border-top:1px solid #cfdffb;
+  font-size:.78rem;color:var(--mute);line-height:1.45}
 /* the balance strip above the promotion form */
 .tk-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin-bottom:14px}
 .tk-bar b{font-size:1.15rem;font-weight:800}
