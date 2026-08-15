@@ -72,7 +72,7 @@ row_out('account/index.php present', is_file(__DIR__ . '/account/index.php') ? '
 // visitor a blank 500. This check runs without loading the app, so it still
 // answers when every other page is dead.
 $libs = ['db','helpers','csrf','auth','seo','geo','blocklist','listings','promotions',
-         'plans','settings','stripe','mailer','uploads','notify','ai','wizard'];
+         'plans','settings','stripe','mailer','uploads','notify','ai','wizard','tokens'];
 $missing = [];
 foreach ($libs as $l) if (!is_file(__DIR__ . '/app/lib/' . $l . '.php')) $missing[] = 'app/lib/' . $l . '.php';
 ?>

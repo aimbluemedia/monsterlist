@@ -72,6 +72,15 @@ $enhanced = tier_enhanced($b['tier']);
         </div>
       <?php endif; ?>
 
+      <?php // The long-form Profile section — paid tiers only. Free listings
+            // have the About paragraph and nothing more.
+            if ($enhanced && !empty($b['profile'])): ?>
+        <div class="card card-pad" style="margin-bottom:14px">
+          <h3>Profile</h3>
+          <div class="sf-profile"><?= nl2br(e($b['profile'])) ?></div>
+        </div>
+      <?php endif; ?>
+
       <?php if ($services): ?>
         <?php
         // The setup wizard stores a bare name; the pro storefront editor can add

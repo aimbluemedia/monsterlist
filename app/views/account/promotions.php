@@ -9,6 +9,14 @@
 
     <?php foreach ($errors as $er): ?><div class="flash flash-error"><?= e($er) ?></div><?php endforeach; ?>
 
+    <?php $tkRules = token_rules(); $tkBal = (int)$u['token_balance']; ?>
+    <div class="card card-pad tk-bar">
+      <span>Balance: <b><?= number_format($tkBal) ?></b> token<?= $tkBal === 1 ? '' : 's' ?></span>
+      <span class="mute">Each promotion costs <?= (int)$tkRules['cost_promo'] ?>.</span>
+      <span class="mute">Earn <?= (int)$tkRules['earn_view'] ?> by opening a member promotion.</span>
+      <a class="btn btn-ghost btn-sm" style="margin-left:auto" href="/account/tokens">Tokens &amp; history</a>
+    </div>
+
     <?php if (!$mine): ?>
       <div class="card card-pad" style="margin-top:16px">
         <strong>Add a listing first.</strong>
@@ -51,7 +59,7 @@
       <?php if (!$list): ?>
         <p class="mute">Nothing submitted yet.</p>
       <?php else: ?>
-        <div class="card card-pad">
+        <div class="card card-pad table-wrap">
           <table class="table">
             <tr><th>Promotion</th><th>Channel</th><th>Listing</th><th>Clicks</th><th>Status</th><th></th></tr>
             <?php foreach ($list as $p): ?>

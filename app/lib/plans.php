@@ -14,6 +14,8 @@ function plans(): array
             'enhanced'     => false,
             'featured'     => false,  // priority placement
             'analytics'    => false,
+            'profile'      => false,  // the long-form Profile section
+            'concierge'    => false,  // we write and post it for them
             'blurb'        => 'Get found. One listing with your description, category, location and a link to your website.',
         ],
         'pro' => [
@@ -23,7 +25,9 @@ function plans(): array
             'enhanced'     => true,
             'featured'     => false,
             'analytics'    => true,
-            'blurb'        => 'A full storefront: phone and public email, logo, photo gallery, video, verified badge and analytics.',
+            'profile'      => true,
+            'concierge'    => false,
+            'blurb'        => 'A full storefront: a 1,500-word profile, phone and public email, logo, photo gallery, video, verified badge and analytics — plus the tokens to promote it every month.',
         ],
         'featured' => [
             'label'        => 'Featured',
@@ -32,7 +36,9 @@ function plans(): array
             'enhanced'     => true,
             'featured'     => true,
             'analytics'    => true,
-            'blurb'        => 'Everything in Pro, plus priority placement on the homepage and at the top of city and category pages.',
+            'profile'      => true,
+            'concierge'    => true,
+            'blurb'        => 'Everything in Pro, plus priority placement — and we do the work: one article a month, written for you and posted out across our own channels and yours.',
         ],
     ];
 }

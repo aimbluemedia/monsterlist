@@ -16,7 +16,7 @@ if (PHP_VERSION_ID < 70400) {
 // Build number of this upload. Shown in the control panel under Diagnostics so
 // "is my change live?" is a question the site answers itself, rather than one
 // you have to work out from what a page looks like. Bumped with each release.
-define('ML_BUILD', 'v72');
+define('ML_BUILD', 'v73');
 
 define('APP_ROOT', __DIR__);
 define('BASE_ROOT', dirname(__DIR__));
@@ -101,7 +101,7 @@ session_start();
 // behind by a partial FTP transfer — otherwise fatals on require and the
 // visitor gets a blank 500 with nothing to go on.
 $mlLibs = ['db', 'helpers', 'csrf', 'auth', 'seo', 'geo', 'blocklist', 'listings',
-           'promotions', 'plans', 'settings', 'stripe', 'mailer', 'uploads', 'notify', 'ai', 'wizard'];
+           'promotions', 'plans', 'settings', 'stripe', 'mailer', 'uploads', 'notify', 'ai', 'wizard', 'tokens'];
 $mlMissing = [];
 foreach ($mlLibs as $mlLib) {
     if (!is_file(APP_ROOT . '/lib/' . $mlLib . '.php')) $mlMissing[] = 'app/lib/' . $mlLib . '.php';

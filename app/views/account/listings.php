@@ -9,7 +9,7 @@
     <?php if (!$listings): ?>
       <div class="card card-pad">No listings yet — <a href="/account/listings/new" style="color:var(--accent);font-weight:700">create one now</a>.</div>
     <?php else: ?>
-      <div class="card card-pad">
+      <div class="card card-pad table-wrap">
         <table class="table">
           <tr><th>Business</th><th>Category</th><th>City</th><th>Status</th><th>Tier</th><th></th></tr>
           <?php foreach ($listings as $l): ?>

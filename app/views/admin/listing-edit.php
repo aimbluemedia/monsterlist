@@ -67,6 +67,10 @@ $listUrl    = e(listings_url($back, $_GET['q'] ?? ''));
     <input type="text" name="tagline" value="<?= e($v('tagline')) ?>" maxlength="255">
     <label>Description</label>
     <textarea name="description" rows="5" maxlength="5000"><?= e($v('description')) ?></textarea>
+    <label>Profile <span class="badge badge-pro">Pro</span></label>
+    <p class="form-note" style="margin:0 0 6px">Long-form section, up to <?= number_format(PROFILE_MAX_WORDS) ?> words.
+      Only shown on the storefront for paid tiers.</p>
+    <textarea name="profile" rows="10"><?= e($v('profile')) ?></textarea>
     <div class="form-grid">
       <div><label>Website</label><input type="text" name="website" value="<?= e($v('website')) ?>" placeholder="https://…"></div>
       <div><label>Year founded</label><input type="number" name="founded" value="<?= e($v('founded')) ?>" min="1800" max="<?= date('Y') ?>"></div>

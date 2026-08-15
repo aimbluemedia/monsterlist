@@ -15,6 +15,12 @@ function own_business(int $id, int $userId): ?array
     return row('SELECT * FROM businesses WHERE id = ? AND owner_id = ?', [$id, $userId]);
 }
 
+// This month's token allowance, handed out on first sight rather than by a
+// scheduled job — shared-hosting cron is the least dependable part of this
+// stack, and the ledger's unique key makes repeating the attempt free.
+token_grant_monthly($u);
+$u['token_balance'] = token_balance((int)$u['id']);
+
 // ---------- routes ----------
 
 $meta = ['title' => "My account — $site", 'robots' => 'noindex'];
@@ -81,10 +87,11 @@ if ($sub === 'dashboard') {
         [$data, $errors] = listing_form_data($u, $plan);
         if (!$errors) {
             $slug = unique_business_slug($data['name'], (int)$data['city_id']);
-            q('INSERT INTO businesses (owner_id, name, slug, category_id, city_id, tier, status, tagline, description, phone, website, email, address, founded, video_url, social, review_links)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+            q('INSERT INTO businesses (owner_id, name, slug, category_id, city_id, tier, status, tagline, description, profile, phone, website, email, address, founded, video_url, social, review_links)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
               [$u['id'], $data['name'], $slug, $data['category_id'], $data['city_id'], $u['plan'], 'pending',
-               $data['tagline'], $data['description'], $data['phone'] ?? null, $data['website'], $data['email'] ?? null,
+               $data['tagline'], $data['description'], $data['profile'] ?? null,
+               $data['phone'] ?? null, $data['website'], $data['email'] ?? null,
                $data['address'], $data['founded'], $data['video_url'] ?? null, $data['social'] ?? null,
                $data['review_links'] ?? null]);
             $bizId = (int)db()->lastInsertId();
@@ -116,9 +123,10 @@ if ($sub === 'dashboard') {
             $slug = unique_business_slug($data['name'], (int)$data['city_id'], (int)$biz['id']);
             // Edits go back to moderation only if core public fields changed
             $needsReview = $data['name'] !== $biz['name'] || $data['description'] !== (string)$biz['description'];
-            q('UPDATE businesses SET name=?, slug=?, category_id=?, city_id=?, tagline=?, description=?, phone=?, website=?, email=?, address=?, founded=?, video_url=?, social=?, review_links=?, status=?
+            q('UPDATE businesses SET name=?, slug=?, category_id=?, city_id=?, tagline=?, description=?, profile=?, phone=?, website=?, email=?, address=?, founded=?, video_url=?, social=?, review_links=?, status=?
                WHERE id=? AND owner_id=?',
               [$data['name'], $slug, $data['category_id'], $data['city_id'], $data['tagline'], $data['description'],
+               $data['profile'] ?? $biz['profile'],
                // Paid-only fields are absent from $data on a free plan — keep
                // whatever is stored rather than blanking it, so an upgrade
                // brings the old phone and email back instead of nothing.
@@ -236,11 +244,21 @@ if ($sub === 'dashboard') {
             if ($dupe) $errors[] = 'You have already submitted that link.';
         }
 
+        // Running a promotion costs tokens. Charge first: token_spend() checks
+        // the balance and deducts in one statement, so two submissions racing
+        // each other cannot both spend the same tokens.
+        $cost = token_rules()['cost_promo'];
+        if (!$errors && $cost > 0 && !token_spend((int)$u['id'], $cost, 'Promotion: ' . $title)) {
+            $errors[] = 'That costs ' . $cost . ' tokens and you have ' . token_balance((int)$u['id'])
+                . '. Open a few member promotions to earn more, or upgrade for a bigger monthly allowance.';
+        }
+
         if (!$errors) {
             q('INSERT INTO promotions (business_id, user_id, channel, url, title, blurb, status)
                VALUES (?,?,?,?,?,?,"pending")',
               [$biz['id'], $u['id'], $chan, $url, $title, $blurb ?: null]);
-            flash_set('success', 'Submitted. It goes live in the member feed once our team approves it — usually within 24 hours.');
+            flash_set('success', 'Submitted' . ($cost > 0 ? " for $cost tokens" : '')
+                . '. It goes live in the member feed once our team approves it — usually within 24 hours.');
             redirect('/account/promotions');
         }
     }
@@ -248,6 +266,47 @@ if ($sub === 'dashboard') {
     $list = promotions_for_user((int)$u['id']);
     $meta = ['title' => "Promotion engine — $site", 'robots' => 'noindex'];
     view('account/promotions', compact('meta', 'u', 'plan', 'errors', 'mine', 'list'));
+
+} elseif ($sub === 'tokens') {
+    $rules   = token_rules();
+    $history = token_history((int)$u['id']);
+    $meta    = ['title' => "Tokens — $site", 'robots' => 'noindex'];
+    view('account/tokens', compact('meta', 'u', 'plan', 'rules', 'history'));
+
+} elseif ($sub === 'article') {
+    // The Featured tier's monthly article: the member briefs it, our team
+    // writes it, publishes it and posts it out across the network's channels.
+    if (empty($plan['concierge'])) {
+        view('account/article-upsell', compact('meta', 'u', 'plan'));
+    } else {
+        $month  = date('Y-m');
+        $errors = [];
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            csrf_check();
+            $topic = mb_substr(post('topic'), 0, 200);
+            $brief = mb_substr(post('brief'), 0, 4000);
+            $bizId = (int)post('business_id');
+            $biz   = $bizId ? own_business($bizId, (int)$u['id']) : null;
+            if ($topic === '') $errors[] = 'Give the article a topic — one line is enough.';
+            if (!$errors) {
+                // One per member per month, enforced by the unique key: a second
+                // submission updates the brief rather than queueing another.
+                q('INSERT INTO articles (user_id, business_id, month, topic, brief)
+                   VALUES (?,?,?,?,?)
+                   ON DUPLICATE KEY UPDATE business_id = VALUES(business_id),
+                       topic = VALUES(topic), brief = VALUES(brief)',
+                  [$u['id'], $biz['id'] ?? null, $month, $topic, $brief ?: null]);
+                flash_set('success', 'Brief received. Our team writes it, publishes it, and posts it out across our channels and yours.');
+                redirect('/account/article');
+            }
+        }
+        $current = article_for_month((int)$u['id'], $month);
+        $past    = rows('SELECT * FROM articles WHERE user_id = ? AND month != ? ORDER BY month DESC LIMIT 12',
+                        [$u['id'], $month]);
+        $mine    = rows('SELECT id, name FROM businesses WHERE owner_id = ? ORDER BY name', [$u['id']]);
+        $meta    = ['title' => "Monthly article — $site", 'robots' => 'noindex'];
+        view('account/article', compact('meta', 'u', 'plan', 'errors', 'current', 'past', 'mine', 'month'));
+    }
 
 } elseif ($sub === 'analytics') {
     if (!$plan['analytics']) {

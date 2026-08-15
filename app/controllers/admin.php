@@ -81,7 +81,8 @@ if ($sub === 'dashboard') {
     $errors = [];
 
     // Staff get the full field set regardless of what the owner is paying for.
-    $staffPlan = ['enhanced' => true, 'max_listings' => PHP_INT_MAX, 'label' => 'Staff', 'analytics' => true];
+    $staffPlan = ['enhanced' => true, 'max_listings' => PHP_INT_MAX, 'label' => 'Staff',
+                  'analytics' => true, 'profile' => true, 'concierge' => true];
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         csrf_check();
@@ -105,11 +106,12 @@ if ($sub === 'dashboard') {
 
         if (!$errors) {
             $slug = unique_business_slug($data['name'], (int)$data['city_id'], (int)$biz['id']);
-            q('UPDATE businesses SET name=?, slug=?, category_id=?, city_id=?, tagline=?, description=?, phone=?,
+            q('UPDATE businesses SET name=?, slug=?, category_id=?, city_id=?, tagline=?, description=?, profile=?, phone=?,
                       website=?, email=?, address=?, founded=?, video_url=?, social=?, review_links=?,
                       status=?, tier=?, verified=?, owner_id=?
                WHERE id=?',
               [$data['name'], $slug, $data['category_id'], $data['city_id'], $data['tagline'], $data['description'],
+               $data['profile'] ?? $biz['profile'],
                // $staffPlan is enhanced, so these are always present — the
                // fallback keeps this honest if that ever changes.
                $data['phone'] ?? $biz['phone'], $data['website'], $data['email'] ?? $biz['email'],
@@ -235,6 +237,15 @@ if ($sub === 'dashboard') {
         'ok'     => column_exists('businesses', 'review_links'),
         'fix'    => 'Import database/upgrade-v6.sql',
         'detail' => 'Review-site profiles from the setup wizard. Without it the “Our Reviews” card can never appear, and saving a listing fails.',
+    ];
+
+    $checks[] = [
+        'label'  => 'token_events + articles',
+        'ok'     => table_exists('token_events') && table_exists('articles')
+                    && table_exists('promotion_views') && column_exists('users', 'token_balance')
+                    && column_exists('businesses', 'profile'),
+        'fix'    => 'Import database/upgrade-v7.sql',
+        'detail' => 'Tokens, the long-form Profile section and the monthly article queue. Without it the member area fails on load.',
     ];
 
     $schemaOk = true;
@@ -376,6 +387,13 @@ if ($sub === 'dashboard') {
                 q('UPDATE users SET plan = ? WHERE id = ?', [post('plan'), $target['id']]);
                 sync_business_tiers((int)$target['id'], post('plan'));
                 flash_set('success', 'Plan updated to ' . post('plan') . '.');
+            } elseif ($action === 'tokens') {
+                $delta = (int)post('delta');
+                if ($delta !== 0) {
+                    token_adjust((int)$target['id'], $delta,
+                        'Adjusted by ' . $u['name'] . (post('note') !== '' ? ': ' . mb_substr(post('note'), 0, 200) : ''));
+                    flash_set('success', ($delta > 0 ? '+' : '') . $delta . ' tokens for ' . $target['email'] . '.');
+                }
             } elseif ($action === 'delete') {
                 q('DELETE FROM users WHERE id = ?', [$target['id']]);
                 flash_set('success', 'Account deleted. Their listings remain, unclaimed.');
@@ -552,11 +570,36 @@ if ($sub === 'dashboard') {
     $edit   = $editId ? row('SELECT * FROM users WHERE id = ? AND role IN ("admin","superadmin")', [$editId]) : null;
     view_raw('admin/admins', compact('meta', 'u', 'list', 'edit'));
 
+} elseif ($sub === 'articles') {
+    // The Featured tier's monthly articles: what members have briefed, and
+    // where we are with writing and posting each one.
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        csrf_check();
+        $a = row('SELECT * FROM articles WHERE id = ?', [(int)post('id')]);
+        if ($a) {
+            $status = in_array(post('status'), ['requested','writing','published'], true) ? post('status') : $a['status'];
+            q('UPDATE articles SET status = ?, url = ?, staff_note = ? WHERE id = ?',
+              [$status, clean_url(post('url')), mb_substr(post('staff_note'), 0, 500) ?: null, $a['id']]);
+            flash_set('success', 'Article updated.');
+        }
+        redirect('/superadmin/articles');
+    }
+    $list = rows("SELECT a.*, u.email AS owner_email, u.name AS owner_name, b.name AS business_name
+                  FROM articles a
+                  JOIN users u ON u.id = a.user_id
+                  LEFT JOIN businesses b ON b.id = a.business_id
+                  ORDER BY FIELD(a.status,'requested','writing','published'), a.month DESC, a.id DESC
+                  LIMIT 100");
+    $meta = ['title' => "Articles — $site", 'robots' => 'noindex'];
+    view_raw('admin/articles', compact('meta', 'u', 'list'));
+
 } elseif ($sub === 'settings') {
     require_superadmin();
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         csrf_check();
-        foreach (['site_name','site_tagline','price_pro_monthly','price_featured_monthly','stripe_price_pro','stripe_price_featured','anthropic_api_key'] as $k) {
+        foreach (['site_name','site_tagline','price_pro_monthly','price_featured_monthly','stripe_price_pro','stripe_price_featured','anthropic_api_key',
+                  'tokens_cost_promo','tokens_earn_view','tokens_daily_earn_cap',
+                  'tokens_grant_free','tokens_grant_pro','tokens_grant_featured'] as $k) {
             if (isset($_POST[$k])) setting_save($k, trim((string)$_POST[$k]));
         }
         flash_set('success', 'Settings saved.');

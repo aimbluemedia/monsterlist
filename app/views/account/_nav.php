@@ -3,6 +3,9 @@
   <a class="<?= $cur === '/account' ? 'active' : '' ?>" href="/account">Dashboard</a>
   <a class="<?= $is('/account/listings') ?>" href="/account/listings">My listings</a>
   <a class="<?= $is('/account/promotions') ?>" href="/account/promotions">Promotion engine</a>
+  <a class="<?= $is('/account/tokens') ?>" href="/account/tokens">Tokens<?php
+      $navU = current_user(); if ($navU): ?> <span class="tk-pill"><?= number_format((int)$navU['token_balance']) ?></span><?php endif; ?></a>
+  <a class="<?= $is('/account/article') ?>" href="/account/article">Monthly article</a>
   <a class="<?= $is('/account/analytics') ?>" href="/account/analytics">Analytics</a>
   <a class="<?= $is('/account/billing') ?>" href="/account/billing">Plan &amp; billing</a>
   <a class="<?= $is('/account/settings') ?>" href="/account/settings">Settings</a>

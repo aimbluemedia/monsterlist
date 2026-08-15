@@ -32,6 +32,26 @@ function db(): PDO
 }
 
 /**
+ * A query failure with the statement attached, and the SQLSTATE kept.
+ *
+ * PDO carries its SQLSTATE ('23000' for a duplicate key, and so on) in the
+ * exception code, and callers catch on it. Re-throwing a plain PDOException
+ * silently replaced that code with 0 — so a caller relying on it, like the
+ * token ledger treating a duplicate as "already granted", saw every duplicate
+ * as a fatal error instead. The code is protected on Exception, which is why
+ * this needs to be a subclass rather than a property assignment.
+ */
+class QueryException extends PDOException
+{
+    public function __construct(string $message, PDOException $previous)
+    {
+        parent::__construct($message, 0, $previous);
+        $this->code = $previous->getCode();
+        $this->errorInfo = $previous->errorInfo;
+    }
+}
+
+/**
  * Run a prepared statement, return the PDOStatement.
  *
  * A failure is re-thrown with the statement attached. PDO's own message names
@@ -46,7 +66,7 @@ function q(string $sql, array $params = []): PDOStatement
         return $st;
     } catch (PDOException $e) {
         $flat = trim(preg_replace('/\s+/', ' ', $sql));
-        throw new PDOException($e->getMessage() . ' — SQL: ' . $flat, 0, $e);
+        throw new QueryException($e->getMessage() . ' — SQL: ' . $flat, $e);
     }
 }
 

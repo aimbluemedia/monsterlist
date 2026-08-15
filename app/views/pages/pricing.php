@@ -24,14 +24,22 @@
           <li>Appears in search &amp; city pages</li>
           <li>Link to your website</li>
           <li>Social profiles &amp; review-site links</li>
+          <li><?= number_format(token_monthly_grant($key)) ?> promotion tokens a month</li>
           <?php if ($p['enhanced']): ?>
+            <li><?= number_format(PROFILE_MAX_WORDS) ?>-word Profile section</li>
             <li>Phone &amp; public email on your listing</li>
             <li>Your logo and a photo gallery</li>
             <li>Video</li>
             <li>Verified badge</li>
           <?php else: ?>
+            <li class="no">About section only — no long-form Profile</li>
             <li class="no">No phone or public email</li>
             <li class="no">No logo or photos</li>
+          <?php endif; ?>
+          <?php if (!empty($p['concierge'])): ?>
+            <li>One article a month, written for you</li>
+            <li>We post it to our Facebook, Instagram, TikTok, YouTube, Pinterest &amp; Reddit</li>
+            <li>…and promote it to each of yours</li>
           <?php endif; ?>
           <?php if ($p['analytics']): ?><li>Views &amp; clicks analytics</li><?php endif; ?>
           <?php if ($p['featured']): ?><li>Priority placement — homepage + top of city &amp; category pages</li><?php endif; ?>

@@ -108,6 +108,13 @@ $selCity    = $_SERVER['REQUEST_METHOD'] === 'POST' ? post('city') : (!empty($ci
         <div><label>Year founded</label><input type="number" name="founded" value="<?= e($v('founded')) ?>" min="1800" max="<?= date('Y') ?>"></div>
       </div>
 
+      <?php if (!empty($plan['profile'])): ?>
+        <h3 style="margin-top:24px">Profile <span class="badge badge-pro">Pro</span></h3>
+        <p class="form-note" style="margin-bottom:2px">Up to <?= number_format(PROFILE_MAX_WORDS) ?> words —
+          the long version of your story, shown as its own section on your listing. Blank lines make paragraphs.</p>
+        <textarea name="profile" rows="12"><?= e($editing ? (string)($biz['profile'] ?? '') : '') ?></textarea>
+      <?php endif; ?>
+
       <?php // Phone, public email and images are paid features. The fields are
             // not rendered at all on the Free plan — the save path ignores them
             // too, so this is the honest view of it rather than a disabled tease.

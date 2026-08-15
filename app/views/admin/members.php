@@ -3,11 +3,11 @@
 <form method="get" style="max-width:360px;margin-bottom:14px">
   <input type="text" name="q" value="<?= e($qstr) ?>" placeholder="Search by name or email…">
 </form>
-<div class="card card-pad">
+<div class="card card-pad table-wrap">
   <?php if (!$list): ?><p class="mute">No members found.</p>
   <?php else: ?>
   <table class="table">
-    <tr><th>Member</th><th>Plan</th><th>Listings</th><th>Status</th><th>Joined</th><th></th></tr>
+    <tr><th>Member</th><th>Plan</th><th>Listings</th><th>Tokens</th><th>Status</th><th>Joined</th><th></th></tr>
     <?php foreach ($list as $m): ?>
       <tr>
         <td><strong><?= e($m['name']) ?></strong><br><span class="mute" style="font-size:.82rem"><?= e($m['email']) ?></span></td>
@@ -22,6 +22,14 @@
           </form>
         </td>
         <td><?= (int)$m['listing_count'] ?></td>
+        <td style="white-space:nowrap">
+          <strong><?= number_format((int)$m['token_balance']) ?></strong>
+          <form method="post" style="display:inline-flex;gap:4px;margin-left:6px"><?= csrf_field() ?>
+            <input type="hidden" name="id" value="<?= (int)$m['id'] ?>"><input type="hidden" name="action" value="tokens">
+            <input type="number" name="delta" value="" placeholder="±" style="width:64px;padding:4px 6px;font-size:.82rem">
+            <button class="btn btn-sm btn-ghost" title="Add or remove tokens">Set</button>
+          </form>
+        </td>
         <td><span class="badge <?= $m['status'] === 'active' ? 'badge-live' : 'badge-rejected' ?>"><?= e($m['status']) ?></span></td>
         <td><?= e(date('M j, Y', strtotime($m['created_at']))) ?></td>
         <td style="white-space:nowrap">

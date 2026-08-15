@@ -149,6 +149,30 @@ function listing_logo(array $b): ?string
     return tier_enhanced($b['tier'] ?? 'free') && !empty($b['logo_url']) ? (string)$b['logo_url'] : null;
 }
 
+/** How many words the Profile section holds on a paid plan. */
+const PROFILE_MAX_WORDS = 1500;
+
+/**
+ * Trim the Profile section to PROFILE_MAX_WORDS, keeping paragraph breaks.
+ *
+ * Word-counted rather than character-counted because that is how the limit is
+ * sold ("1,500 words"), and cut at the end of the sentence that crosses the
+ * limit so it never stops mid-thought.
+ */
+function profile_cap(string $text): string
+{
+    $text = trim(str_replace("\r\n", "\n", $text));
+    if ($text === '') return '';
+    $count = preg_match_all('/\S+/u', $text);
+    if ($count <= PROFILE_MAX_WORDS) return $text;
+
+    // Character position of the word limit, then round up to a sentence end.
+    if (preg_match('/^(?:\s*\S+){' . PROFILE_MAX_WORDS . '}/u', $text, $m)) {
+        return sentence_cap($text, mb_strlen($m[0]), mb_strlen($m[0]) + 400);
+    }
+    return $text;
+}
+
 /** Canonical storefront path. Accepts a row that includes city fields. */
 function business_path(array $b): string
 {
@@ -285,6 +309,13 @@ function listing_form_data(array $user, array $plan, int $exceptId = 0, bool $en
         $data['phone']     = mb_substr(post('phone'), 0, 40);
         $data['email']     = filter_var(post('email'), FILTER_VALIDATE_EMAIL) ?: null;
         $data['video_url'] = clean_url(post('video_url'));
+    }
+
+    // The long-form Profile section, paid tiers only. Like the review links it
+    // is written only when the form rendered the field, so a form without it
+    // cannot wipe 1,500 words.
+    if (!empty($plan['profile']) && array_key_exists('profile', $_POST)) {
+        $data['profile'] = profile_cap(post('profile')) ?: null;
     }
 
     // Social and review links belong to every tier — the setup wizard collects

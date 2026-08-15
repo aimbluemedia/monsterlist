@@ -8,6 +8,16 @@ if (($segments[1] ?? '') === 'go' && isset($segments[2])) {
     $promo = row('SELECT * FROM promotions WHERE id = ? AND status = "live"', [(int)$segments[2]]);
     if (!$promo) not_found();
     promotion_click((int)$promo['id']);
+
+    // Attention paid is attention earned: opening another member's promotion
+    // credits tokens, which are what it costs to run one of your own. Once per
+    // promotion per day, never for your own, and under a daily ceiling —
+    // token_earn_from_view() holds those rules.
+    $earned = token_earn_from_view(current_user(), $promo);
+    if ($earned > 0) {
+        flash_set('success', "+$earned token" . ($earned === 1 ? '' : 's') . ' for taking a look. Thanks for supporting another member.');
+    }
+
     header('Location: ' . $promo['url'], true, 302);
     header('X-Robots-Tag: noindex');
     exit;
