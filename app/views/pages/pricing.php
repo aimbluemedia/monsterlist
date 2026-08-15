@@ -8,16 +8,30 @@
     <?php foreach ($planList as $key => $p): ?>
       <?php // Free spans the full width on top; the two paid plans share the row
             // below it, so the choice reads as "start here" then "or upgrade to". ?>
-      <div class="card plan <?= $key === 'pro' ? 'popular' : '' ?><?= $key === 'free' ? ' plan-wide' : '' ?>">
+      <?php
+      // Each card leads with a ribbon that says what this plan is FOR, not what
+      // it is called. The per-day figure is there because $19 a month and 63p a
+      // day are the same number and only one of them sounds like a decision
+      // worth agonising over.
+      $ribbon = ['free' => 'Start here', 'pro' => 'Most popular', 'featured' => 'We do it for you'][$key];
+      $perDay = $p['price'] > 0 ? '$' . number_format($p['price'] / 30.4, 2) . ' a day' : 'Free forever';
+      $reassure = $key === 'free'
+          ? 'Live in minutes · No credit card · Cancel anytime'
+          : 'Cancel anytime · Upgrade takes effect instantly';
+      ?>
+      <div class="card plan <?= $key === 'pro' ? 'popular ' : '' ?><?= $key === 'featured' ? 'plan-premium ' : '' ?><?= $key === 'free' ? 'plan-wide' : '' ?>">
+        <span class="plan-ribbon"><?= e($ribbon) ?></span>
+
         <?php // The free card leads with the offer rather than the plan name —
               // "Free" is what the price already says. ?>
         <?php if ($key === 'free'): ?>
           <h3>Add Your Business FREE</h3>
           <p class="plan-sub">No Credit Card Needed</p>
         <?php else: ?>
-          <h3><?= e($p['label']) ?><?= $key === 'pro' ? ' · Most popular' : '' ?></h3>
+          <h3><?= e($p['label']) ?></h3>
         <?php endif; ?>
         <div class="price">$<?= number_format($p['price'], 0) ?><small>/month</small></div>
+        <p class="plan-day"><?= e($perDay) ?></p>
         <p class="mute"><?= e($p['blurb']) ?></p>
         <?php // Headlines only. Fifteen bullets on one card is a wall nobody
               // reads — the full detail is in the comparison table below. ?>
@@ -40,13 +54,14 @@
         <?php if ($key === 'free'): ?>
           <?php // Primary, not ghost: this is the highlighted card, and a ghost
                 // button on it would be the weakest call to action on the page. ?>
-          <a class="btn btn-primary btn-block btn-xl" href="/signup">Start free</a>
+          <a class="btn btn-primary btn-block btn-xl" href="/signup">Add my business free</a>
         <?php else: ?>
           <form method="post" action="/stripe/checkout"><?= csrf_field() ?>
             <input type="hidden" name="plan" value="<?= e($key) ?>">
-            <button class="btn btn-primary btn-block">Get <?= e($p['label']) ?></button>
+            <button class="btn btn-primary btn-block btn-xl">Get <?= e($p['label']) ?></button>
           </form>
         <?php endif; ?>
+        <p class="plan-note"><?= e($reassure) ?></p>
       </div>
     <?php endforeach; ?>
   </div>
