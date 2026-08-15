@@ -25,6 +25,20 @@ function token_rules(): array
     ];
 }
 
+/**
+ * How many promotions a member must open to afford one of their own.
+ *
+ * This is the number that has to make sense to a member, and it is derived
+ * rather than configured — change the cost or the earn rate in Settings and
+ * this follows, so the page can never quote a rate the ledger does not use.
+ */
+function token_views_per_promo(): int
+{
+    $r = token_rules();
+    if ($r['earn_view'] <= 0 || $r['cost_promo'] <= 0) return 0;
+    return (int)ceil($r['cost_promo'] / $r['earn_view']);
+}
+
 /** The monthly allowance for a plan. */
 function token_monthly_grant(string $plan): int
 {

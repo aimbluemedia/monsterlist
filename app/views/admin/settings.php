@@ -20,6 +20,17 @@
     <div><label>Cost to promote</label><input type="number" name="tokens_cost_promo" min="0" value="<?= e(setting('tokens_cost_promo', '10')) ?>"></div>
     <div><label>Earned per view</label><input type="number" name="tokens_earn_view" min="0" value="<?= e(setting('tokens_earn_view', '2')) ?>"></div>
   </div>
+  <?php $vpp = token_views_per_promo(); ?>
+  <p class="form-note" style="margin:2px 0 10px">
+    <?php if ($vpp): ?>
+      At these numbers a member opens <strong><?= $vpp ?></strong> promotions to afford one of their own.
+      The network mints <?= (int)setting('tokens_earn_view', '2') ?> tokens per view and burns
+      <?= (int)setting('tokens_cost_promo', '10') ?> per promotion, so it stays in balance while the average
+      promotion gets about <?= $vpp ?> views. Well above that and tokens pile up faster than they are spent.
+    <?php else: ?>
+      Earning is switched off — members can only spend their monthly allowance.
+    <?php endif; ?>
+  </p>
   <label>Most a member can earn in a day</label>
   <input type="number" name="tokens_daily_earn_cap" min="0" value="<?= e(setting('tokens_daily_earn_cap', '20')) ?>">
   <p class="form-note">0 means no daily ceiling.</p>

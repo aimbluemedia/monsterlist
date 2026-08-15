@@ -26,6 +26,9 @@
         <p class="mute" style="margin:0">Open another member's promotion and you earn
           <strong><?= (int)$rules['earn_view'] ?> tokens</strong> — once per promotion per day, up to
           <strong><?= (int)$rules['daily_earn_cap'] ?> a day</strong>. Give a genuine look; that is the deal.</p>
+        <?php if ($vpp = token_views_per_promo()): ?>
+          <p style="margin:10px 0 0"><strong>Open <?= $vpp ?> promotions and you have earned one of your own.</strong></p>
+        <?php endif; ?>
         <a class="btn btn-ghost btn-sm" style="margin-top:12px" href="/promotions">Open the feed</a>
       </div>
       <div class="card card-pad">
