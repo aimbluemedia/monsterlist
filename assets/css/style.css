@@ -152,6 +152,25 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
   .plan-wide .btn{max-width:none}
 }
 
+/* pricing comparison table */
+.cmp-wrap{margin-top:18px;padding:8px}
+.cmp{min-width:0}
+.cmp thead th{font-size:.95rem;text-transform:none;letter-spacing:0;color:var(--ink);
+  font-weight:800;text-align:center;padding-bottom:10px}
+.cmp thead th .faint{font-weight:600;font-size:.8rem}
+.cmp td:first-child,.cmp tbody th{text-align:left}
+.cmp .cmp-col{text-align:center;width:16%;white-space:nowrap}
+/* the popular column is tinted end to end so the eye follows one plan down */
+.cmp .cmp-pop{background:var(--accent-soft)}
+.cmp-group th{padding-top:18px;font-size:.72rem;text-transform:uppercase;letter-spacing:.6px;
+  color:var(--accent);border-bottom:1.5px solid var(--border)}
+.cmp-yes{color:var(--green);font-weight:800}
+.cmp-no{color:var(--faint)}
+@media(max-width:640px){
+  .cmp{min-width:520px}
+  .cmp td:first-child{min-width:220px}
+}
+
 /* tables (admin + account) */
 .table{width:100%;border-collapse:collapse;font-size:.9rem}
 .table th{color:var(--mute);text-transform:uppercase;font-size:.72rem;letter-spacing:.4px;text-align:left}
