@@ -24,7 +24,13 @@
           <li>Appears in search &amp; city pages</li>
           <li>Link to your website</li>
           <li>Social profiles &amp; review-site links</li>
-          <li><?= number_format(token_monthly_grant($key)) ?> promotion tokens a month</li>
+          <?php $tk = token_rules($key); ?>
+          <li><?= number_format((int)$tk['grant']) ?> promotion tokens a month</li>
+          <li>Run up to <?= (int)$tk['promos_max'] ?> promotions a month</li>
+          <li>Earn <?= (int)$tk['earn_view'] ?> tokens per member promotion you open<?= (int)$tk['daily_earn_cap'] ? ', up to ' . (int)$tk['daily_earn_cap'] . ' a day' : '' ?></li>
+          <?php if ($key !== 'free' && ($boost = (int)setting('feed_boost_' . $key, $key === 'pro' ? '7' : '14'))): ?>
+            <li>Your promotions stay top of the feed <?= $boost ?> days longer</li>
+          <?php endif; ?>
           <?php if ($p['enhanced']): ?>
             <li><?= number_format(PROFILE_MAX_WORDS) ?>-word Profile section</li>
             <li>Phone &amp; public email on your listing</li>

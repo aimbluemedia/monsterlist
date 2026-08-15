@@ -244,10 +244,21 @@ if ($sub === 'dashboard') {
             if ($dupe) $errors[] = 'You have already submitted that link.';
         }
 
-        // Running a promotion costs tokens. Charge first: token_spend() checks
+        // The plan's monthly ceiling comes first. Tokens buy a promotion; the
+        // plan decides how many you may run — which is the part effort cannot
+        // lift, and the reason a paid membership is worth paying for.
+        $promoMax  = promos_monthly_max((string)$u['plan']);
+        $promoUsed = promos_used_this_month((int)$u['id']);
+        if (!$errors && $promoMax > 0 && $promoUsed >= $promoMax) {
+            $errors[] = 'Your ' . $plan['label'] . ' plan runs ' . $promoMax
+                . ' promotion' . ($promoMax === 1 ? '' : 's') . ' a month and you have used them all. '
+                . 'They reset on the 1st — or upgrade to run more.';
+        }
+
+        // Running a promotion costs tokens. Charge second: token_spend() checks
         // the balance and deducts in one statement, so two submissions racing
         // each other cannot both spend the same tokens.
-        $cost = token_rules()['cost_promo'];
+        $cost = token_rules((string)$u['plan'])['cost_promo'];
         if (!$errors && $cost > 0 && !token_spend((int)$u['id'], $cost, 'Promotion: ' . $title)) {
             $errors[] = 'That costs ' . $cost . ' tokens and you have ' . token_balance((int)$u['id'])
                 . '. Open a few member promotions to earn more, or upgrade for a bigger monthly allowance.';
@@ -263,15 +274,19 @@ if ($sub === 'dashboard') {
         }
     }
 
-    $list = promotions_for_user((int)$u['id']);
+    $list      = promotions_for_user((int)$u['id']);
+    $promoMax  = promos_monthly_max((string)$u['plan']);
+    $promoUsed = promos_used_this_month((int)$u['id']);
     $meta = ['title' => "Promotion engine — $site", 'robots' => 'noindex'];
-    view('account/promotions', compact('meta', 'u', 'plan', 'errors', 'mine', 'list'));
+    view('account/promotions', compact('meta', 'u', 'plan', 'errors', 'mine', 'list', 'promoMax', 'promoUsed'));
 
 } elseif ($sub === 'tokens') {
-    $rules   = token_rules();
-    $history = token_history((int)$u['id']);
-    $meta    = ['title' => "Tokens — $site", 'robots' => 'noindex'];
-    view('account/tokens', compact('meta', 'u', 'plan', 'rules', 'history'));
+    $rules     = token_rules((string)$u['plan']);
+    $history   = token_history((int)$u['id']);
+    $promoMax  = promos_monthly_max((string)$u['plan']);
+    $promoUsed = promos_used_this_month((int)$u['id']);
+    $meta      = ['title' => "Tokens — $site", 'robots' => 'noindex'];
+    view('account/tokens', compact('meta', 'u', 'plan', 'rules', 'history', 'promoMax', 'promoUsed'));
 
 } elseif ($sub === 'article') {
     // The Featured tier's monthly article: the member briefs it, our team

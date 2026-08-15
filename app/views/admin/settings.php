@@ -13,36 +13,44 @@
     <div><label>Featured price</label><input type="number" name="price_featured_monthly" value="<?= e(setting('price_featured_monthly')) ?>" min="1"></div>
   </div>
 
-  <h3 style="margin-top:24px">Tokens</h3>
-  <p class="mute" style="font-size:.85rem">Members spend tokens to put a link in the member feed, and earn them by
-    opening other members' promotions. Allowances land on each member's first visit of the month.</p>
-  <div class="form-grid">
-    <div><label>Cost to promote</label><input type="number" name="tokens_cost_promo" min="0" value="<?= e(setting('tokens_cost_promo', '10')) ?>"></div>
-    <div><label>Earned per view</label><input type="number" name="tokens_earn_view" min="0" value="<?= e(setting('tokens_earn_view', '2')) ?>"></div>
+  <h3 style="margin-top:24px">Tokens &amp; the promotion engine</h3>
+  <p class="mute" style="font-size:.85rem">Members spend tokens to put a link in the member feed and earn them by
+    opening other members' promotions. Everything except the cost varies by plan — that is what makes a paid
+    membership worth paying for when effort alone can earn tokens.</p>
+
+  <label>Cost to run one promotion</label>
+  <input type="number" name="tokens_cost_promo" min="0" value="<?= e(setting('tokens_cost_promo', '10')) ?>">
+
+  <div class="table-wrap" style="margin-top:14px">
+    <table class="table table-narrow">
+      <tr>
+        <th>Plan</th>
+        <th title="Tokens added on the member's first visit each month">Monthly tokens</th>
+        <th title="Tokens earned for opening another member's promotion">Earn / view</th>
+        <th title="Most a member can earn in one day">Daily cap</th>
+        <th title="Promotions this plan may submit per calendar month">Promos / month</th>
+        <th title="Extra days of freshness in the feed">Feed boost</th>
+      </tr>
+      <?php foreach (['free' => 'Free', 'pro' => 'Pro', 'featured' => 'Featured'] as $pk => $pl):
+            $pr = token_rules($pk); ?>
+        <tr>
+          <td><strong><?= $pl ?></strong><br><span class="faint" style="font-size:.78rem">
+            <?= token_views_per_promo($pk) ? token_views_per_promo($pk) . ' views = 1 promo' : 'earning off' ?></span></td>
+          <td><input type="number" min="0" name="tokens_grant_<?= $pk ?>" value="<?= (int)$pr['grant'] ?>" style="width:90px;padding:6px 8px"></td>
+          <td><input type="number" min="0" name="tokens_earn_<?= $pk ?>" value="<?= (int)$pr['earn_view'] ?>" style="width:80px;padding:6px 8px"></td>
+          <td><input type="number" min="0" name="tokens_daily_<?= $pk ?>" value="<?= (int)$pr['daily_earn_cap'] ?>" style="width:80px;padding:6px 8px"></td>
+          <td><input type="number" min="0" name="promos_max_<?= $pk ?>" value="<?= (int)$pr['promos_max'] ?>" style="width:90px;padding:6px 8px"></td>
+          <td><?php if ($pk === 'free'): ?><span class="faint">none</span>
+              <?php else: ?><input type="number" min="0" name="feed_boost_<?= $pk ?>" value="<?= e(setting('feed_boost_' . $pk, $pk === 'pro' ? '7' : '14')) ?>" style="width:70px;padding:6px 8px"> days<?php endif; ?></td>
+        </tr>
+      <?php endforeach; ?>
+    </table>
   </div>
-  <?php $vpp = token_views_per_promo(); ?>
-  <p class="form-note" style="margin:2px 0 10px">
-    <?php if ($vpp): ?>
-      At these numbers a member opens <strong><?= $vpp ?></strong> promotions to afford one of their own.
-      The network mints <?= (int)setting('tokens_earn_view', '2') ?> tokens per view and burns
-      <?= (int)setting('tokens_cost_promo', '10') ?> per promotion, so it stays in balance while the average
-      promotion gets about <?= $vpp ?> views. Well above that and tokens pile up faster than they are spent.
-    <?php else: ?>
-      Earning is switched off — members can only spend their monthly allowance.
-    <?php endif; ?>
+  <p class="form-note">
+    <strong>Promos / month</strong> is the ceiling effort cannot lift — tokens buy a promotion, the plan decides
+    how many. <strong>Feed boost</strong> makes a paid promotion sort as though it were published that many days
+    later, so it sits higher for longer without burying free members permanently. 0 in any daily cap means no ceiling.
   </p>
-  <label>Most a member can earn in a day</label>
-  <input type="number" name="tokens_daily_earn_cap" min="0" value="<?= e(setting('tokens_daily_earn_cap', '20')) ?>">
-  <p class="form-note">0 means no daily ceiling.</p>
-  <label style="margin-top:14px">Monthly allowance by plan</label>
-  <div class="form-grid">
-    <div><label class="mute" style="font-weight:500">Free</label><input type="number" name="tokens_grant_free" min="0" value="<?= e(setting('tokens_grant_free', '20')) ?>"></div>
-    <div><label class="mute" style="font-weight:500">Pro</label><input type="number" name="tokens_grant_pro" min="0" value="<?= e(setting('tokens_grant_pro', '120')) ?>"></div>
-  </div>
-  <div class="form-grid">
-    <div><label class="mute" style="font-weight:500">Featured</label><input type="number" name="tokens_grant_featured" min="0" value="<?= e(setting('tokens_grant_featured', '400')) ?>"></div>
-    <div></div>
-  </div>
 
   <h3 style="margin-top:24px">AI fill (Anthropic API)</h3>
   <p class="mute" style="font-size:.85rem">Lets members auto-fill the New Listing form from their website.

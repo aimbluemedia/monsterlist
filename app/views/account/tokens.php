@@ -8,8 +8,10 @@
       <b><?= number_format($bal) ?></b>
       <small>Token<?= $bal === 1 ? '' : 's' ?> available</small>
       <p class="mute" style="margin:14px 0 0">
-        Your <?= e($plan['label']) ?> plan adds <strong><?= number_format(token_monthly_grant((string)$u['plan'])) ?></strong>
-        tokens on the first visit of each month.
+        Your <?= e($plan['label']) ?> plan adds <strong><?= number_format((int)$rules['grant']) ?></strong>
+        tokens on the first visit of each month, and runs up to
+        <strong><?= (int)$promoMax ?></strong> promotion<?= $promoMax === 1 ? '' : 's' ?> a month —
+        <strong><?= max(0, $promoMax - $promoUsed) ?></strong> left in <?= e(date('F')) ?>.
       </p>
     </div>
 
@@ -26,7 +28,7 @@
         <p class="mute" style="margin:0">Open another member's promotion and you earn
           <strong><?= (int)$rules['earn_view'] ?> tokens</strong> — once per promotion per day, up to
           <strong><?= (int)$rules['daily_earn_cap'] ?> a day</strong>. Give a genuine look; that is the deal.</p>
-        <?php if ($vpp = token_views_per_promo()): ?>
+        <?php if ($vpp = token_views_per_promo((string)$u['plan'])): ?>
           <p style="margin:10px 0 0"><strong>Open <?= $vpp ?> promotions and you have earned one of your own.</strong></p>
         <?php endif; ?>
         <a class="btn btn-ghost btn-sm" style="margin-top:12px" href="/promotions">Open the feed</a>
@@ -35,6 +37,11 @@
         <h3>Why tokens</h3>
         <p class="mute" style="margin:0">A feed nobody reads is worth nothing to post in. Paying attention to
           earn attention keeps the members posting and the members reading the same people.</p>
+        <?php if ((string)$u['plan'] !== 'featured'): ?>
+          <p class="mute" style="margin:10px 0 0">Paid plans earn faster per view, allow more each day, run more
+            promotions a month, and sit higher in the feed for longer.</p>
+          <a class="btn btn-ghost btn-sm" style="margin-top:10px" href="/pricing">Compare plans</a>
+        <?php endif; ?>
       </div>
     </div>
 

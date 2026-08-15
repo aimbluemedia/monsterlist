@@ -9,11 +9,11 @@
 
     <?php foreach ($errors as $er): ?><div class="flash flash-error"><?= e($er) ?></div><?php endforeach; ?>
 
-    <?php $tkRules = token_rules(); $tkBal = (int)$u['token_balance']; ?>
+    <?php $tkRules = token_rules((string)$u['plan']); $tkBal = (int)$u['token_balance']; ?>
     <div class="card card-pad tk-bar">
       <span>Balance: <b><?= number_format($tkBal) ?></b> token<?= $tkBal === 1 ? '' : 's' ?></span>
-      <span class="mute">Each promotion costs <?= (int)$tkRules['cost_promo'] ?>.</span>
-      <span class="mute">Earn <?= (int)$tkRules['earn_view'] ?> by opening a member promotion.</span>
+      <span class="mute">Each costs <?= (int)$tkRules['cost_promo'] ?>; you earn <?= (int)$tkRules['earn_view'] ?> per member promotion you open.</span>
+      <span><b><?= max(0, $promoMax - $promoUsed) ?></b> of <?= (int)$promoMax ?> left this month</span>
       <a class="btn btn-ghost btn-sm" style="margin-left:auto" href="/account/tokens">Tokens &amp; history</a>
     </div>
 

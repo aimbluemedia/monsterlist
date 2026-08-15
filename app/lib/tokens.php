@@ -10,18 +10,36 @@
 // is a cache kept in step with it, so showing a balance never costs a SUM.
 // ---------------------------------------------------------------------------
 
-/** Tunable economics, all editable in Superadmin → Settings. */
-function token_rules(): array
+/** The three plan keys, in ladder order. */
+function token_plans(): array
 {
+    return ['free', 'pro', 'featured'];
+}
+
+/**
+ * Economics for one plan, all editable in Superadmin → Settings.
+ *
+ * Everything except the cost of a promotion varies by plan. That is the point:
+ * viewing is rewarded for everyone, but a paid member earns faster, may earn
+ * more each day, and may publish more each month — so effort alone cannot buy
+ * what the plan sells.
+ */
+function token_rules(string $plan = 'free'): array
+{
+    if (!in_array($plan, token_plans(), true)) $plan = 'free';
+    $defaults = [
+        'earn'   => ['free' => 2,  'pro' => 3,   'featured' => 4],
+        'daily'  => ['free' => 20, 'pro' => 40,  'featured' => 60],
+        'grant'  => ['free' => 10, 'pro' => 150, 'featured' => 400],
+        'promos' => ['free' => 4,  'pro' => 20,  'featured' => 60],
+    ];
     return [
+        'plan'           => $plan,
         'cost_promo'     => max(0, (int)setting('tokens_cost_promo', '10')),
-        'earn_view'      => max(0, (int)setting('tokens_earn_view', '2')),
-        'daily_earn_cap' => max(0, (int)setting('tokens_daily_earn_cap', '20')),
-        'grant' => [
-            'free'     => max(0, (int)setting('tokens_grant_free', '20')),
-            'pro'      => max(0, (int)setting('tokens_grant_pro', '120')),
-            'featured' => max(0, (int)setting('tokens_grant_featured', '400')),
-        ],
+        'earn_view'      => max(0, (int)setting("tokens_earn_$plan",  (string)$defaults['earn'][$plan])),
+        'daily_earn_cap' => max(0, (int)setting("tokens_daily_$plan", (string)$defaults['daily'][$plan])),
+        'grant'          => max(0, (int)setting("tokens_grant_$plan", (string)$defaults['grant'][$plan])),
+        'promos_max'     => max(0, (int)setting("promos_max_$plan",   (string)$defaults['promos'][$plan])),
     ];
 }
 
@@ -32,9 +50,9 @@ function token_rules(): array
  * rather than configured — change the cost or the earn rate in Settings and
  * this follows, so the page can never quote a rate the ledger does not use.
  */
-function token_views_per_promo(): int
+function token_views_per_promo(string $plan = 'free'): int
 {
-    $r = token_rules();
+    $r = token_rules($plan);
     if ($r['earn_view'] <= 0 || $r['cost_promo'] <= 0) return 0;
     return (int)ceil($r['cost_promo'] / $r['earn_view']);
 }
@@ -42,8 +60,22 @@ function token_views_per_promo(): int
 /** The monthly allowance for a plan. */
 function token_monthly_grant(string $plan): int
 {
-    $g = token_rules()['grant'];
-    return $g[$plan] ?? $g['free'];
+    return token_rules($plan)['grant'];
+}
+
+/** How many promotions this plan may publish in a calendar month. */
+function promos_monthly_max(string $plan): int
+{
+    return token_rules($plan)['promos_max'];
+}
+
+/** How many this member has already submitted this month. */
+function promos_used_this_month(int $userId): int
+{
+    return (int)scalar(
+        "SELECT COUNT(*) FROM promotions
+         WHERE user_id = ? AND status != 'rejected'
+           AND created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01')", [$userId]);
 }
 
 function token_balance(int $userId): int
@@ -115,9 +147,20 @@ function token_earn_from_view(?array $user, array $promo): int
     if (!$user) return 0;
     if ((int)$promo['user_id'] === (int)$user['id']) return 0;
 
-    $rules = token_rules();
+    // The VIEWER's plan sets the rate — paying members earn faster.
+    $rules = token_rules((string)($user['plan'] ?? 'free'));
     if ($rules['earn_view'] <= 0) return 0;
-    if ($rules['daily_earn_cap'] > 0 && token_earned_today((int)$user['id']) >= $rules['daily_earn_cap']) return 0;
+
+    // The last award of the day is trimmed to what is left of the ceiling
+    // rather than paid in full. Checking "already at the cap?" and then paying
+    // the whole rate overshoots by up to rate-1 — a Pro member on a stated cap
+    // of 40 finished the day on 42, which makes the number on the page a lie.
+    $amount = $rules['earn_view'];
+    if ($rules['daily_earn_cap'] > 0) {
+        $left = $rules['daily_earn_cap'] - token_earned_today((int)$user['id']);
+        if ($left <= 0) return 0;
+        $amount = min($amount, $left);
+    }
 
     // The unique key is the check: if today's row already exists, this member
     // has already been paid for this promotion today.
@@ -129,7 +172,6 @@ function token_earn_from_view(?array $user, array $promo): int
         throw $e;
     }
 
-    $amount = $rules['earn_view'];
     // Repeatable, so no once_key — the promotion_views row above is what stops
     // this being earned twice for the same promotion on the same day.
     token_add((int)$user['id'], $amount, 'promo:view',

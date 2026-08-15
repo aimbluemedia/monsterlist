@@ -59,6 +59,16 @@ function promotions_live(string $channel = '', int $page = 1, int $perPage = 24)
         $where .= ' AND p.channel = ?';
         $args[] = $channel;
     }
+    // Paid promotions carry extra "freshness": a Featured post sorts as though
+    // it were published feed_boost_featured days later than it was. That buys
+    // real exposure — the thing a paid membership is actually selling — without
+    // pinning paid posts above every free one for ever, which would leave free
+    // members no reason to take part and no feed worth paying to be in.
+    $boostPro = max(0, (int)setting('feed_boost_pro', '7'));
+    $boostFea = max(0, (int)setting('feed_boost_featured', '14'));
+    $rank = "DATE_ADD(p.created_at, INTERVAL CASE b.tier
+                 WHEN 'featured' THEN $boostFea WHEN 'pro' THEN $boostPro ELSE 0 END DAY)";
+
     return rows(
         "SELECT p.*, b.name AS business_name, b.slug AS business_slug, b.logo_url,
                 b.tier, b.verified, ci.name AS city_name, c.label AS category_label,
@@ -70,7 +80,7 @@ function promotions_live(string $channel = '', int $page = 1, int $perPage = 24)
          LEFT JOIN countries co ON co.code = ci.country_code
          LEFT JOIN categories c ON c.id = b.category_id
          WHERE $where
-         ORDER BY p.created_at DESC
+         ORDER BY $rank DESC, p.id DESC
          LIMIT $perPage OFFSET $offset", $args);
 }
 
