@@ -11,11 +11,31 @@ $social = $editing ? (json_decode((string)$biz['social'], true) ?: []) : [];
 $selCountry = $_SERVER['REQUEST_METHOD'] === 'POST' ? strtoupper(post('country')) : (!empty($cityRow) ? $cityRow['country_code'] : 'US');
 $selRegion  = $_SERVER['REQUEST_METHOD'] === 'POST' ? post('region') : (!empty($cityRow['region_slug']) ? $cityRow['region_slug'] : '');
 $selCity    = $_SERVER['REQUEST_METHOD'] === 'POST' ? post('city') : (!empty($cityRow) ? $cityRow['name'] : '');
+
+// Social and review profiles are on every plan — the setup wizard asks every
+// member for them, so every member has to be able to change them afterwards.
+// social_nets() and wizard_reviews() are the shared lists: a form that renders
+// fewer fields than the save path writes drops the rest.
+$revLinks = $editing ? wizard_links($biz['review_links'] ?? null) : [];
 ?>
 <div class="wrap dash">
   <?php require __DIR__ . '/_nav.php'; ?>
   <div>
     <h1><?= $editing ? 'Edit listing' : 'New listing' ?></h1>
+
+    <?php // The balance belongs at the top of the page a member spends it from. ?>
+    <?php if (tokens_ready()): ?>
+      <?php $lfMax = promos_monthly_max((string)$u['plan']); $lfUsed = promos_used_this_month((int)$u['id']); ?>
+      <a class="tk-strip" href="/account/tokens">
+        <span class="tk-strip-num"><?= number_format((int)$u['token_balance']) ?></span>
+        <span class="tk-strip-txt">
+          <b>Token<?= (int)$u['token_balance'] === 1 ? '' : 's' ?> available</b>
+          <small><?= max(0, $lfMax - $lfUsed) ?> of <?= (int)$lfMax ?> promotions left this month · <?= e($plan['label']) ?> plan</small>
+        </span>
+        <span class="tk-strip-go">Tokens &amp; history →</span>
+      </a>
+    <?php endif; ?>
+
     <?php foreach ($errors as $er): ?><div class="flash flash-error"><?= e($er) ?></div><?php endforeach; ?>
 
     <?php
@@ -46,140 +66,157 @@ $selCity    = $_SERVER['REQUEST_METHOD'] === 'POST' ? post('city') : (!empty($ci
         <?php endif; ?>
       </div>
     <?php endif; ?>
-    <form method="post" enctype="multipart/form-data" class="card card-pad" id="listing-form"><?= csrf_field() ?>
-      <h3>Basics</h3>
-      <div class="form-grid">
-        <div>
-          <label>Business name *</label>
-          <input type="text" name="name" value="<?= e($v('name')) ?>" required maxlength="180">
-        </div>
-        <div>
-          <label>Category *</label>
-          <select name="category_id" required>
-            <option value="">Choose…</option>
-            <?php foreach ($cats as $c): ?>
-              <option value="<?= e($c['id']) ?>" <?= $v('category_id') === $c['id'] ? 'selected' : '' ?>><?= e($c['label']) ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-      </div>
-      <label>Tagline</label>
-      <input type="text" name="tagline" value="<?= e($v('tagline')) ?>" maxlength="255" placeholder="One line that sells your business">
-      <?php // maxlength is the ceiling, not the guide: a browser-enforced 300
-            // stops the member mid-sentence, and the server rounds up to the end
-            // of the sentence anyway. The guide is in the label instead. ?>
-      <label>Description <?= $plan['enhanced'] ? '' : '(around 300 characters on the Free plan — we keep whole sentences)' ?></label>
-      <textarea name="description" rows="5" maxlength="<?= $plan['enhanced'] ? 10000 : 600 ?>"><?= e($v('description')) ?></textarea>
 
-      <h3 style="margin-top:24px">Location</h3>
-      <div class="form-grid">
-        <div>
-          <label>Country *</label>
-          <select name="country" required>
-            <?php foreach ($countries as $co): ?>
-              <option value="<?= e($co['code']) ?>" <?= $selCountry === $co['code'] ? 'selected' : '' ?>><?= e($co['name']) ?></option>
-            <?php endforeach; ?>
-          </select>
+    <?php // One card per section, the same shape as the staff editor. The form
+          // wraps them all so it still posts as one thing. ?>
+    <form method="post" enctype="multipart/form-data" id="listing-form"><?= csrf_field() ?>
+
+      <div class="card card-pad ed-card">
+        <h3>Basics</h3>
+        <div class="form-grid">
+          <div>
+            <label>Business name *</label>
+            <input type="text" name="name" value="<?= e($v('name')) ?>" required maxlength="180">
+          </div>
+          <div>
+            <label>Category *</label>
+            <select name="category_id" required>
+              <option value="">Choose…</option>
+              <?php foreach ($cats as $c): ?>
+                <option value="<?= e($c['id']) ?>" <?= $v('category_id') === $c['id'] ? 'selected' : '' ?>><?= e($c['label']) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
         </div>
-        <div>
-          <label>State (US only)</label>
-          <select name="region">
-            <option value="">—</option>
-            <?php foreach ($usStates as $s): ?>
-              <option value="<?= e($s['slug']) ?>" <?= $selRegion === $s['slug'] ? 'selected' : '' ?>><?= e($s['name']) ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-      </div>
-      <div class="form-grid">
-        <div>
-          <label>City *</label>
-          <input type="text" name="city" value="<?= e($selCity) ?>" required maxlength="140" placeholder="e.g. Phoenix">
-        </div>
-        <div>
-          <label>Street address</label>
-          <input type="text" name="address" value="<?= e($v('address')) ?>" maxlength="255">
-        </div>
+        <label>Tagline</label>
+        <input type="text" name="tagline" value="<?= e($v('tagline')) ?>" maxlength="255" placeholder="One line that sells your business">
+        <?php // maxlength is the ceiling, not the guide: a browser-enforced 300
+              // stops the member mid-sentence, and the server rounds up to the end
+              // of the sentence anyway. The guide is in the label instead. ?>
+        <label>Description <?= $plan['enhanced'] ? '' : '(around 300 characters on the Free plan — we keep whole sentences)' ?></label>
+        <textarea name="description" rows="5" maxlength="<?= $plan['enhanced'] ? 10000 : 600 ?>"><?= e($v('description')) ?></textarea>
       </div>
 
-      <h3 style="margin-top:24px">Contact</h3>
-      <div class="form-grid">
-        <div><label>Website</label><input type="text" name="website" value="<?= e($v('website')) ?>" placeholder="https://…"></div>
-        <div><label>Year founded</label><input type="number" name="founded" value="<?= e($v('founded')) ?>" min="1800" max="<?= date('Y') ?>"></div>
+      <div class="card card-pad ed-card">
+        <h3>Location</h3>
+        <div class="form-grid">
+          <div>
+            <label>Country *</label>
+            <select name="country" required>
+              <?php foreach ($countries as $co): ?>
+                <option value="<?= e($co['code']) ?>" <?= $selCountry === $co['code'] ? 'selected' : '' ?>><?= e($co['name']) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <div>
+            <label>State (US only)</label>
+            <select name="region">
+              <option value="">—</option>
+              <?php foreach ($usStates as $s): ?>
+                <option value="<?= e($s['slug']) ?>" <?= $selRegion === $s['slug'] ? 'selected' : '' ?>><?= e($s['name']) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div>
+            <label>City *</label>
+            <input type="text" name="city" value="<?= e($selCity) ?>" required maxlength="140" placeholder="e.g. Phoenix">
+          </div>
+          <div>
+            <label>Street address</label>
+            <input type="text" name="address" value="<?= e($v('address')) ?>" maxlength="255">
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-pad ed-card">
+        <h3>Contact</h3>
+        <div class="form-grid">
+          <div><label>Website</label><input type="text" name="website" value="<?= e($v('website')) ?>" placeholder="https://…"></div>
+          <div><label>Year founded</label><input type="number" name="founded" value="<?= e($v('founded')) ?>" min="1800" max="<?= date('Y') ?>"></div>
+        </div>
+        <?php // Phone and public email are paid features. The fields are not
+              // rendered at all on the Free plan — the save path ignores them
+              // too, so this is the honest view rather than a disabled tease. ?>
+        <?php if ($plan['enhanced']): ?>
+          <div class="form-grid">
+            <div><label>Phone</label><input type="text" name="phone" value="<?= e($v('phone')) ?>" maxlength="40"></div>
+            <div><label>Public email</label><input type="email" name="email" value="<?= e($v('email')) ?>"></div>
+          </div>
+        <?php endif; ?>
       </div>
 
       <?php if (!empty($plan['profile'])): ?>
-        <h3 style="margin-top:24px">Profile <span class="badge badge-pro">Pro</span></h3>
-        <p class="form-note" style="margin-bottom:2px">Up to <?= number_format(PROFILE_MAX_WORDS) ?> words —
-          the long version of your story, shown as its own section on your listing. Blank lines make paragraphs.</p>
-        <textarea name="profile" rows="12"><?= e($editing ? (string)($biz['profile'] ?? '') : '') ?></textarea>
+        <div class="card card-pad ed-card">
+          <h3>Profile <span class="badge badge-pro">Pro</span></h3>
+          <p class="mute ed-note">Up to <?= number_format(PROFILE_MAX_WORDS) ?> words — the long version of your
+            story, shown as its own section on your listing. Blank lines make paragraphs.</p>
+          <textarea name="profile" rows="12"><?= e($editing ? (string)($biz['profile'] ?? '') : '') ?></textarea>
+        </div>
       <?php endif; ?>
 
-      <?php // Phone, public email and images are paid features. The fields are
-            // not rendered at all on the Free plan — the save path ignores them
-            // too, so this is the honest view of it rather than a disabled tease.
-            if ($plan['enhanced']): ?>
-        <div class="form-grid">
-          <div><label>Phone</label><input type="text" name="phone" value="<?= e($v('phone')) ?>" maxlength="40"></div>
-          <div><label>Public email</label><input type="email" name="email" value="<?= e($v('email')) ?>"></div>
+      <?php if ($plan['enhanced']): ?>
+        <div class="card card-pad ed-card">
+          <h3>Logo <span class="badge badge-pro">Pro</span></h3>
+          <?php if ($editing && $biz['logo_url']): ?>
+            <p><img src="<?= e($biz['logo_url']) ?>" alt="Current logo" style="width:72px;height:72px;object-fit:cover;border-radius:12px;border:1px solid var(--border)">
+            <label style="display:inline;font-weight:500;margin-left:10px"><input type="checkbox" name="remove_logo" value="1" style="width:auto"> Remove current logo</label></p>
+          <?php endif; ?>
+          <input type="file" name="logo" accept="image/jpeg,image/png,image/webp,image/gif">
+          <p class="form-note">JPG, PNG, WebP or GIF up to 5 MB. Shown on your listing card and storefront.</p>
         </div>
 
-        <h3 style="margin-top:24px">Logo <span class="badge badge-pro">Pro</span></h3>
-        <?php if ($editing && $biz['logo_url']): ?>
-          <p><img src="<?= e($biz['logo_url']) ?>" alt="Current logo" style="width:72px;height:72px;object-fit:cover;border-radius:12px;border:1px solid var(--border)">
-          <label style="display:inline;font-weight:500;margin-left:10px"><input type="checkbox" name="remove_logo" value="1" style="width:auto"> Remove current logo</label></p>
-        <?php endif; ?>
-        <input type="file" name="logo" accept="image/jpeg,image/png,image/webp,image/gif">
-        <p class="form-note">JPG, PNG, WebP or GIF up to 5 MB. Shown on your listing card and storefront.</p>
-
-        <h3 style="margin-top:24px">Storefront extras <span class="badge badge-pro">Pro</span></h3>
-        <label>Photo gallery (up to 6 photos)</label>
-        <?php if (!empty($gallery)): ?>
-          <div class="gallery-grid" style="margin-bottom:10px">
-            <?php foreach ($gallery as $g): ?>
-              <div>
-                <img src="<?= e($g['url']) ?>" alt="">
-                <label style="font-weight:500;margin-top:4px"><input type="checkbox" name="remove_gallery[]" value="<?= (int)$g['id'] ?>" style="width:auto"> Remove</label>
-              </div>
-            <?php endforeach; ?>
-          </div>
-        <?php endif; ?>
-        <input type="file" name="gallery[]" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
-        <p class="form-note">Add up to <?= max(0, 6 - count($gallery ?? [])) ?> more photos, 5 MB each. They're resized automatically.</p>
-        <label>Video URL (YouTube, Vimeo…)</label>
-        <input type="text" name="video_url" value="<?= e($v('video_url')) ?>">
+        <div class="card card-pad ed-card">
+          <h3>Storefront extras <span class="badge badge-pro">Pro</span></h3>
+          <label>Photo gallery (up to 6 photos)</label>
+          <?php if (!empty($gallery)): ?>
+            <div class="gallery-grid" style="margin-bottom:10px">
+              <?php foreach ($gallery as $g): ?>
+                <div>
+                  <img src="<?= e($g['url']) ?>" alt="">
+                  <label style="font-weight:500;margin-top:4px"><input type="checkbox" name="remove_gallery[]" value="<?= (int)$g['id'] ?>" style="width:auto"> Remove</label>
+                </div>
+              <?php endforeach; ?>
+            </div>
+          <?php endif; ?>
+          <input type="file" name="gallery[]" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
+          <p class="form-note">Add up to <?= max(0, 6 - count($gallery ?? [])) ?> more photos, 5 MB each. They're resized automatically.</p>
+          <label>Video URL (YouTube, Vimeo…)</label>
+          <input type="text" name="video_url" value="<?= e($v('video_url')) ?>">
+        </div>
       <?php endif; ?>
 
-      <?php
-      // Social and review profiles are on every plan — the setup wizard asks
-      // every member for them, so every member has to be able to change them
-      // afterwards. social_nets() and wizard_reviews() are the shared lists: a
-      // form that renders fewer fields than the save path writes drops the rest.
-      $revLinks = $editing ? wizard_links($biz['review_links'] ?? null) : [];
-      ?>
-      <h3 style="margin-top:24px">Social profiles</h3>
-      <p class="form-note" style="margin-bottom:2px">Paste the address of each profile you have. Leave the rest blank.</p>
-      <div class="form-grid">
-        <?php foreach (social_nets() as $net => $netLabel): ?>
-          <div>
-            <label><?= e($netLabel) ?></label>
-            <input type="text" name="social_<?= e($net) ?>" value="<?= e($_SERVER['REQUEST_METHOD'] === 'POST' ? post('social_' . $net) : ($social[$net] ?? '')) ?>" placeholder="https://…">
-          </div>
-        <?php endforeach; ?>
+      <div class="card card-pad ed-card">
+        <h3>Social media</h3>
+        <p class="mute ed-note">Paste the address of each profile you have. Leave the rest blank.</p>
+        <div class="form-grid">
+          <?php foreach (social_nets() as $net => $netLabel): ?>
+            <div>
+              <label><?= e($netLabel) ?></label>
+              <input type="text" name="social_<?= e($net) ?>" value="<?= e($_SERVER['REQUEST_METHOD'] === 'POST' ? post('social_' . $net) : ($social[$net] ?? '')) ?>" placeholder="https://…">
+            </div>
+          <?php endforeach; ?>
+        </div>
       </div>
 
-      <h3 style="margin-top:24px">Review profiles</h3>
-      <p class="form-note" style="margin-bottom:2px">Shown on your listing as “Our Reviews”. We link out — we never copy the reviews.</p>
-      <div class="form-grid">
-        <?php foreach (wizard_reviews() as $site => [$revLabel, $revPlaceholder]): ?>
-          <div>
-            <label><?= e($revLabel) ?></label>
-            <input type="text" name="review_<?= e($site) ?>" value="<?= e($_SERVER['REQUEST_METHOD'] === 'POST' ? post('review_' . $site) : ($revLinks[$site] ?? '')) ?>" placeholder="<?= e($revPlaceholder) ?>">
-          </div>
-        <?php endforeach; ?>
+      <div class="card card-pad ed-card">
+        <h3>Our Reviews</h3>
+        <p class="mute ed-note">Shown on your listing as “Our Reviews”. We link out — we never copy the reviews.</p>
+        <div class="form-grid">
+          <?php foreach (wizard_reviews() as $site => [$revLabel, $revPlaceholder]): ?>
+            <div>
+              <label><?= e($revLabel) ?></label>
+              <input type="text" name="review_<?= e($site) ?>" value="<?= e($_SERVER['REQUEST_METHOD'] === 'POST' ? post('review_' . $site) : ($revLinks[$site] ?? '')) ?>" placeholder="<?= e($revPlaceholder) ?>">
+            </div>
+          <?php endforeach; ?>
+        </div>
       </div>
 
-      <button class="btn btn-primary" style="margin-top:22px"><?= $editing ? 'Save changes' : 'Submit listing for review' ?></button>
+      <div class="ed-actions">
+        <button class="btn btn-primary btn-xl"><?= $editing ? 'Save changes' : 'Submit listing for review' ?></button>
+        <?php if ($editing): ?><a class="btn btn-ghost" href="/account/listings">Cancel</a><?php endif; ?>
+      </div>
       <?php if (!$editing): ?><p class="form-note">New listings are reviewed by our team before going live — usually within 24 hours.</p><?php endif; ?>
     </form>
   </div>
