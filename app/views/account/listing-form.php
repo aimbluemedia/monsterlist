@@ -25,15 +25,26 @@ $revLinks = $editing ? wizard_links($biz['review_links'] ?? null) : [];
 
     <?php // The balance belongs at the top of the page a member spends it from. ?>
     <?php if (tokens_ready()): ?>
-      <?php $lfMax = promos_monthly_max((string)$u['plan']); $lfUsed = promos_used_this_month((int)$u['id']); ?>
-      <a class="tk-strip" href="/account/tokens">
+      <?php
+      $lfMax  = promos_monthly_max((string)$u['plan']);
+      $lfUsed = promos_used_this_month((int)$u['id']);
+      // The upgrade button is only shown to someone who has somewhere to go —
+      // offering "upgrade" to a Featured member is an insult and a dead link.
+      $canUpgrade = (string)$u['plan'] !== 'featured';
+      ?>
+      <div class="tk-strip">
         <span class="tk-strip-num"><?= number_format((int)$u['token_balance']) ?></span>
         <span class="tk-strip-txt">
           <b>Token<?= (int)$u['token_balance'] === 1 ? '' : 's' ?> available</b>
           <small><?= max(0, $lfMax - $lfUsed) ?> of <?= (int)$lfMax ?> promotions left this month · <?= e($plan['label']) ?> plan</small>
         </span>
-        <span class="tk-strip-go">Tokens &amp; history →</span>
-      </a>
+        <span class="tk-strip-actions">
+          <?php if ($canUpgrade): ?>
+            <a class="btn btn-sm tk-strip-up" href="/pricing">Upgrade your listing</a>
+          <?php endif; ?>
+          <a class="tk-strip-go" href="/account/tokens">Tokens &amp; history →</a>
+        </span>
+      </div>
     <?php endif; ?>
 
     <?php foreach ($errors as $er): ?><div class="flash flash-error"><?= e($er) ?></div><?php endforeach; ?>

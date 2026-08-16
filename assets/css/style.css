@@ -654,16 +654,21 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 .tk-strip{display:flex;align-items:center;gap:16px;background:var(--accent);color:#fff;
   border-radius:var(--radius);padding:16px 20px;margin:0 0 18px;
   box-shadow:0 6px 20px rgba(37,99,235,.24)}
-.tk-strip:hover{background:#1d4ed8}
 .tk-strip-num{font-size:2.4rem;font-weight:800;line-height:1;letter-spacing:-1.5px;
   font-variant-numeric:tabular-nums}
 .tk-strip-txt{flex:1;min-width:0}
 .tk-strip-txt b{display:block;font-size:.95rem;font-weight:800}
 .tk-strip-txt small{display:block;margin-top:2px;font-size:.8rem;color:#cfe0ff}
+.tk-strip-actions{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;justify-content:flex-end}
+/* white on blue: the one button on this bar should read as the brightest thing
+   on it, which a blue button on a blue bar cannot */
+.tk-strip-up{background:#fff;color:var(--accent);font-weight:800;white-space:nowrap}
+.tk-strip-up:hover{background:#e6efff;color:#1d4ed8}
 .tk-strip-go{font-size:.82rem;font-weight:800;white-space:nowrap;color:#e6efff}
+.tk-strip-go:hover{color:#fff}
 @media(max-width:560px){
   .tk-strip{flex-wrap:wrap;gap:10px 14px}
-  .tk-strip-go{width:100%}
+  .tk-strip-actions{width:100%;justify-content:flex-start}
 }
 
 /* the long-form Profile section on a storefront */
