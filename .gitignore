@@ -1,5 +1,9 @@
 app/config.php
 *.log
+
+# Release zips are build output, rebuilt from the tree on every release.
+# They were purged from main once already for bloating the repo — keep them out.
+monsterlist-*.zip
 .DS_Store
 uploads/*
 !uploads/.htaccess
