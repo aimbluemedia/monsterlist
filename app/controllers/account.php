@@ -119,9 +119,29 @@ if ($sub === 'dashboard') {
     $cats      = categories_all();
     view('account/listing-form', compact('meta', 'u', 'plan', 'errors', 'biz', 'prefill', 'countries', 'usStates', 'cats'));
 
+} elseif ($sub === 'listings' && $act === 'upgrade') {
+    // Upgrading is sold per listing, not per account. The plan is stored on the
+    // user and every plan carries exactly one listing, so the two are the same
+    // thing — but only one of them is the thing the member came here about, and
+    // it is the one with their business name on it.
+    $biz = own_business((int)($_GET['id'] ?? 0), (int)$u['id']);
+    if (!$biz) not_found();
+    $offers  = plans_above((string)$u['plan']);
+    $cityRow = $biz['city_id'] ? city_full((int)$biz['city_id']) : null;
+    $meta['title'] = 'Upgrade ' . $biz['name'] . " — $site";
+    view('account/listing-upgrade', compact('meta', 'u', 'plan', 'biz', 'offers', 'cityRow'));
+
 } elseif ($sub === 'listings' && $act === 'edit') {
     $biz = own_business((int)($_GET['id'] ?? 0), (int)$u['id']);
     if (!$biz) not_found();
+    // Stripe sends the member back here rather than to a general billing page,
+    // so the listing they paid to upgrade is what they are looking at when they
+    // land. The plan itself arrives with the webhook, moments later.
+    if (isset($_GET['upgraded'])) {
+        flash_set('success', 'Payment received — thank you! ' . $biz['name']
+            . ' moves onto your new plan within a few seconds of Stripe confirming. '
+            . 'Reload this page if the new fields are not here yet.');
+    }
     $errors = [];
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         csrf_check();

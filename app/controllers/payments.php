@@ -5,16 +5,27 @@ if ($path === '/stripe/checkout' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_check();
     $u = require_login();
     $plan = post('plan');
-    if (!in_array($plan, ['pro', 'featured'], true)) redirect('/pricing');
+    // The listing the upgrade was started from, when it was started from one.
+    // Checked against the owner here: it decides where the member is sent back
+    // to, and an id from someone else's account would name their business on
+    // this member's screen.
+    $bizId = (int)($_POST['business_id'] ?? 0);
+    if ($bizId && !scalar('SELECT id FROM businesses WHERE id = ? AND owner_id = ?', [$bizId, $u['id']])) {
+        $bizId = 0;
+    }
+    // Somewhere to send them when this cannot go ahead — back to the page they
+    // pressed the button on, not out to the public price list.
+    $back = $bizId ? '/account/listings/upgrade?id=' . $bizId : '/pricing';
+    if (!in_array($plan, ['pro', 'featured'], true)) redirect($back);
     if (!stripe_configured()) {
         flash_set('error', 'Payments are not configured yet — add your Stripe keys to app/config.php.');
-        redirect('/pricing');
+        redirect($back);
     }
     try {
-        redirect(stripe_checkout_url($u, $plan));
+        redirect(stripe_checkout_url($u, $plan, $bizId));
     } catch (Throwable $e) {
         flash_set('error', 'Could not start checkout: ' . $e->getMessage());
-        redirect('/pricing');
+        redirect($back);
     }
 }
 

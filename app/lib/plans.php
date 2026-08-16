@@ -52,6 +52,97 @@ function plan_for(array $user): array
     return $p[$user['plan']] ?? $p['free'];
 }
 
+/** The three plan keys, cheapest first. The one place the order is written down. */
+function plan_ladder(): array
+{
+    return ['free', 'pro', 'featured'];
+}
+
+/** Where a plan sits on the ladder. Anything unrecognised counts as free. */
+function plan_rank(string $plan): int
+{
+    $i = array_search($plan, plan_ladder(), true);
+    return $i === false ? 0 : (int)$i;
+}
+
+/**
+ * The plans a member on $plan can move up to, in ladder order.
+ *
+ * Empty for Featured, and the upgrade page shows nothing rather than a card
+ * they cannot buy: offering someone an upgrade to what they already pay for is
+ * how a page loses their trust in everything else it says.
+ */
+function plans_above(string $plan): array
+{
+    $all  = plans();
+    $out  = [];
+    foreach (array_slice(plan_ladder(), plan_rank($plan) + 1) as $key) {
+        if (isset($all[$key])) $out[$key] = $all[$key];
+    }
+    return $out;
+}
+
+/** Days a plan's promotions stay boosted at the top of the feed. */
+function plan_feed_boost(string $plan): int
+{
+    if ($plan === 'free') return 0;
+    return (int)setting('feed_boost_' . $plan, $plan === 'pro' ? '7' : '14');
+}
+
+/**
+ * What moving from one plan to another actually adds, in plain sentences.
+ *
+ * Built by comparing the two plans rather than written out per pair, so it can
+ * only ever promise what plans() and token_rules() really grant — and a price
+ * or token figure changed in Settings changes this copy with it.
+ */
+function plan_gains(string $from, string $to): array
+{
+    $all = plans();
+    if (!isset($all[$from], $all[$to])) return [];
+    $a  = $all[$from];
+    $b  = $all[$to];
+    $ta = token_rules($from);
+    $tb = token_rules($to);
+
+    $gains = [];
+    if (empty($a['enhanced']) && !empty($b['enhanced'])) {
+        $gains[] = 'Your phone number and a public email address on the listing';
+        $gains[] = 'Your logo, a photo gallery of up to 6 images, and a video';
+        $gains[] = 'The verified badge';
+    }
+    if (empty($a['profile']) && !empty($b['profile'])) {
+        $gains[] = 'A ' . number_format(PROFILE_MAX_WORDS) . '-word Profile section on the storefront';
+    }
+    if (empty($a['analytics']) && !empty($b['analytics'])) {
+        $gains[] = 'Views and website-click analytics for this listing';
+    }
+    if (empty($a['featured']) && !empty($b['featured'])) {
+        $gains[] = 'Priority placement on the homepage, city and category pages';
+    }
+    if (empty($a['concierge']) && !empty($b['concierge'])) {
+        $gains[] = 'One article a month, written for you and posted to our '
+                 . implode(', ', article_channels());
+        $gains[] = 'That article promoted out to each of your own channels';
+    }
+    if ($tb['grant'] > $ta['grant']) {
+        $gains[] = number_format($tb['grant']) . ' tokens a month instead of '
+                 . number_format($ta['grant']);
+    }
+    if ($tb['promos_max'] > $ta['promos_max']) {
+        $gains[] = 'Up to ' . (int)$tb['promos_max'] . ' promotions a month instead of '
+                 . (int)$ta['promos_max'];
+    }
+    if ($tb['earn_view'] > $ta['earn_view']) {
+        $gains[] = $tb['earn_view'] . ' tokens for every promotion you open instead of '
+                 . $ta['earn_view'];
+    }
+    if (plan_feed_boost($to) > plan_feed_boost($from)) {
+        $gains[] = plan_feed_boost($to) . ' extra days at the top of the promotions feed';
+    }
+    return $gains;
+}
+
 function user_listing_count(int $userId): int
 {
     return (int)scalar('SELECT COUNT(*) FROM businesses WHERE owner_id = ? AND status != "rejected"', [$userId]);

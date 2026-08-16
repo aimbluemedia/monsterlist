@@ -4,7 +4,13 @@
     <h1>Hi, <?= e($u['name']) ?></h1>
     <p class="mute">You're on the <strong><?= e($plan['label']) ?></strong> plan
       (<?= count($listings) ?>/<?= (int)$plan['max_listings'] ?> listings used).
-      <?php if ($u['plan'] === 'free'): ?><a href="/pricing" style="color:var(--accent);font-weight:700">Upgrade →</a><?php endif; ?>
+      <?php // Straight to the upgrade page for the listing they own, when they
+            // own one — a member with a business already has the thing the
+            // upgrade applies to, and the price list would only ask them again. ?>
+      <?php if ($u['plan'] !== 'featured'): ?>
+        <a href="<?= $listings ? '/account/listings/upgrade?id=' . (int)$listings[0]['id'] : '/pricing' ?>"
+           style="color:var(--accent);font-weight:700">Upgrade →</a>
+      <?php endif; ?>
     </p>
     <div class="stat-row">
       <div class="card stat"><div class="n"><?= count($listings) ?></div><div class="l">Listings</div></div>

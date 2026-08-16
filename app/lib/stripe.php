@@ -48,21 +48,34 @@ function stripe_customer_for(array $user): string
 }
 
 /** Start a subscription Checkout session; returns the redirect URL. */
-function stripe_checkout_url(array $user, string $plan): string
+/**
+ * A checkout session for one plan.
+ *
+ * $businessId is the listing the member started the upgrade from. It changes no
+ * pricing — the plan is held on the account — but it decides where they come
+ * back to, and coming back to the listing they upgraded is what makes "upgrade
+ * this listing" true all the way through the purchase rather than only on the
+ * button that began it. Zero means the checkout began somewhere account-wide,
+ * like the public pricing page.
+ */
+function stripe_checkout_url(array $user, string $plan, int $businessId = 0): string
 {
     $priceId = setting($plan === 'featured' ? 'stripe_price_featured' : 'stripe_price_pro');
     if ($priceId === '') {
         throw new RuntimeException('Stripe price ID for the ' . $plan . ' plan is not configured (Admin → Settings).');
     }
+    $done   = $businessId ? '/account/listings/edit?id=' . $businessId . '&upgraded=1' : '/account/billing?upgraded=1';
+    $cancel = $businessId ? '/account/listings/upgrade?id=' . $businessId : '/pricing';
     $session = stripe_request('POST', '/checkout/sessions', [
         'mode'                 => 'subscription',
         'customer'             => stripe_customer_for($user),
         'line_items[0][price]' => $priceId,
         'line_items[0][quantity]' => 1,
-        'success_url'          => site_url('/account/billing?upgraded=1'),
-        'cancel_url'           => site_url('/pricing'),
+        'success_url'          => site_url($done),
+        'cancel_url'           => site_url($cancel),
         'metadata[user_id]'    => $user['id'],
         'metadata[plan]'       => $plan,
+        'metadata[business_id]' => $businessId,
         'subscription_data[metadata][user_id]' => $user['id'],
         'subscription_data[metadata][plan]'    => $plan,
     ]);

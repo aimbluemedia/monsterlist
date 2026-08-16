@@ -25,6 +25,11 @@
                 <?php endif; ?>
                 <a href="/account/listings/edit?id=<?= (int)$l['id'] ?>" style="color:var(--accent);font-weight:700">Edit</a> ·
                 <a href="/account/listings/services?id=<?= (int)$l['id'] ?>" style="color:var(--accent);font-weight:700" title="Services, social links and review profiles">Profile setup</a> ·
+                <?php // Offered per row, so the upgrade a member starts is tied to
+                      // the listing they were looking at when they decided to. ?>
+                <?php if ($u['plan'] !== 'featured'): ?>
+                  <a href="/account/listings/upgrade?id=<?= (int)$l['id'] ?>" style="color:var(--green);font-weight:700">Upgrade</a> ·
+                <?php endif; ?>
                 <form method="post" action="/account/listings/delete" style="display:inline"><?= csrf_field() ?>
                   <input type="hidden" name="id" value="<?= (int)$l['id'] ?>">
                   <button class="btn btn-sm" style="background:none;border:none;color:var(--red);font-weight:700;cursor:pointer;padding:0" data-confirm="Delete this listing permanently?">Delete</button>

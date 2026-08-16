@@ -40,7 +40,11 @@ $revLinks = $editing ? wizard_links($biz['review_links'] ?? null) : [];
         </span>
         <span class="tk-strip-actions">
           <?php if ($canUpgrade): ?>
-            <a class="btn btn-sm tk-strip-up" href="/pricing">Upgrade your listing</a>
+            <?php // On an existing listing the button goes to that listing's own
+                  // upgrade page, so what is being bought is never in doubt. A
+                  // listing being created has no id yet — the price list is the
+                  // only honest destination until it is saved. ?>
+            <a class="btn btn-sm tk-strip-up" href="<?= $editing ? '/account/listings/upgrade?id=' . (int)$biz['id'] : '/pricing' ?>">Upgrade your listing</a>
           <?php endif; ?>
           <a class="tk-strip-go" href="/account/tokens">Tokens &amp; history →</a>
         </span>

@@ -10,10 +10,10 @@
 // is a cache kept in step with it, so showing a balance never costs a SUM.
 // ---------------------------------------------------------------------------
 
-/** The three plan keys, in ladder order. */
+/** The three plan keys, in ladder order — plans.php owns the list. */
 function token_plans(): array
 {
-    return ['free', 'pro', 'featured'];
+    return plan_ladder();
 }
 
 /**
