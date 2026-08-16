@@ -12,6 +12,12 @@ function db(): PDO
                 PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES   => false,
+                // A MySQL that is not answering must fail fast. Without this the
+                // connect blocks until PHP's own limit, every worker piles up
+                // behind it, and the visitor gets nginx's 504 — which names
+                // nothing and points at nobody. Ten seconds turns that into the
+                // message below, which says exactly what to check.
+                PDO::ATTR_TIMEOUT            => 10,
             ]);
         } catch (PDOException $e) {
             http_response_code(500);
@@ -91,28 +97,60 @@ function scalar(string $sql, array $params = [])
 }
 
 /**
+ * Every table in this database, as a lookup keyed by lowercase name.
+ *
+ * SHOW TABLES reads this database's own dictionary and nothing else. The
+ * information_schema queries these helpers used to run are scoped with
+ * TABLE_SCHEMA = DATABASE(), which reads like it is just as narrow, but on
+ * shared hosting the server holds thousands of databases and the filter is
+ * applied after the scan — so each call could take seconds, and the diagnostics
+ * page fired a dozen of them. A probe whose job is to keep the site up must
+ * never be the reason it goes down.
+ *
+ * One query per request, memoised: a schema does not change mid-request.
+ */
+function db_tables(): array
+{
+    static $list = null;
+    if ($list === null) {
+        $list = [];
+        foreach (q('SHOW TABLES')->fetchAll(PDO::FETCH_COLUMN) as $t) $list[strtolower((string)$t)] = true;
+    }
+    return $list;
+}
+
+/**
  * Does a table exist in the current database?
  *
  * Used by the diagnostics page to tell "this release's SQL has not been run"
  * apart from "the feature is broken" — the two look identical from a browser.
- * Results are memoised: a schema does not change inside one request.
  */
 function table_exists(string $table): bool
 {
+    return isset(db_tables()[strtolower($table)]);
+}
+
+/** Every column on one table, keyed by lowercase name. Empty if no such table. */
+function db_columns(string $table): array
+{
     static $seen = [];
-    if (isset($seen[$table])) return $seen[$table];
-    $n = scalar('SELECT COUNT(*) FROM information_schema.TABLES
-                 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?', [$table]);
-    return $seen[$table] = ((int)$n > 0);
+    $key = strtolower($table);
+    if (!isset($seen[$key])) {
+        $seen[$key] = [];
+        // The name goes into the SQL text — SHOW COLUMNS takes no placeholder
+        // there — so anything that is not a plain identifier is refused rather
+        // than quoted and hoped for.
+        if (preg_match('/^[A-Za-z0-9_]+$/', $table) && table_exists($table)) {
+            foreach (q("SHOW COLUMNS FROM `$table`")->fetchAll(PDO::FETCH_COLUMN) as $c) {
+                $seen[$key][strtolower((string)$c)] = true;
+            }
+        }
+    }
+    return $seen[$key];
 }
 
 /** Does a column exist on a table? */
 function column_exists(string $table, string $column): bool
 {
-    static $seen = [];
-    $key = $table . '.' . $column;
-    if (isset($seen[$key])) return $seen[$key];
-    $n = scalar('SELECT COUNT(*) FROM information_schema.COLUMNS
-                 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?', [$table, $column]);
-    return $seen[$key] = ((int)$n > 0);
+    return isset(db_columns($table)[strtolower($column)]);
 }

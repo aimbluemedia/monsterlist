@@ -26,22 +26,18 @@ function token_plans(): array
  * the site with it. Superadmin → Diagnostics is where the missing file is
  * reported; the member just sees no tokens until it is run.
  *
- * One information_schema query per request, memoised, and only reached on
- * member pages.
+ * Answered from the memoised SHOW TABLES in db.php, so asking costs one cheap
+ * dictionary read per request however many times it is asked.
  */
 function token_schema(): array
 {
     static $have = null;
     if ($have === null) {
-        $found = array_column(rows(
-            "SELECT TABLE_NAME AS t FROM information_schema.TABLES
-             WHERE TABLE_SCHEMA = DATABASE()
-               AND TABLE_NAME IN ('token_events','promotion_views','articles')"), 't');
         $have = [
-            'tokens'   => in_array('token_events', $found, true)
-                          && in_array('promotion_views', $found, true)
+            'tokens'   => table_exists('token_events')
+                          && table_exists('promotion_views')
                           && column_exists('users', 'token_balance'),
-            'articles' => in_array('articles', $found, true),
+            'articles' => table_exists('articles'),
         ];
     }
     return $have;
