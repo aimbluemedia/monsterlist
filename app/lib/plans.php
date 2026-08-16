@@ -8,6 +8,9 @@ function plans(): array
         'free' => [
             'label'        => 'Free',
             'price'        => 0,
+            // Every plan carries one listing. The paid tiers sell what that one
+            // listing can DO — a full storefront, more promotion, and the
+            // article service — not how many of them you may own.
             'max_listings' => 1,
             // 'enhanced' is the paid-features gate: phone, public email, logo,
             // photo gallery, video, social links and the long description.
@@ -21,7 +24,7 @@ function plans(): array
         'pro' => [
             'label'        => 'Pro',
             'price'        => (float)setting('price_pro_monthly', '19'),
-            'max_listings' => 5,
+            'max_listings' => 1,
             'enhanced'     => true,
             'featured'     => false,
             'analytics'    => true,
@@ -32,7 +35,7 @@ function plans(): array
         'featured' => [
             'label'        => 'Featured',
             'price'        => (float)setting('price_featured_monthly', '49'),
-            'max_listings' => 15,
+            'max_listings' => 1,
             'enhanced'     => true,
             'featured'     => true,
             'analytics'    => true,

@@ -78,8 +78,15 @@ if ($sub === 'dashboard') {
 
 } elseif ($sub === 'listings' && $act === 'new') {
     if (!user_can_add_listing($u)) {
-        flash_set('error', 'Your ' . $plan['label'] . ' plan allows ' . $plan['max_listings'] . ' listing(s). Upgrade to add more.');
-        redirect('/pricing');
+        // Only point at the pricing page when a higher plan actually allows
+        // more. Every plan carries one listing today, so "upgrade to add more"
+        // would send them to a page that does not offer what was promised.
+        $best = max(array_column(plans(), 'max_listings'));
+        $more = $best > (int)$plan['max_listings'];
+        flash_set('error', 'Your ' . $plan['label'] . ' plan covers '
+            . (int)$plan['max_listings'] . ' listing' . ((int)$plan['max_listings'] === 1 ? '' : 's')
+            . ($more ? '. Upgrade to add more.' : ' — edit the one you have, or contact us if you run several businesses.'));
+        redirect($more ? '/pricing' : '/account/listings');
     }
     $errors = [];
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
