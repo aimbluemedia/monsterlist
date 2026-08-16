@@ -25,7 +25,7 @@ $navUsed = $navU ? promos_used_this_month((int)$navU['id']) : 0;
     <a href="/logout">Log out</a>
   </nav>
 
-  <?php if ($navU): ?>
+  <?php if ($navU && tokens_ready()): ?>
     <a class="card card-pad tk-side" href="/account/tokens">
       <b><?= number_format($navBal) ?></b>
       <small>Token<?= $navBal === 1 ? '' : 's' ?></small>

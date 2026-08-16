@@ -298,7 +298,7 @@ if ($sub === 'dashboard') {
 } elseif ($sub === 'article') {
     // The Featured tier's monthly article: the member briefs it, our team
     // writes it, publishes it and posts it out across the network's channels.
-    if (empty($plan['concierge'])) {
+    if (empty($plan['concierge']) || !articles_ready()) {
         view('account/article-upsell', compact('meta', 'u', 'plan'));
     } else {
         $month  = date('Y-m');

@@ -17,6 +17,40 @@ function token_plans(): array
 }
 
 /**
+ * Is the token schema actually present?
+ *
+ * The allowance is granted on every member page load, so before this check a
+ * missing upgrade-v7.sql did not disable tokens — it locked every member out of
+ * their account entirely, with a database error where the dashboard should be.
+ * A feature that has not been installed yet should switch itself off, not take
+ * the site with it. Superadmin → Diagnostics is where the missing file is
+ * reported; the member just sees no tokens until it is run.
+ *
+ * One information_schema query per request, memoised, and only reached on
+ * member pages.
+ */
+function token_schema(): array
+{
+    static $have = null;
+    if ($have === null) {
+        $found = array_column(rows(
+            "SELECT TABLE_NAME AS t FROM information_schema.TABLES
+             WHERE TABLE_SCHEMA = DATABASE()
+               AND TABLE_NAME IN ('token_events','promotion_views','articles')"), 't');
+        $have = [
+            'tokens'   => in_array('token_events', $found, true)
+                          && in_array('promotion_views', $found, true)
+                          && column_exists('users', 'token_balance'),
+            'articles' => in_array('articles', $found, true),
+        ];
+    }
+    return $have;
+}
+
+function tokens_ready(): bool   { return token_schema()['tokens']; }
+function articles_ready(): bool { return token_schema()['articles']; }
+
+/**
  * Economics for one plan, all editable in Superadmin → Settings.
  *
  * Everything except the cost of a promotion varies by plan. That is the point:
@@ -80,6 +114,7 @@ function promos_used_this_month(int $userId): int
 
 function token_balance(int $userId): int
 {
+    if (!tokens_ready()) return 0;
     return (int)scalar('SELECT token_balance FROM users WHERE id = ?', [$userId]);
 }
 
@@ -96,7 +131,7 @@ function token_balance(int $userId): int
 function token_add(int $userId, int $delta, string $reason, ?string $note = null,
                    ?string $onceKey = null, ?string $refType = null, ?int $refId = null): bool
 {
-    if ($delta === 0) return false;
+    if ($delta === 0 || !tokens_ready()) return false;
     try {
         q('INSERT INTO token_events (user_id, delta, reason, once_key, note, ref_type, ref_id)
            VALUES (?,?,?,?,?,?,?)', [$userId, $delta, $reason, $onceKey, $note, $refType, $refId]);
@@ -118,6 +153,7 @@ function token_add(int $userId, int $delta, string $reason, ?string $note = null
  */
 function token_grant_monthly(array $user): bool
 {
+    if (!tokens_ready()) return false;
     $amount = token_monthly_grant((string)$user['plan']);
     if ($amount <= 0) return false;
     $month = date('Y-m');
@@ -129,6 +165,7 @@ function token_grant_monthly(array $user): bool
 /** Tokens earned today, against the daily cap. */
 function token_earned_today(int $userId): int
 {
+    if (!tokens_ready()) return 0;
     return (int)scalar(
         "SELECT COALESCE(SUM(delta),0) FROM token_events
          WHERE user_id = ? AND delta > 0 AND reason = 'promo:view' AND DATE(created_at) = CURDATE()",
@@ -144,7 +181,7 @@ function token_earned_today(int $userId): int
  */
 function token_earn_from_view(?array $user, array $promo): int
 {
-    if (!$user) return 0;
+    if (!$user || !tokens_ready()) return 0;
     if ((int)$promo['user_id'] === (int)$user['id']) return 0;
 
     // The VIEWER's plan sets the rate — paying members earn faster.
@@ -184,7 +221,10 @@ function token_earn_from_view(?array $user, array $promo): int
 function token_spend(int $userId, int $amount, string $note = '',
                      ?string $refType = null, ?int $refId = null): bool
 {
-    if ($amount <= 0) return true;
+    // With no ledger installed the charge cannot be recorded — so let the
+    // action through rather than blocking it. A missing upgrade should cost the
+    // accounting, not the feature.
+    if ($amount <= 0 || !tokens_ready()) return true;
     // Conditional UPDATE: the balance check and the deduction are one statement,
     // so two submissions at once cannot both pass a "can they afford it?" test.
     $ok = q('UPDATE users SET token_balance = token_balance - ? WHERE id = ? AND token_balance >= ?',
@@ -198,7 +238,7 @@ function token_spend(int $userId, int $amount, string $note = '',
 /** Staff adjustment, up or down, always with a reason attached. */
 function token_adjust(int $userId, int $delta, string $note): bool
 {
-    if ($delta === 0) return false;
+    if ($delta === 0 || !tokens_ready()) return false;
     q('INSERT INTO token_events (user_id, delta, reason, note) VALUES (?,?,?,?)',
       [$userId, $delta, 'staff:adjust', $note]);
     q('UPDATE users SET token_balance = GREATEST(0, token_balance + ?) WHERE id = ?', [$delta, $userId]);
@@ -207,6 +247,7 @@ function token_adjust(int $userId, int $delta, string $note): bool
 
 function token_history(int $userId, int $limit = 50): array
 {
+    if (!tokens_ready()) return [];
     $limit = max(1, min(200, $limit));
     return rows("SELECT * FROM token_events WHERE user_id = ? ORDER BY id DESC LIMIT $limit", [$userId]);
 }
@@ -230,6 +271,7 @@ function token_reason_label(array $e): string
 /** This member's article for a given month (default: now), or null. */
 function article_for_month(int $userId, string $month = ''): ?array
 {
+    if (!articles_ready()) return null;
     return row('SELECT * FROM articles WHERE user_id = ? AND month = ?',
                [$userId, $month ?: date('Y-m')]);
 }

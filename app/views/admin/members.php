@@ -23,7 +23,7 @@
         </td>
         <td><?= (int)$m['listing_count'] ?></td>
         <td style="white-space:nowrap">
-          <strong><?= number_format((int)$m['token_balance']) ?></strong>
+          <strong><?= number_format((int)($m['token_balance'] ?? 0)) ?></strong>
           <form method="post" style="display:inline-flex;gap:4px;margin-left:6px"><?= csrf_field() ?>
             <input type="hidden" name="id" value="<?= (int)$m['id'] ?>"><input type="hidden" name="action" value="tokens">
             <input type="number" name="delta" value="" placeholder="±" style="width:64px;padding:4px 6px;font-size:.82rem">

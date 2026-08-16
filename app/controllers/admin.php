@@ -584,7 +584,7 @@ if ($sub === 'dashboard') {
         }
         redirect('/superadmin/articles');
     }
-    $list = rows("SELECT a.*, u.email AS owner_email, u.name AS owner_name, b.name AS business_name
+    $list = !articles_ready() ? [] : rows("SELECT a.*, u.email AS owner_email, u.name AS owner_name, b.name AS business_name
                   FROM articles a
                   JOIN users u ON u.id = a.user_id
                   LEFT JOIN businesses b ON b.id = a.business_id
