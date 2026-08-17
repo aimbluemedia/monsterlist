@@ -672,15 +672,23 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 }
 
 /* ===== My listings: the manage buttons =====
-   Three to a row, two rows. Fixed columns rather than wrapping, so every row on
+   Four to a row, two rows. Fixed columns rather than wrapping, so every row on
    the page lines its buttons up with the row above whatever it happens to
-   contain — View is missing until a listing is live, Upgrade until there is a
-   plan above this one. */
-.ls-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;min-width:250px}
+   contain — View Storefront is missing until a listing is live, Upgrade until
+   there is a plan above this one, the two token buttons until the token tables
+   are installed. */
+.ls-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;min-width:396px}
 .ls-actions form{margin:0;display:block}
-.ls-actions .btn{width:100%;padding-left:8px;padding-right:8px;text-align:center}
+/* a size down from btn-sm: four two-word labels across share this cell with the
+   business name, and the name is what the row is actually about */
+.ls-actions .btn{width:100%;padding-left:6px;padding-right:6px;font-size:.78rem;
+  text-align:center;white-space:nowrap}
 .ls-up{background:var(--green);border-color:var(--green);color:#fff;font-weight:800}
 .ls-up:hover{background:#099268;border-color:#099268;color:#fff}
+/* the balance, on the row it will be spent from */
+.ls-tok{background:var(--accent-soft);border-color:#cfdffb;color:var(--accent);font-weight:800;
+  font-variant-numeric:tabular-nums}
+.ls-tok:hover{background:#dbe7fe;border-color:var(--accent);color:#1d4ed8}
 /* Delete is the one irreversible button here, so it is the one that does not
    look like the others until you are on it. */
 .ls-del{background:var(--card);border-color:var(--border);color:var(--red);font-weight:700;cursor:pointer}
@@ -690,8 +698,13 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
    rewrap. Category and Tier give up their columns to make room: the buttons
    are what this page is for, and a member who has to scroll sideways to reach
    them may as well not have them. Tier is on the line above the table anyway. */
+/* "View Storefront" cannot be a quarter of a phone screen, so the grid halves
+   to two columns and runs four rows deep. Category and Tier stand down as
+   well: the buttons are the point of the page, and a member who has to scroll
+   sideways to reach them may as well not have them. Tier is on the line above
+   the table anyway. */
 @media(max-width:560px){
-  .ls-actions{min-width:150px;gap:4px}
+  .ls-actions{grid-template-columns:repeat(2,minmax(0,1fr));min-width:190px;gap:4px}
   .ls-actions .btn{padding-left:3px;padding-right:3px;font-size:.7rem}
   .ls-table th:nth-child(2),.ls-table td:nth-child(2),
   .ls-table th:nth-child(4),.ls-table td:nth-child(4){display:none}

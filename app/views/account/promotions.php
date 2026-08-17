@@ -27,9 +27,14 @@
       <form method="post" class="card card-pad" style="max-width:640px;margin-top:16px"><?= csrf_field() ?>
         <h3>Submit a promotion</h3>
         <label>Which listing? *</label>
+        <?php // Arriving from "Add Promotion" on a listing means the answer to
+              // this question is already known — asking it again would be the
+              // form forgetting which button was pressed to open it. A rejected
+              // submission being corrected keeps what was posted instead. ?>
+        <?php $preselect = post('business_id') !== '' ? post('business_id') : (int)($_GET['business'] ?? 0); ?>
         <select name="business_id" required>
           <?php foreach ($mine as $b): ?>
-            <option value="<?= (int)$b['id'] ?>" <?= post('business_id') == $b['id'] ? 'selected' : '' ?>><?= e($b['name']) ?></option>
+            <option value="<?= (int)$b['id'] ?>" <?= (int)$preselect === (int)$b['id'] ? 'selected' : '' ?>><?= e($b['name']) ?></option>
           <?php endforeach; ?>
         </select>
 

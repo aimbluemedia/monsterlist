@@ -22,18 +22,25 @@
               <td><span class="badge badge-<?= e($l['status']) ?>"><?= e($l['status']) ?></span></td>
               <td><?= e(ucfirst($l['tier'])) ?></td>
               <td>
-                <?php // Six actions on one line was a run of dot-separated links
-                      // that read as a sentence and clipped on a narrow screen.
-                      // Three to a row, two rows, each one a button you can hit. ?>
+                <?php // What the buttons said before — "Edit", "Profile" — read
+                      // fine in a row of links and not at all as buttons, where
+                      // each one has to name its own destination. Four across,
+                      // two rows. ?>
                 <div class="ls-actions">
                   <?php if ($l['status'] === 'live' && $l['city_id']): ?>
-                    <a class="btn btn-sm btn-ghost" href="<?= e(business_path($l)) ?>">View</a>
+                    <a class="btn btn-sm btn-ghost" href="<?= e(business_path($l)) ?>">View Storefront</a>
                   <?php endif; ?>
-                  <a class="btn btn-sm btn-ghost" href="/account/listings/edit?id=<?= (int)$l['id'] ?>">Edit</a>
+                  <a class="btn btn-sm btn-ghost" href="/account/listings/edit?id=<?= (int)$l['id'] ?>">Edit Listing</a>
                   <a class="btn btn-sm btn-ghost" href="/account/listings/services?id=<?= (int)$l['id'] ?>"
-                     title="Services, social links and review profiles">Profile</a>
+                     title="Services, social links and review profiles">Edit Profile</a>
                   <?php if (tokens_ready()): ?>
-                    <a class="btn btn-sm btn-ghost" href="/account/tokens">Tokens</a>
+                    <?php // The balance itself, not the word — a member deciding
+                          // whether to promote needs the number, and this is the
+                          // row they are deciding on. ?>
+                    <a class="btn btn-sm ls-tok" href="/account/tokens">
+                      <?= number_format((int)$u['token_balance']) ?> Tokens
+                    </a>
+                    <a class="btn btn-sm btn-ghost" href="/account/promotions?business=<?= (int)$l['id'] ?>">Add Promotion</a>
                   <?php endif; ?>
                   <?php // Offered per row, so the upgrade a member starts is tied to
                         // the listing they were looking at when they decided to. ?>
