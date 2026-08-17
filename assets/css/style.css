@@ -671,6 +671,35 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
   .tk-strip-actions{width:100%;justify-content:flex-start}
 }
 
+/* ===== My listings: the manage buttons =====
+   Three to a row, two rows. Fixed columns rather than wrapping, so every row on
+   the page lines its buttons up with the row above whatever it happens to
+   contain — View is missing until a listing is live, Upgrade until there is a
+   plan above this one. */
+.ls-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;min-width:250px}
+.ls-actions form{margin:0;display:block}
+.ls-actions .btn{width:100%;padding-left:8px;padding-right:8px;text-align:center}
+.ls-up{background:var(--green);border-color:var(--green);color:#fff;font-weight:800}
+.ls-up:hover{background:#099268;border-color:#099268;color:#fff}
+/* Delete is the one irreversible button here, so it is the one that does not
+   look like the others until you are on it. */
+.ls-del{background:var(--card);border-color:var(--border);color:var(--red);font-weight:700;cursor:pointer}
+.ls-del:hover{background:#fee2e2;border-color:var(--red)}
+/* Still three across on a phone — two rows is the layout, not a desktop
+   nicety. The labels are one short word each, so they shrink rather than
+   rewrap. Category and Tier give up their columns to make room: the buttons
+   are what this page is for, and a member who has to scroll sideways to reach
+   them may as well not have them. Tier is on the line above the table anyway. */
+@media(max-width:560px){
+  .ls-actions{min-width:150px;gap:4px}
+  .ls-actions .btn{padding-left:3px;padding-right:3px;font-size:.7rem}
+  .ls-table th:nth-child(2),.ls-table td:nth-child(2),
+  .ls-table th:nth-child(4),.ls-table td:nth-child(4){display:none}
+  /* 12px of gutter either side of three columns is 72px of a 390px screen */
+  .ls-table th,.ls-table td{padding:10px 6px}
+  .ls-table td:first-child{font-size:.85rem}
+}
+
 /* ===== upgrade, scoped to one listing =====
    The whole page has to keep answering "which listing am I upgrading?", so it
    opens with the business named on a card of its own before any price appears. */
