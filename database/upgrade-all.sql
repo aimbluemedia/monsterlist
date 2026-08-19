@@ -229,6 +229,13 @@ UPDATE settings SET value = '150' WHERE name = 'tokens_grant_pro'  AND value = '
 
 -- ===========================================================================
 -- Report. Every line should read OK. Anything else is worth telling me about.
+--
+-- Two separate statements on purpose. Putting the settings count in the same
+-- UNION as the information_schema lookups made some MySQL builds resolve the
+-- unqualified name `settings` inside information_schema and stop with
+--   #1109 - Unknown table 'settings' in information_schema
+-- — after all the real work above had already succeeded, which is a confusing
+-- way to be told everything went fine.
 -- ===========================================================================
 SELECT 'blocklist table'          AS piece, IF(COUNT(*) > 0, 'OK', 'MISSING') AS state FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'blocklist'
 UNION ALL SELECT 'token_events table',      IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'token_events'
@@ -239,8 +246,13 @@ UNION ALL SELECT 'users.website',           IF(COUNT(*) > 0, 'OK', 'MISSING') FR
 UNION ALL SELECT 'users.token_balance',     IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'      AND COLUMN_NAME = 'token_balance'
 UNION ALL SELECT 'users.stripe_customer_id',IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'      AND COLUMN_NAME = 'stripe_customer_id'
 UNION ALL SELECT 'businesses.review_links', IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'review_links'
-UNION ALL SELECT 'businesses.profile',      IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'profile'
-UNION ALL SELECT 'token settings',          IF(COUNT(*) = 15, 'OK', CONCAT('ONLY ', COUNT(*), ' OF 15')) FROM settings WHERE name IN
+UNION ALL SELECT 'businesses.profile',      IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'profile';
+
+-- The fifteen token settings, counted on their own.
+SELECT 'token settings' AS piece,
+       IF(COUNT(*) = 15, 'OK', CONCAT('ONLY ', COUNT(*), ' OF 15')) AS state
+  FROM settings
+ WHERE name IN
    ('tokens_cost_promo','tokens_grant_free','tokens_grant_pro','tokens_grant_featured',
     'tokens_earn_free','tokens_earn_pro','tokens_earn_featured',
     'tokens_daily_free','tokens_daily_pro','tokens_daily_featured',
