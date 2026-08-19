@@ -214,6 +214,84 @@ if ($sub === 'dashboard') {
          $joins WHERE $sqlWhere ORDER BY b.created_at DESC LIMIT 30 OFFSET $offset", $params);
     view_raw('admin/listings', compact('meta', 'u', 'list', 'status', 'page', 'term', 'total'));
 
+} elseif ($sub === 'intake') {
+    // Accounts created by us rather than by somebody filling in the sign-up
+    // form: paste in an email, a password and a domain, and press a button to
+    // have AI read that domain and build the listing.
+    require_superadmin();
+    if (!intake_ready()) {
+        flash_set('error', 'Member intake needs a database upgrade — run database/upgrade-all.sql, then reload this page.');
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        csrf_check();
+        $action = post('action');
+
+        if ($action === 'add') {
+            // One typed-in member, or a pasted block of them. Both go through
+            // the same create call, so both validate identically.
+            $lines = trim((string)($_POST['bulk'] ?? '')) !== ''
+                ? intake_parse_bulk((string)$_POST['bulk'])
+                : [['email' => post('email'), 'password' => (string)($_POST['password'] ?? ''), 'domain' => post('domain')]];
+
+            $made = [];
+            foreach ($lines as $line) {
+                if (isset($line['error'])) { flash_set('error', $line['error']); continue; }
+                [$newUser, $errs] = intake_create_member($line['email'], $line['password'], $line['domain']);
+                foreach ($errs as $e) flash_set('error', $e);
+                if ($newUser) $made[] = $newUser['email'] . '  ' . $newUser['plain_password'];
+            }
+            if ($made) {
+                // The only time these passwords are ever readable. They are
+                // hashed in the database and no page can show them again, so
+                // this message is the one chance to copy them out.
+                flash_set('success', 'Added ' . count($made) . ' member' . (count($made) === 1 ? '' : 's')
+                    . '. Copy the passwords now — they cannot be shown again: ' . implode(' · ', $made));
+            }
+            redirect('/superadmin/intake');
+        }
+
+        if ($action === 'build') {
+            $target = row('SELECT * FROM users WHERE id = ? AND intake_at IS NOT NULL', [(int)post('id')]);
+            if (!$target) {
+                flash_set('error', 'No such intake member.');
+            } else {
+                [$bizId, $err] = intake_build_listing($target);
+                if ($bizId) {
+                    flash_set('success', 'Listing built for ' . $target['website']
+                        . ' and left pending — check it before it goes live.');
+                    redirect('/superadmin/listings/edit?id=' . $bizId . '&back=pending');
+                }
+                flash_set('error', 'Could not build ' . $target['website'] . ': ' . $err);
+            }
+            redirect('/superadmin/intake');
+        }
+
+        if ($action === 'delete') {
+            // Only while it is still just an account. Once there is a listing
+            // this is an ordinary member and belongs on the Members page, where
+            // deleting one has the rest of its consequences to think about.
+            $id = (int)post('id');
+            $target = row('SELECT * FROM users WHERE id = ? AND intake_at IS NOT NULL', [$id]);
+            if ($target && !scalar('SELECT id FROM businesses WHERE owner_id = ?', [$id])) {
+                q('DELETE FROM users WHERE id = ?', [$id]);
+                flash_set('success', 'Removed ' . $target['email'] . '.');
+            } else {
+                flash_set('error', 'That member already has a listing — use the Members page.');
+            }
+            redirect('/superadmin/intake');
+        }
+
+        if ($action === 'rotate_key') {
+            intake_api_key_rotate();
+            flash_set('success', 'New API key generated. Anything using the old one stops working now.');
+            redirect('/superadmin/intake');
+        }
+    }
+
+    $queue  = intake_queue();
+    $apiKey = intake_ready() ? intake_api_key() : '';
+    $meta['title'] = "Member intake — $site";
+    view_raw('admin/intake', compact('meta', 'u', 'queue', 'apiKey'));
+
 } elseif ($sub === 'diagnostics') {
     // Answers the two questions that follow every upload: is this build live,
     // and has the database caught up with it? Plus a count of what listings
@@ -246,6 +324,13 @@ if ($sub === 'dashboard') {
                     && column_exists('businesses', 'profile'),
         'fix'    => 'Import database/upgrade-all.sql',
         'detail' => 'Tokens, the long-form Profile section and the monthly article queue. Without it the member area fails on load.',
+    ];
+
+    $checks[] = [
+        'label'  => 'users.intake_at',
+        'ok'     => intake_ready(),
+        'fix'    => 'Import database/upgrade-all.sql',
+        'detail' => 'Member intake — accounts added by staff or through the API, and the queue their listings are built from.',
     ];
 
     $schemaOk = true;

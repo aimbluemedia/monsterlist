@@ -104,6 +104,11 @@ switch (true) {
         require $controllers . '/admin.php';
         break;
 
+    // Key-authenticated, no session. Everything it can do is in api.php.
+    case $first === 'api':
+        require $controllers . '/api.php';
+        break;
+
     case $first === 'stripe':
         require $controllers . '/payments.php';
         break;

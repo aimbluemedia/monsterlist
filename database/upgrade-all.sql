@@ -176,6 +176,25 @@ SET @ddl = IF((SELECT COUNT(*) FROM information_schema.COLUMNS
   'ALTER TABLE users ADD COLUMN token_balance INT NOT NULL DEFAULT 0');
 PREPARE s FROM @ddl; EXECUTE s; DEALLOCATE PREPARE s;
 
+-- Member intake: when this account was created by staff or through the API
+-- rather than by somebody filling in the sign-up form. NULL for a normal
+-- signup, which is what keeps the intake queue to the accounts we made.
+SET @ddl = IF((SELECT COUNT(*) FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'
+                  AND COLUMN_NAME = 'intake_at') > 0,
+  'DO 0',
+  'ALTER TABLE users ADD COLUMN intake_at DATETIME DEFAULT NULL');
+PREPARE s FROM @ddl; EXECUTE s; DEALLOCATE PREPARE s;
+
+-- The last thing that went wrong building this member's listing, so a row that
+-- failed says why instead of just sitting in the queue looking untouched.
+SET @ddl = IF((SELECT COUNT(*) FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'
+                  AND COLUMN_NAME = 'intake_note') > 0,
+  'DO 0',
+  'ALTER TABLE users ADD COLUMN intake_note VARCHAR(255) DEFAULT NULL');
+PREPARE s FROM @ddl; EXECUTE s; DEALLOCATE PREPARE s;
+
 -- Stripe's id for this member as a customer, so a second purchase reuses the
 -- card on file instead of creating a duplicate customer.
 SET @ddl = IF((SELECT COUNT(*) FROM information_schema.COLUMNS
@@ -274,6 +293,8 @@ UNION ALL SELECT 'subscriptions table',     IF(COUNT(*) > 0, 'OK', 'MISSING') FR
 UNION ALL SELECT 'users.website',           IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'      AND COLUMN_NAME = 'website'
 UNION ALL SELECT 'users.token_balance',     IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'      AND COLUMN_NAME = 'token_balance'
 UNION ALL SELECT 'users.stripe_customer_id',IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'      AND COLUMN_NAME = 'stripe_customer_id'
+UNION ALL SELECT 'users.intake_at',          IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'      AND COLUMN_NAME = 'intake_at'
+UNION ALL SELECT 'users.intake_note',        IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'      AND COLUMN_NAME = 'intake_note'
 UNION ALL SELECT 'businesses.review_links', IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'review_links'
 UNION ALL SELECT 'businesses.profile',      IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'profile';
 

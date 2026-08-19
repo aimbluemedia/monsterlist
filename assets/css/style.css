@@ -671,6 +671,31 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
   .tk-strip-actions{width:100%;justify-content:flex-start}
 }
 
+/* ===== Superadmin: member intake ===== */
+.intake-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:6px}
+.intake-bulk{margin:10px 0 14px}
+.intake-bulk summary{cursor:pointer;font-weight:700;font-size:.9rem;color:var(--accent)}
+.intake-bulk textarea{width:100%;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem}
+.intake-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.intake-actions form{margin:0}
+/* Build is the button that spends an AI call and reads somebody else's site,
+   so it is the one that looks like a decision. */
+.intake-build{background:var(--green);border-color:var(--green);color:#fff;font-weight:800;cursor:pointer;white-space:nowrap}
+.intake-build:hover{background:#099268;border-color:#099268;color:#fff}
+.intake-del{background:var(--card);border-color:var(--border);color:var(--red);font-weight:700;cursor:pointer}
+.intake-del:hover{background:#fee2e2;border-color:var(--red)}
+.intake-err{color:var(--red);font-weight:600}
+.intake-gap{color:var(--gold);font-weight:700}
+.intake-code{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;
+  overflow-x:auto;font-size:.8rem;line-height:1.55;margin:10px 0;white-space:pre}
+/* A 48-character key is one unbreakable word, and one unbreakable word wider
+   than the phone pushes the whole page sideways. */
+.intake-kv{align-items:flex-start;gap:12px}
+.intake-kv span:last-child{min-width:0;word-break:break-all;text-align:right}
+@media(max-width:700px){
+  .intake-fields{grid-template-columns:minmax(0,1fr)}
+}
+
 /* ===== My listings: the manage buttons =====
    Four to a row, two rows. Fixed columns rather than wrapping, so every row on
    the page lines its buttons up with the row above whatever it happens to
