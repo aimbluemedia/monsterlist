@@ -17,7 +17,14 @@
 --
 --   It ends with a report listing every table and column it cares about, so
 --   you can see the result rather than trust it. Every line should say OK.
---   Superadmin -> Diagnostics says the same thing from inside the site.
+--
+--   IF ONLY THE REPORT ERRORS, THE UPGRADE STILL WORKED. The report is the
+--   last thing in the file and changes nothing; phpMyAdmin has a habit of
+--   losing track of which database it is in once a query reads
+--   information_schema, which is where any "#1109 - Unknown table ... in
+--   information_schema" comes from. Everything above it has already run.
+--   Superadmin -> Diagnostics reports the same state from inside the site,
+--   and is the better place to check.
 --
 -- WHAT IT COVERS
 --   v4  blocklist table
@@ -230,13 +237,35 @@ UPDATE settings SET value = '150' WHERE name = 'tokens_grant_pro'  AND value = '
 -- ===========================================================================
 -- Report. Every line should read OK. Anything else is worth telling me about.
 --
--- Two separate statements on purpose. Putting the settings count in the same
--- UNION as the information_schema lookups made some MySQL builds resolve the
--- unqualified name `settings` inside information_schema and stop with
+-- ORDER MATTERS HERE, for a reason that is nothing to do with SQL.
+--
+-- phpMyAdmin reads the statements it runs and, on seeing a query whose FROM is
+-- `information_schema`, switches the database it thinks you are working in.
+-- Anything after that looking for one of your own tables then fails with
 --   #1109 - Unknown table 'settings' in information_schema
--- — after all the real work above had already succeeded, which is a confusing
--- way to be told everything went fine.
+-- even though the table is there and every statement above it worked.
+--
+-- It only reacts to a top-level SELECT ... FROM information_schema, which is
+-- why the column guards further up are unaffected: theirs is tucked inside
+-- SET @ddl = IF((SELECT ...)), where the parser does not go looking.
+--
+-- So: the settings count runs first, and it is built as a prepared statement
+-- naming its own database, which puts the table name inside a string where
+-- nothing can second-guess it. The information_schema report goes last, where
+-- there is nothing left after it to break.
 -- ===========================================================================
+
+SET @rep = CONCAT(
+  'SELECT ''token settings'' AS piece, ',
+  'IF(COUNT(*) = 15, ''OK'', CONCAT(''ONLY '', COUNT(*), '' OF 15'')) AS state ',
+  'FROM `', DATABASE(), '`.settings WHERE name IN (',
+  '''tokens_cost_promo'',''tokens_grant_free'',''tokens_grant_pro'',''tokens_grant_featured'',',
+  '''tokens_earn_free'',''tokens_earn_pro'',''tokens_earn_featured'',',
+  '''tokens_daily_free'',''tokens_daily_pro'',''tokens_daily_featured'',',
+  '''promos_max_free'',''promos_max_pro'',''promos_max_featured'',',
+  '''feed_boost_pro'',''feed_boost_featured'')');
+PREPARE r FROM @rep; EXECUTE r; DEALLOCATE PREPARE r;
+
 SELECT 'blocklist table'          AS piece, IF(COUNT(*) > 0, 'OK', 'MISSING') AS state FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'blocklist'
 UNION ALL SELECT 'token_events table',      IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'token_events'
 UNION ALL SELECT 'promotion_views table',   IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'promotion_views'
@@ -248,13 +277,4 @@ UNION ALL SELECT 'users.stripe_customer_id',IF(COUNT(*) > 0, 'OK', 'MISSING') FR
 UNION ALL SELECT 'businesses.review_links', IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'review_links'
 UNION ALL SELECT 'businesses.profile',      IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'profile';
 
--- The fifteen token settings, counted on their own.
-SELECT 'token settings' AS piece,
-       IF(COUNT(*) = 15, 'OK', CONCAT('ONLY ', COUNT(*), ' OF 15')) AS state
-  FROM settings
- WHERE name IN
-   ('tokens_cost_promo','tokens_grant_free','tokens_grant_pro','tokens_grant_featured',
-    'tokens_earn_free','tokens_earn_pro','tokens_earn_featured',
-    'tokens_daily_free','tokens_daily_pro','tokens_daily_featured',
-    'promos_max_free','promos_max_pro','promos_max_featured',
-    'feed_boost_pro','feed_boost_featured');
+-- Nothing goes below this line. See the note above the report.
