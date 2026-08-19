@@ -14,9 +14,10 @@
 
 <div class="card card-pad ed-card">
   <h3>Database upgrades</h3>
-  <p class="mute ed-note">Each release that adds a column ships a numbered file in
-    <code>database/</code>. Uploading the files does not run them — import each one in
-    phpMyAdmin, in order.</p>
+  <p class="mute ed-note">Uploading a release does not change the database. If anything below is
+    missing, open phpMyAdmin → your database → SQL tab and run
+    <code>database/upgrade-all.sql</code> from the release zip. It skips whatever is already
+    there, so it is safe to run at any time, and it never drops anything.</p>
 
   <?php if ($schemaOk): ?>
     <p class="flash flash-success" style="margin:0">Every upgrade has been applied. The database matches this build.</p>

@@ -16,7 +16,7 @@ if (PHP_VERSION_ID < 70400) {
 // Build number of this upload. Shown in the control panel under Diagnostics so
 // "is my change live?" is a question the site answers itself, rather than one
 // you have to work out from what a page looks like. Bumped with each release.
-define('ML_BUILD', 'v87');
+define('ML_BUILD', 'v88');
 
 define('APP_ROOT', __DIR__);
 define('BASE_ROOT', dirname(__DIR__));
@@ -59,9 +59,9 @@ set_exception_handler(function (Throwable $e) {
            . '<p>The uploaded code expects a table or column this database does not have yet:</p>'
            . '<p><code>' . htmlspecialchars($msg) . '</code></p>'
            . '<p>Fix: in hPanel open <strong>phpMyAdmin</strong>, pick this site’s database, open the '
-           . '<strong>SQL</strong> tab, and run the <code>database/upgrade-*.sql</code> files from the '
-           . 'release zip that you have not run yet, oldest first. Re-running one you have already '
-           . 'applied is harmless — it just reports that the table or column exists.</p>';
+           . '<strong>SQL</strong> tab, and run <code>database/upgrade-all.sql</code> from the release '
+           . 'zip. It skips whatever the database already has, so it is safe whether none, some or all '
+           . 'of the upgrades have been applied, and it never drops anything.</p>';
     } else {
         echo '<h1>Something went wrong</h1><p>The page could not be generated.</p>'
            . '<p><code>' . htmlspecialchars(get_class($e)) . '</code> in <code>'

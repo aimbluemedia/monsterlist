@@ -25,11 +25,31 @@ cPanel → MySQL Databases:
 STEP 3 — IMPORT THE SQL FILES (phpMyAdmin → Import), IN THIS ORDER
 ------------------------------------------------------------------
   1. database/schema.sql             (tables — required)
-  2. database/seed.sql               (countries, states, cities, categories — required)
-  3. database/create-superadmin.sql  (your admin login — required;
+  2. database/upgrade-all.sql        (everything added since schema.sql was
+                                      written — required, see below)
+  3. database/seed.sql               (countries, states, cities, categories — required)
+  4. database/create-superadmin.sql  (your admin login — required;
                                       edit the email in the file first!)
-  4. database/demo-data.sql          (OPTIONAL: 695 demo listings so pages
+  5. database/demo-data.sql          (OPTIONAL: 695 demo listings so pages
                                       aren't empty; fresh installs only)
+
+  ABOUT upgrade-all.sql
+  Releases that add a table or column ship a numbered upgrade-v*.sql. Each
+  has to be run once, in order, and a plain ALTER fails outright if the
+  column is already there — which stops the rest of the batch. Half-applied
+  databases are easy to end up with and unpleasant to get out of.
+
+  upgrade-all.sql replaces the whole set. Every step checks first and skips
+  what is already done, so it is safe on a database that is fully current,
+  partly upgraded, or years behind, and safe to run again any time. It only
+  ever adds — it drops no table, no column and no row.
+
+  Run it after ANY release that says the database changed. It prints a
+  report at the end; every line should read OK. Superadmin → Diagnostics
+  says the same from inside the site.
+
+  (The numbered files are still in database/ for reference. You do not need
+  them if you run this one.)
 
 STEP 4 — CONFIGURE
 ------------------

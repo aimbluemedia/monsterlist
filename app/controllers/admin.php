@@ -223,19 +223,19 @@ if ($sub === 'dashboard') {
     $checks[] = [
         'label'  => 'Blocklist table',
         'ok'     => table_exists('blocklist'),
-        'fix'    => 'Import database/upgrade-v4.sql',
+        'fix'    => 'Import database/upgrade-all.sql',
         'detail' => 'Rejected emails and domains. Without it, Reject cannot block a re-signup.',
     ];
     $checks[] = [
         'label'  => 'users.website',
         'ok'     => column_exists('users', 'website'),
-        'fix'    => 'Import database/upgrade-v5.sql',
+        'fix'    => 'Import database/upgrade-all.sql',
         'detail' => 'The domain given at sign-up, used to pre-fill the listing and drive AI fill.',
     ];
     $checks[] = [
         'label'  => 'businesses.review_links',
         'ok'     => column_exists('businesses', 'review_links'),
-        'fix'    => 'Import database/upgrade-v6.sql',
+        'fix'    => 'Import database/upgrade-all.sql',
         'detail' => 'Review-site profiles from the setup wizard. Without it the “Our Reviews” card can never appear, and saving a listing fails.',
     ];
 
@@ -244,7 +244,7 @@ if ($sub === 'dashboard') {
         'ok'     => table_exists('token_events') && table_exists('articles')
                     && table_exists('promotion_views') && column_exists('users', 'token_balance')
                     && column_exists('businesses', 'profile'),
-        'fix'    => 'Import database/upgrade-v7.sql',
+        'fix'    => 'Import database/upgrade-all.sql',
         'detail' => 'Tokens, the long-form Profile section and the monthly article queue. Without it the member area fails on load.',
     ];
 
