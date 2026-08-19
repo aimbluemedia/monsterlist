@@ -52,18 +52,14 @@ if ($path === '/stripe/webhook' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $obj  = $event['data']['object'] ?? [];
 
     if ($type === 'checkout.session.completed') {
-        $userId = (int)($obj['metadata']['user_id'] ?? 0);
-        $plan   = $obj['metadata']['plan'] ?? '';
-        $subId  = $obj['subscription'] ?? null;
-        if ($userId && in_array($plan, ['pro', 'featured'], true)) {
-            q('UPDATE users SET plan = ? WHERE id = ?', [$plan, $userId]);
-            sync_business_tiers($userId, $plan);
-            notify_plan_change($userId, $plan);
-            if ($subId) {
-                q('INSERT INTO subscriptions (user_id, plan, status, stripe_subscription_id) VALUES (?,?,"active",?)
-                   ON DUPLICATE KEY UPDATE plan = VALUES(plan), status = "active"', [$userId, $plan, $subId]);
-            }
-        }
+        // Same call the member's return from checkout makes, so whichever gets
+        // here first grants the plan and the second is a no-op.
+        $subId = $obj['subscription'] ?? null;
+        stripe_apply_plan(
+            (int)($obj['metadata']['user_id'] ?? 0),
+            (string)($obj['metadata']['plan'] ?? ''),
+            is_string($subId) ? $subId : null
+        );
     } elseif (in_array($type, ['customer.subscription.updated', 'customer.subscription.deleted'], true)) {
         $subId  = $obj['id'] ?? '';
         $userId = (int)($obj['metadata']['user_id'] ?? 0);

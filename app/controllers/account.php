@@ -136,11 +136,25 @@ if ($sub === 'dashboard') {
     if (!$biz) not_found();
     // Stripe sends the member back here rather than to a general billing page,
     // so the listing they paid to upgrade is what they are looking at when they
-    // land. The plan itself arrives with the webhook, moments later.
+    // land — and the plan is granted right now from the session id it sends
+    // with them, rather than waiting on a webhook that may never have been set
+    // up. Re-read everything afterwards: the form about to render decides which
+    // fields exist from the plan, and it must be the plan just bought.
     if (isset($_GET['upgraded'])) {
-        flash_set('success', 'Payment received — thank you! ' . $biz['name']
-            . ' moves onto your new plan within a few seconds of Stripe confirming. '
-            . 'Reload this page if the new fields are not here yet.');
+        $bought = stripe_fulfill_session((string)($_GET['session_id'] ?? ''), (int)$u['id']);
+        if ($bought !== '') {
+            // Straight from the table, not current_user(): that memoises the row
+            // it read at the top of this request, which still says "free".
+            $u    = row('SELECT * FROM users WHERE id = ?', [(int)$u['id']]) ?? $u;
+            $plan = plan_for($u);
+            $biz  = own_business((int)$biz['id'], (int)$u['id']) ?? $biz;
+            flash_set('success', 'Payment received — thank you! ' . $biz['name']
+                . ' is now on the ' . $plan['label'] . ' plan. The new fields are below.');
+        } else {
+            flash_set('success', 'Payment received — thank you! ' . $biz['name']
+                . ' moves onto your new plan within a few seconds of Stripe confirming. '
+                . 'Reload this page if the new fields are not here yet.');
+        }
     }
     $errors = [];
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -370,8 +384,18 @@ if ($sub === 'dashboard') {
     }
 
 } elseif ($sub === 'billing') {
+    if (isset($_GET['upgraded'])) {
+        // Same as the listing return: settle the payment here rather than hope
+        // the webhook already has.
+        if (stripe_fulfill_session((string)($_GET['session_id'] ?? ''), (int)$u['id']) !== '') {
+            $u    = row('SELECT * FROM users WHERE id = ?', [(int)$u['id']]) ?? $u;
+            $plan = plan_for($u);
+            flash_set('success', 'Payment received — welcome aboard! You are now on the ' . $plan['label'] . ' plan.');
+        } else {
+            flash_set('success', 'Payment received — welcome aboard! Your plan updates within a few seconds of Stripe confirming.');
+        }
+    }
     $subRow = row('SELECT * FROM subscriptions WHERE user_id = ? ORDER BY id DESC LIMIT 1', [$u['id']]);
-    if (isset($_GET['upgraded'])) flash_set('success', 'Payment received — welcome aboard! Your plan updates within a few seconds of Stripe confirming.');
     view('account/billing', compact('meta', 'u', 'plan', 'subRow'));
 
 } elseif ($sub === 'settings') {

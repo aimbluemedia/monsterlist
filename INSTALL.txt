@@ -51,18 +51,60 @@ STEP 5 — FIRST LOGIN
 
 STEP 6 — STRIPE (monthly memberships)
 -------------------------------------
-  1. dashboard.stripe.com → create a Product with TWO recurring monthly
-     Prices (Pro and Featured)
-  2. Put your API keys (sk_..., pk_...) in app/config.php → 'stripe'
-  3. Paste the two price IDs (price_...) in Superadmin panel → Settings
-  4. Stripe → Developers → Webhooks → Add endpoint:
+Do the whole of this with the Test/Live toggle in Stripe set to TEST
+first. Keys and price IDs are per-mode: a live price ID under a test key
+looks perfectly valid and fails only when a member tries to pay.
+
+  1. dashboard.stripe.com → Product catalogue → add two products, each
+     with ONE recurring MONTHLY price:
+        Pro       $19.00 / month
+        Featured  $49.00 / month
+     (These must match the figures in Superadmin → Settings, which are
+     what the pricing page prints. Stripe is what actually charges.)
+
+  2. Open each product and copy its PRICE id — the one starting
+        price_...
+     NOT the product id starting prod_.... This is the single most
+     common mistake and Diagnostics checks for it.
+
+  3. Superadmin panel → Settings → paste them into
+        Pro price ID
+        Featured price ID
+
+  4. Stripe → Developers → API keys → copy the secret key (sk_test_...)
+     into app/config.php:
+        'stripe' => [
+            'secret_key'      => 'sk_test_...',
+            'publishable_key' => 'pk_test_...',
+            'webhook_secret'  => '',        // filled in at step 5
+        ],
+
+  5. Stripe → Developers → Webhooks → Add endpoint:
         https://monsterlist.org/stripe/webhook
      Events:  checkout.session.completed
               customer.subscription.updated
               customer.subscription.deleted
-     Copy its signing secret (whsec_...) into app/config.php
-  5. Test with a Stripe test card (4242 4242 4242 4242) using test keys
-     before switching to live keys.
+     Copy its signing secret (whsec_...) into app/config.php.
+
+     Upgrades work without this — the site confirms the payment itself
+     when the member returns from Stripe. The webhook is what tells the
+     site about everything that happens LATER: a card that fails, a
+     cancellation, a renewal. Without it a member who cancels in Stripe
+     keeps their plan here forever.
+
+  6. Superadmin panel → Diagnostics → "Stripe payments". Every row must
+     be a tick. It looks the two price IDs up in Stripe, so it catches a
+     wrong ID, an archived price, a one-off price where a subscription
+     was meant, and a test/live mismatch.
+
+  7. Sign up as a test member, press Upgrade, pay with Stripe's test card
+        4242 4242 4242 4242, any future expiry, any CVC
+     You should land back on your listing with the new plan already
+     applied. Check Superadmin → Members shows the new plan.
+
+  8. Only then: flip Stripe to LIVE, repeat steps 1-5 with the live
+     product, live price IDs and live keys (they are all different), and
+     re-check Diagnostics.
 
 STEP 6b — AI FILL (optional but recommended)
 --------------------------------------------

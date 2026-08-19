@@ -251,6 +251,41 @@ if ($sub === 'dashboard') {
     $schemaOk = true;
     foreach ($checks as $c) { if (!$c['ok']) $schemaOk = false; }
 
+    // ---- Stripe ----
+    // Payments fail in ways nobody reports: a member reaches the card form,
+    // something is wrong, and they close the tab. Every part of the setup is
+    // checked here instead, and the two price ids are checked against Stripe
+    // itself — a syntactically fine id for a price that does not exist, or a
+    // product id pasted where a price id goes, looks perfect in Settings and
+    // breaks only at the moment someone tries to pay.
+    $stripe = [
+        'mode'    => stripe_mode(),
+        'webhook' => stripe_config('webhook_secret') !== '',
+        'url'     => site_url('/stripe/webhook'),
+        'prices'  => [],
+    ];
+    foreach (['pro' => 'stripe_price_pro', 'featured' => 'stripe_price_featured'] as $planKey => $settingKey) {
+        $id   = setting($settingKey);
+        $info = $id !== '' ? stripe_price_info($id) : null;
+        $stripe['prices'][$planKey] = [
+            'id'        => $id,
+            'label'     => $info ? stripe_price_label($info) : '',
+            'ok'        => $info !== null,
+            'recurring' => $info !== null && !empty($info['recurring']),
+            'live'      => $info !== null && !empty($info['livemode']),
+            'active'    => $info === null || !empty($info['active']),
+        ];
+    }
+    // A live-mode price under a test key (or the reverse) is the mistake that
+    // survives every other check: both halves are real, they just are not from
+    // the same Stripe.
+    $stripe['mismatch'] = false;
+    foreach ($stripe['prices'] as $p) {
+        if ($p['ok'] && $stripe['mode'] !== '' && $p['live'] !== ($stripe['mode'] === 'live')) $stripe['mismatch'] = true;
+    }
+    $stripe['ready'] = stripe_configured() && $stripe['webhook'] && !$stripe['mismatch']
+                    && $stripe['prices']['pro']['ok'] && $stripe['prices']['featured']['ok'];
+
     // What listings actually hold. A zero here explains an absent card far
     // faster than reading the storefront template does.
     $stats = ['live' => (int)scalar("SELECT COUNT(*) FROM businesses WHERE status = 'live'")];
@@ -316,7 +351,7 @@ if ($sub === 'dashboard') {
     }
 
     $meta = ['title' => "Diagnostics — $site", 'robots' => 'noindex'];
-    view_raw('admin/diagnostics', compact('meta', 'u', 'checks', 'schemaOk', 'stats', 'probe', 'found', 'matches', 'cards'));
+    view_raw('admin/diagnostics', compact('meta', 'u', 'checks', 'schemaOk', 'stats', 'probe', 'found', 'matches', 'cards', 'stripe'));
 
 } elseif ($sub === 'blocked') {
     // Emails barred from signing up and domains barred from being listed.
