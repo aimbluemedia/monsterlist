@@ -12,6 +12,10 @@ switch ($path) {
             // The account is identified by its business domain, so the domain
             // can be checked before an account exists at all.
             $domain = normalize_domain(post('website'));
+            // Normalising gets a pasted URL into the shape of a host; it does
+            // not decide whether the result is one. "-bad.com" and "a..b.com"
+            // survive the first and fail the second.
+            if ($domain !== null && !domain_is_valid($domain)) $domain = null;
             $email  = filter_var(post('email'), FILTER_VALIDATE_EMAIL);
             $pass   = (string)($_POST['password'] ?? '');
             if ($domain === null)        $errors[] = 'Please enter your website, like yourbusiness.com.';
@@ -36,9 +40,12 @@ switch ($path) {
             }
             if (!$errors) {
                 // No name field any more — the domain doubles as the display
-                // name until the member sets one in account settings.
+                // name until the member sets one in account settings. `name`
+                // is the narrower column, so it is cut to fit: a long domain
+                // otherwise failed the insert and the visitor got a 500 on the
+                // sign-up form with their account not created.
                 q('INSERT INTO users (email, password_hash, name, website) VALUES (?,?,?,?)',
-                  [$email, password_hash($pass, PASSWORD_DEFAULT), $domain, $domain]);
+                  [$email, password_hash($pass, PASSWORD_DEFAULT), mb_substr($domain, 0, 140), $domain]);
                 $user = row('SELECT * FROM users WHERE email = ?', [$email]);
                 login_user($user);
                 // Best-effort: the account exists and the member is signed in,

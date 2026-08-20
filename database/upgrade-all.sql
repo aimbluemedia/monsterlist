@@ -176,6 +176,17 @@ SET @ddl = IF((SELECT COUNT(*) FROM information_schema.COLUMNS
   'ALTER TABLE users ADD COLUMN token_balance INT NOT NULL DEFAULT 0');
 PREPARE s FROM @ddl; EXECUTE s; DEALLOCATE PREPARE s;
 
+-- A hostname is allowed to be 253 characters. users.website was cut to 190,
+-- which silently shortened the few real domains longer than that into
+-- something that matches nothing. Only rebuilt when it is still too narrow —
+-- MODIFY rewrites the table, and there is no reason to do that on every run.
+SET @ddl = IF((SELECT COALESCE(MAX(CHARACTER_MAXIMUM_LENGTH), 255) FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'
+                  AND COLUMN_NAME = 'website') >= 255,
+  'DO 0',
+  'ALTER TABLE users MODIFY COLUMN website VARCHAR(255) DEFAULT NULL');
+PREPARE s FROM @ddl; EXECUTE s; DEALLOCATE PREPARE s;
+
 -- Member intake: when this account was created by staff or through the API
 -- rather than by somebody filling in the sign-up form. NULL for a normal
 -- signup, which is what keeps the intake queue to the accounts we made.

@@ -77,14 +77,13 @@ function intake_create_member(string $email, string $password, string $domain): 
         $errors[] = $email . ' already has an account.';
     }
 
-    // Accept anything a person might paste — a bare domain, a full URL, a
-    // trailing slash — and store the host, which is what signup stores.
-    $host = $domain;
-    if (preg_match('#^https?://#i', $host)) $host = (string)parse_url($host, PHP_URL_HOST);
-    $host = preg_replace('#/.*$#', '', trim($host));
-    $host = preg_replace('/^www\./i', '', (string)$host);
-    if ($host === '' || !preg_match('/^[a-z0-9.-]+\.[a-z]{2,}$/i', $host)) {
+    // The same two calls the sign-up form makes, rather than a second opinion
+    // written here: intake and signup have to agree on what a domain is, or the
+    // duplicate checks between them stop matching.
+    $host = normalize_domain($domain);
+    if ($host === null || !domain_is_valid($host)) {
         $errors[] = '"' . $domain . '" is not a domain name.';
+        $host = '';
     }
 
     if ($password === '') $password = intake_password();
@@ -93,9 +92,11 @@ function intake_create_member(string $email, string $password, string $domain): 
     if ($errors) return [null, $errors];
 
     // The domain doubles as the display name until the member sets one, which
-    // is exactly what the sign-up form does.
+    // is exactly what the sign-up form does. `name` is the narrower column of
+    // the two, so it is cut to fit: a display label losing its tail is nothing,
+    // where the same domain overflowing the column is a fatal insert.
     q('INSERT INTO users (email, password_hash, name, website, intake_at) VALUES (?,?,?,?,NOW())',
-      [$email, password_hash($password, PASSWORD_DEFAULT), $host, $host]);
+      [$email, password_hash($password, PASSWORD_DEFAULT), mb_substr($host, 0, 140), $host]);
 
     $user = row('SELECT * FROM users WHERE email = ?', [$email]);
     $user['plain_password'] = $password;   // for this request only, never stored

@@ -684,6 +684,9 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 .intake-build:hover{background:#099268;border-color:#099268;color:#fff}
 .intake-del{background:var(--card);border-color:var(--border);color:var(--red);font-weight:700;cursor:pointer}
 .intake-del:hover{background:#fee2e2;border-color:var(--red)}
+/* A hostname can be 253 characters and has no spaces to break at, so left
+   alone one long one takes the width and pushes the buttons off the card. */
+.intake-domain{word-break:break-all;max-width:280px}
 .intake-err{color:var(--red);font-weight:600}
 .intake-gap{color:var(--gold);font-weight:700}
 .intake-code{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;

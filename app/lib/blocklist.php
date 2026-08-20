@@ -31,9 +31,48 @@ function normalize_domain(?string $url): ?string
     $host = explode(':', $host)[0];       // strip :port
     $host = preg_replace('#^www\.#i', '', $host);
     $host = strtolower(trim($host, ". \t\n\r"));
-    // Must look like a hostname: at least one dot, no spaces.
+    // Unicode domains are real, but DNS only carries ASCII. Fold café.com to
+    // xn--caf-dma.com so the two are one account rather than two, and so the
+    // shape check below has something it can judge. Where the intl extension
+    // is missing — shared hosting sometimes leaves it out — the name stays as
+    // typed and domain_is_valid() will turn it down, which is the honest
+    // outcome: better refused than accepted and never matched again.
+    if (preg_match('/[^\x20-\x7e]/', $host) && function_exists('idn_to_ascii')) {
+        $ascii = idn_to_ascii($host, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46);
+        if (is_string($ascii) && $ascii !== '') $host = strtolower($ascii);
+    }
+    // Must look like a hostname: at least one dot, no spaces, and inside the
+    // 253 characters a hostname is allowed to be. Over-length is refused
+    // rather than trimmed to fit — cutting the tail off a name invents a
+    // different one, and a shortened domain passes every check afterwards
+    // while matching nothing that exists.
     if ($host === '' || strpos($host, '.') === false || preg_match('/\s/', $host)) return null;
-    return mb_substr($host, 0, 190);
+    if (strlen($host) > 253) return null;
+    return $host;
+}
+
+/**
+ * Is this a well-formed hostname?
+ *
+ * Shape only — it says nothing about whether the domain exists or resolves.
+ * normalize_domain() gets a string into the right form; this decides whether
+ * the result is a name at all, which "a..b.com", "-bad.com" and "trailing-.com"
+ * are not, however reasonable they look at a glance.
+ */
+function domain_is_valid(?string $host): bool
+{
+    $host = (string)$host;
+    if ($host === '' || strlen($host) > 253) return false;
+    $labels = explode('.', $host);
+    if (count($labels) < 2) return false;
+    foreach ($labels as $label) {
+        // 63 characters per label, letters/digits/hyphen, and never a hyphen at
+        // either end.
+        if (!preg_match('/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/i', $label)) return false;
+    }
+    // The last label is the TLD: letters, or the xn-- form a unicode one folds
+    // to. Digits there would make it an IP address, which is not a website.
+    return (bool)preg_match('/^([a-z]{2,63}|xn--[a-z0-9-]{2,59})$/i', (string)end($labels));
 }
 
 /** The domain part of an email address, lowercased. */
