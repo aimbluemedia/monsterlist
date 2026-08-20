@@ -4,9 +4,26 @@
 </div>
 
 <div class="card card-pad ed-card">
-  <h3>Queue <span class="mute" style="font-weight:400">(<?= count($queue) ?>)</span></h3>
+  <div class="intake-head">
+    <h3><?= $showAll ? 'Everyone' : 'Queue' ?>
+      <span class="mute" style="font-weight:400">(<?= count($queue) ?>)</span></h3>
+    <?php // A queue holds work outstanding, so approving takes a row off it.
+          // The ones that have been through are still here to look at. ?>
+    <?php if ($showAll): ?>
+      <a class="btn btn-sm btn-ghost" href="/superadmin/intake">Show the queue only</a>
+    <?php elseif ($done): ?>
+      <a class="btn btn-sm btn-ghost" href="/superadmin/intake?show=all"><?= (int)$done ?> approved — show them</a>
+    <?php endif; ?>
+  </div>
   <?php if (!$queue): ?>
-    <p class="mute" style="margin:0">Nobody yet. Members added below — by hand or through the API — appear here.</p>
+    <p class="mute" style="margin:0">
+      <?php if ($done && !$showAll): ?>
+        Queue clear — all <?= (int)$done ?> of them are live.
+        <a href="/superadmin/intake?show=all" style="color:var(--accent);font-weight:700">Show them anyway</a>.
+      <?php else: ?>
+        Nobody yet. Members added below — by hand or through the API — appear here.
+      <?php endif; ?>
+    </p>
   <?php else: ?>
     <div class="table-wrap table-narrow">
       <table class="table">
@@ -37,6 +54,16 @@
             <td>
               <div class="intake-actions">
                 <?php if ($r['business_id']): ?>
+                  <?php // Approve straight from here when the built listing needs
+                        // no correction. Anything else is a trip to the editor. ?>
+                  <?php if ($r['business_status'] !== 'live'): ?>
+                    <form method="post"><?= csrf_field() ?>
+                      <input type="hidden" name="action" value="approve">
+                      <input type="hidden" name="id" value="<?= (int)$r['id'] ?>">
+                      <button class="btn btn-sm intake-approve"
+                              data-confirm="Put &quot;<?= e((string)$r['business_name']) ?>&quot; live?">Approve</button>
+                    </form>
+                  <?php endif; ?>
                   <a class="btn btn-sm btn-ghost" href="/superadmin/listings/edit?id=<?= (int)$r['business_id'] ?>&back=pending">Edit listing</a>
                 <?php else: ?>
                   <form method="post"><?= csrf_field() ?>
@@ -61,7 +88,9 @@
       </table>
     </div>
     <p class="form-note">Building reads the website, asks AI for the listing fields, and saves the
-      result as <strong>pending</strong> — never live. You land in the staff editor with it open.</p>
+      result as <strong>pending</strong> — never live. You land in the staff editor with it open.
+      Approving puts the listing live and takes the row off this queue; a rejected one stays,
+      because the listing is decided but the account is not.</p>
   <?php endif; ?>
 </div>
 

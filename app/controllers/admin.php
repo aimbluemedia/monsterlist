@@ -265,6 +265,32 @@ if ($sub === 'dashboard') {
             redirect('/superadmin/intake');
         }
 
+        if ($action === 'approve') {
+            // The same approval the Listings page performs, offered here so a
+            // built listing that needs no correction can be waved through
+            // without a detour — and once it is live the row leaves the queue,
+            // because there is nothing left on it to press.
+            $target = row('SELECT * FROM users WHERE id = ? AND intake_at IS NOT NULL', [(int)post('id')]);
+            $biz    = $target ? row('SELECT * FROM businesses WHERE owner_id = ?', [(int)$target['id']]) : null;
+            if (!$biz) {
+                flash_set('error', 'Nothing to approve — that member has no listing yet.');
+            } elseif ($biz['status'] === 'live') {
+                flash_set('error', '"' . $biz['name'] . '" is already live.');
+            } else {
+                q('UPDATE businesses SET status = "live", verified = IF(tier != "free", 1, verified) WHERE id = ?', [$biz['id']]);
+                // Approving reverses an earlier rejection, so lift the blocks it
+                // put in place — otherwise the owner is live but locked out.
+                $lifted = listing_unblock($biz);
+                notify_listing_decision($biz, true);
+                if ($biz['city_id']) refresh_city_count((int)$biz['city_id']);
+                $url = business_url_by_id((int)$biz['id']);
+                if ($url) indexnow_ping([$url]);
+                flash_set('success', '"' . $biz['name'] . '" is now live and has left the queue.'
+                    . ($lifted ? ' Unblocked ' . implode(', ', $lifted) . '.' : ''));
+            }
+            redirect('/superadmin/intake');
+        }
+
         if ($action === 'delete') {
             // Only while it is still just an account. Once there is a listing
             // this is an ordinary member and belongs on the Members page, where
@@ -287,10 +313,12 @@ if ($sub === 'dashboard') {
         }
     }
 
-    $queue  = intake_queue();
-    $apiKey = intake_ready() ? intake_api_key() : '';
+    $showAll = ($_GET['show'] ?? '') === 'all';
+    $queue   = intake_queue(200, $showAll);
+    $done    = intake_done_count();
+    $apiKey  = intake_ready() ? intake_api_key() : '';
     $meta['title'] = "Member intake — $site";
-    view_raw('admin/intake', compact('meta', 'u', 'queue', 'apiKey'));
+    view_raw('admin/intake', compact('meta', 'u', 'queue', 'apiKey', 'showAll', 'done'));
 
 } elseif ($sub === 'diagnostics') {
     // Answers the two questions that follow every upload: is this build live,

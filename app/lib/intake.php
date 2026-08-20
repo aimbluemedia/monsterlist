@@ -120,19 +120,39 @@ function intake_parse_bulk(string $text): array
     return $rows;
 }
 
-/** Members added this way, newest first, with their listing if one exists. */
-function intake_queue(int $limit = 200): array
+/**
+ * Members added this way that still need something doing, newest first.
+ *
+ * A queue is work outstanding, so an approved member leaves it: once the
+ * listing is live there is nothing left here to press. Rejected ones stay —
+ * that listing is decided but the account is not, and somebody still has to
+ * delete it or fix it and resubmit.
+ *
+ * $includeDone brings the approved ones back for a look at what has been
+ * through.
+ */
+function intake_queue(int $limit = 200, bool $includeDone = false): array
 {
     if (!intake_ready()) return [];
+    $where = $includeDone ? '' : " AND (b.id IS NULL OR b.status <> 'live')";
     return rows(
         'SELECT u.id, u.email, u.website, u.intake_at, u.intake_note, u.plan,
                 b.id AS business_id, b.name AS business_name, b.status AS business_status,
                 b.city_id, b.category_id
            FROM users u
            LEFT JOIN businesses b ON b.owner_id = u.id
-          WHERE u.intake_at IS NOT NULL
+          WHERE u.intake_at IS NOT NULL' . $where . '
           ORDER BY u.intake_at DESC, u.id DESC
           LIMIT ' . max(1, $limit));
+}
+
+/** How many intake members are finished — listing built and live. */
+function intake_done_count(): int
+{
+    if (!intake_ready()) return 0;
+    return (int)scalar(
+        "SELECT COUNT(*) FROM users u JOIN businesses b ON b.owner_id = u.id
+          WHERE u.intake_at IS NOT NULL AND b.status = 'live'");
 }
 
 /**

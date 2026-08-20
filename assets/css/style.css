@@ -682,6 +682,12 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
    so it is the one that looks like a decision. */
 .intake-build{background:var(--green);border-color:var(--green);color:#fff;font-weight:800;cursor:pointer;white-space:nowrap}
 .intake-build:hover{background:#099268;border-color:#099268;color:#fff}
+/* Approve is the one that makes something public, so it carries the site's
+   primary colour rather than the green Build wears. */
+.intake-approve{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:800;cursor:pointer;white-space:nowrap}
+.intake-approve:hover{background:#1d4ed8;border-color:#1d4ed8;color:#fff}
+.intake-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+.intake-head h3{margin:0}
 .intake-del{background:var(--card);border-color:var(--border);color:var(--red);font-weight:700;cursor:pointer}
 .intake-del:hover{background:#fee2e2;border-color:var(--red)}
 /* A hostname can be 253 characters and has no spaces to break at, so left
