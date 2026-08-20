@@ -4,26 +4,12 @@
 </div>
 
 <div class="card card-pad ed-card">
-  <div class="intake-head">
-    <h3><?= $showAll ? 'Everyone' : 'Queue' ?>
-      <span class="mute" style="font-weight:400">(<?= count($queue) ?>)</span></h3>
-    <?php // A queue holds work outstanding, so approving takes a row off it.
-          // The ones that have been through are still here to look at. ?>
-    <?php if ($showAll): ?>
-      <a class="btn btn-sm btn-ghost" href="/superadmin/intake">Show the queue only</a>
-    <?php elseif ($done): ?>
-      <a class="btn btn-sm btn-ghost" href="/superadmin/intake?show=all"><?= (int)$done ?> approved — show them</a>
-    <?php endif; ?>
-  </div>
+  <?php // A queue holds work outstanding and nothing else. An approved member
+        // is finished with, and is found on Listings and Members from then on. ?>
+  <h3>Queue <span class="mute" style="font-weight:400">(<?= count($queue) ?>)</span></h3>
   <?php if (!$queue): ?>
-    <p class="mute" style="margin:0">
-      <?php if ($done && !$showAll): ?>
-        Queue clear — all <?= (int)$done ?> of them are live.
-        <a href="/superadmin/intake?show=all" style="color:var(--accent);font-weight:700">Show them anyway</a>.
-      <?php else: ?>
-        Nobody yet. Members added below — by hand or through the API — appear here.
-      <?php endif; ?>
-    </p>
+    <p class="mute" style="margin:0">Nothing waiting. Members added below — by hand or through
+      the API — appear here until their listing is live.</p>
   <?php else: ?>
     <div class="table-wrap table-narrow">
       <table class="table">

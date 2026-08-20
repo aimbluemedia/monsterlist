@@ -313,12 +313,10 @@ if ($sub === 'dashboard') {
         }
     }
 
-    $showAll = ($_GET['show'] ?? '') === 'all';
-    $queue   = intake_queue(200, $showAll);
-    $done    = intake_done_count();
-    $apiKey  = intake_ready() ? intake_api_key() : '';
+    $queue  = intake_queue();
+    $apiKey = intake_ready() ? intake_api_key() : '';
     $meta['title'] = "Member intake — $site";
-    view_raw('admin/intake', compact('meta', 'u', 'queue', 'apiKey', 'showAll', 'done'));
+    view_raw('admin/intake', compact('meta', 'u', 'queue', 'apiKey'));
 
 } elseif ($sub === 'diagnostics') {
     // Answers the two questions that follow every upload: is this build live,

@@ -128,31 +128,23 @@ function intake_parse_bulk(string $text): array
  * that listing is decided but the account is not, and somebody still has to
  * delete it or fix it and resubmit.
  *
- * $includeDone brings the approved ones back for a look at what has been
- * through.
+ * There is no way to see the finished ones from here, deliberately: once a
+ * listing is live it is an ordinary listing and an ordinary member, and the
+ * Listings and Members pages already hold them better than a second copy on
+ * this one would.
  */
-function intake_queue(int $limit = 200, bool $includeDone = false): array
+function intake_queue(int $limit = 200): array
 {
     if (!intake_ready()) return [];
-    $where = $includeDone ? '' : " AND (b.id IS NULL OR b.status <> 'live')";
     return rows(
-        'SELECT u.id, u.email, u.website, u.intake_at, u.intake_note, u.plan,
+        "SELECT u.id, u.email, u.website, u.intake_at, u.intake_note, u.plan,
                 b.id AS business_id, b.name AS business_name, b.status AS business_status,
                 b.city_id, b.category_id
            FROM users u
            LEFT JOIN businesses b ON b.owner_id = u.id
-          WHERE u.intake_at IS NOT NULL' . $where . '
+          WHERE u.intake_at IS NOT NULL AND (b.id IS NULL OR b.status <> 'live')
           ORDER BY u.intake_at DESC, u.id DESC
-          LIMIT ' . max(1, $limit));
-}
-
-/** How many intake members are finished — listing built and live. */
-function intake_done_count(): int
-{
-    if (!intake_ready()) return 0;
-    return (int)scalar(
-        "SELECT COUNT(*) FROM users u JOIN businesses b ON b.owner_id = u.id
-          WHERE u.intake_at IS NOT NULL AND b.status = 'live'");
+          LIMIT " . max(1, $limit));
 }
 
 /**
