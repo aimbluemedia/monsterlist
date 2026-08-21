@@ -165,6 +165,16 @@ function stripe_price_label(array $price): string
 function stripe_apply_plan(int $userId, string $plan, ?string $subId = null): void
 {
     if (!$userId || !in_array($plan, ['pro', 'featured'], true)) return;
+    // A comped plan was granted by staff, not bought. Stripe may still record
+    // the subscription, but it does not get to set the plan on an account that
+    // was never paying for one.
+    if (function_exists('cycle_is_comped') && cycle_is_comped($userId)) {
+        if ($subId) {
+            q('INSERT INTO subscriptions (user_id, plan, status, stripe_subscription_id) VALUES (?,?,"active",?)
+               ON DUPLICATE KEY UPDATE plan = VALUES(plan), status = "active"', [$userId, $plan, $subId]);
+        }
+        return;
+    }
     $before = (string)scalar('SELECT plan FROM users WHERE id = ?', [$userId]);
     q('UPDATE users SET plan = ? WHERE id = ?', [$plan, $userId]);
     sync_business_tiers($userId, $plan);

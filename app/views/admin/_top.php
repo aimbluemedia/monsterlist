@@ -5,6 +5,8 @@ $saNav = [
     ['/superadmin/listings',   'Listings',   true],
     ['/superadmin/promotions', 'Promotions', true],
     ['/superadmin/articles',   'Articles',   true],
+    ['/superadmin/pro',        'Pro',        is_superadmin()],
+    ['/superadmin/premium',    'Premium',    is_superadmin()],
     ['/superadmin/members',    'Members',    true],
     ['/superadmin/intake',     'Member intake', is_superadmin()],
     ['/superadmin/claims',     'Claims',     true],

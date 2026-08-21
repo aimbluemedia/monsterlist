@@ -72,7 +72,9 @@ if ($path === '/stripe/webhook' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $periodEnd = !empty($obj['current_period_end']) ? date('Y-m-d H:i:s', (int)$obj['current_period_end']) : null;
             q('UPDATE subscriptions SET status = ?, current_period_end = ? WHERE stripe_subscription_id = ?',
               [$ended ? 'canceled' : ($status === 'past_due' ? 'past_due' : 'active'), $periodEnd, $subId]);
-            if ($ended) {
+            // A comp is not Stripe's to cancel: a staff-granted plan outlives
+            // whatever happened to a subscription the member may also have had.
+            if ($ended && !cycle_is_comped($userId)) {
                 q('UPDATE users SET plan = "free" WHERE id = ?', [$userId]);
                 sync_business_tiers($userId, 'free');
             }

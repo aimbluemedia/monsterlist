@@ -319,6 +319,44 @@ if ($sub === 'dashboard') {
     $meta['title'] = "Member intake — $site";
     view_raw('admin/intake', compact('meta', 'u', 'queue', 'apiKey'));
 
+} elseif ($sub === 'pro' || $sub === 'premium') {
+    // The monthly service queues. "Premium" is the Featured plan wearing the
+    // name we use out loud; nothing in the data is called premium.
+    require_superadmin();
+    $planKey   = $sub === 'premium' ? 'featured' : 'pro';
+    $planLabel = $sub === 'premium' ? 'Premium' : 'Pro';
+
+    if (!cycles_ready()) {
+        flash_set('error', 'Monthly service queues need a database upgrade — run database/upgrade-all.sql.');
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        csrf_check();
+        $task = row('SELECT * FROM member_tasks WHERE id = ?', [(int)post('id')]);
+        if (!$task) {
+            flash_set('error', 'No such task.');
+        } elseif (post('action') === 'save') {
+            cycle_save((int)$task['id'], (array)($_POST['items'] ?? []), post('note'));
+            $after = row('SELECT done_at FROM member_tasks WHERE id = ?', [(int)$task['id']]);
+            flash_set('success', !empty($after['done_at'])
+                ? 'Everything ticked — this member is done until next month.'
+                : 'Saved.');
+        } elseif (post('action') === 'done') {
+            cycle_mark((int)$task['id'], true);
+            flash_set('success', 'Marked done. They come back on their next renewal date.');
+        } elseif (post('action') === 'reopen') {
+            cycle_mark((int)$task['id'], false);
+            flash_set('success', 'Reopened.');
+        }
+        redirect('/superadmin/' . $sub);
+    }
+
+    // Opening the page is what rolls everybody forward — there is no cron.
+    cycle_roll_all($planKey);
+    $due    = cycle_due($planKey);
+    $roster = cycle_roster($planKey);
+    $items  = cycle_items($planKey);
+    $meta['title'] = "$planLabel members — $site";
+    view_raw('admin/member-tasks', compact('meta', 'u', 'due', 'roster', 'items', 'planKey', 'planLabel'));
+
 } elseif ($sub === 'diagnostics') {
     // Answers the two questions that follow every upload: is this build live,
     // and has the database caught up with it? Plus a count of what listings
@@ -531,9 +569,15 @@ if ($sub === 'dashboard') {
                 q('UPDATE users SET status = IF(status = "active", "suspended", "active") WHERE id = ?', [$target['id']]);
                 flash_set('success', 'Member status toggled.');
             } elseif ($action === 'setplan' && in_array(post('plan'), ['free','pro','featured'], true)) {
-                q('UPDATE users SET plan = ? WHERE id = ?', [post('plan'), $target['id']]);
-                sync_business_tiers((int)$target['id'], post('plan'));
-                flash_set('success', 'Plan updated to ' . post('plan') . '.');
+                // Set by hand, so it is a comp: it gets a renewal date a month
+                // out, opens its first service cycle today, and Stripe is not
+                // allowed to take it away again.
+                cycle_set_plan((int)$target['id'], post('plan'), true);
+                flash_set('success', 'Plan set to ' . post('plan') . '.'
+                    . (post('plan') === 'free'
+                        ? ' Any open monthly task has been closed.'
+                        : ' Renews ' . date('j M Y', strtotime(cycle_add_month(date('Y-m-d'))))
+                          . ', and they are on this month\'s queue now.'));
             } elseif ($action === 'tokens') {
                 $delta = (int)post('delta');
                 if ($delta !== 0) {

@@ -686,6 +686,20 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
   .hrs-day{grid-column:1 / -1}
 }
 
+/* ===== Superadmin: the monthly Pro / Premium queues ===== */
+.mt-task{border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+.mt-head{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.mt-sub{font-size:.82rem;margin-top:2px}
+/* an overdue month should be findable by eye in a list of forty */
+.mt-late{color:var(--red);text-transform:uppercase;font-size:.72rem;letter-spacing:.4px}
+.mt-links{display:flex;gap:6px;flex-wrap:wrap}
+.mt-items{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:6px 14px;margin-bottom:10px}
+.mt-item{display:flex;align-items:center;gap:8px;margin:0;font-size:.9rem;cursor:pointer}
+.mt-item input{width:auto;margin:0}
+.mt-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.mt-done{background:var(--green);border-color:var(--green);color:#fff;font-weight:800;cursor:pointer}
+.mt-done:hover{background:#099268;border-color:#099268;color:#fff}
+
 /* ===== Superadmin: member intake ===== */
 .intake-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:6px}
 .intake-bulk{margin:10px 0 14px}

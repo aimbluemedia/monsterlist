@@ -115,6 +115,47 @@ CREATE TABLE IF NOT EXISTS articles (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
+-- One row per paid member per month: the work that plan owes them, and whether
+-- it has been done. Opened on the member's own renewal date rather than on the
+-- 1st, so somebody who joined on the 20th comes due on the 20th.
+--   month     — YYYY-MM, and half of the unique key that makes opening the same
+--               cycle twice harmless. There is no cron here; a staff page
+--               opening the queue is what rolls everybody forward.
+--   checklist — JSON list of the items ticked so far. Empty for Pro, where the
+--               note is the checklist.
+CREATE TABLE IF NOT EXISTS member_tasks (
+  id         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id    INT UNSIGNED NOT NULL,
+  month      CHAR(7) NOT NULL,
+  plan       VARCHAR(10) NOT NULL,
+  due_on     DATE NOT NULL,
+  checklist  TEXT DEFAULT NULL,
+  note       VARCHAR(500) DEFAULT NULL,
+  done_at    DATETIME DEFAULT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY u_month (user_id, month),
+  KEY k_open (plan, done_at, due_on)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- The date this member's plan renews — their own monthly anniversary.
+SET @ddl = IF((SELECT COUNT(*) FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'
+                  AND COLUMN_NAME = 'plan_renews_on') > 0,
+  'DO 0',
+  'ALTER TABLE users ADD COLUMN plan_renews_on DATE DEFAULT NULL');
+PREPARE s FROM @ddl; EXECUTE s; DEALLOCATE PREPARE s;
+
+-- Granted rather than bought: a test account or a gifted plan. Stripe has no
+-- say over one, so a webhook about somebody else's cancelled subscription can
+-- never downgrade it.
+SET @ddl = IF((SELECT COUNT(*) FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'
+                  AND COLUMN_NAME = 'plan_comped') > 0,
+  'DO 0',
+  'ALTER TABLE users ADD COLUMN plan_comped TINYINT(1) NOT NULL DEFAULT 0');
+PREPARE s FROM @ddl; EXECUTE s; DEALLOCATE PREPARE s;
+
 -- ===========================================================================
 -- Stripe — present since the first release, guarded here for old installs
 -- ===========================================================================
@@ -329,6 +370,9 @@ UNION ALL SELECT 'users.intake_note',        IF(COUNT(*) > 0, 'OK', 'MISSING') F
 UNION ALL SELECT 'businesses.review_links', IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'review_links'
 UNION ALL SELECT 'businesses.profile',      IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'profile'
 UNION ALL SELECT 'businesses.business_type',IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'business_type'
-UNION ALL SELECT 'businesses.postcode',     IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'postcode';
+UNION ALL SELECT 'businesses.postcode',     IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'postcode'
+UNION ALL SELECT 'member_tasks table',      IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'member_tasks'
+UNION ALL SELECT 'users.plan_renews_on',    IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'      AND COLUMN_NAME = 'plan_renews_on'
+UNION ALL SELECT 'users.plan_comped',       IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'      AND COLUMN_NAME = 'plan_comped';
 
 -- Nothing goes below this line. See the note above the report.
