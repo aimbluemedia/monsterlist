@@ -60,6 +60,15 @@ function jsonld_itemlist(array $entries): array
 
 function jsonld_local_business(array $b, array $city, string $path): array
 {
+    // Contact details are a paid feature: the storefront prints the phone and
+    // email only for an enhanced tier. Schema has to obey the same rule, and
+    // did not — a free listing that still holds a phone from a lapsed
+    // subscription was publishing it in machine-readable form on a page that
+    // shows nothing of the sort. That is the paid feature given away to every
+    // crawler, and Google's structured-data guidelines require marked-up
+    // content to be present on the page it describes.
+    $enhanced = tier_enhanced($b['tier'] ?? null);
+
     $data = [
         '@context'   => 'https://schema.org',
         '@type'      => 'LocalBusiness',
@@ -67,8 +76,12 @@ function jsonld_local_business(array $b, array $city, string $path): array
         'name'       => $b['name'],
         'description'=> meta_excerpt((string)$b['description'], 200) ?: $b['tagline'],
         'url'        => $b['website'] ?: site_url($path),
-        'telephone'  => $b['phone'],
-        'priceRange' => '$$',
+        'telephone'  => $enhanced ? $b['phone'] : null,
+        'email'      => $enhanced ? ($b['email'] ?? null) : null,
+        // priceRange was hard-coded to "$$" for all 695 listings. Nobody has
+        // ever been asked what a listing costs, so that was an invented fact
+        // about somebody else's business, published under their name. Omitted
+        // until it is a field somebody fills in.
         'address'    => [
             '@type'           => 'PostalAddress',
             'streetAddress'   => $b['address'],
