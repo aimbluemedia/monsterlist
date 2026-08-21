@@ -103,6 +103,24 @@ $revLinks = $editing ? wizard_links($biz['review_links'] ?? null) : [];
             </select>
           </div>
         </div>
+        <?php // The Schema.org type, grouped by our own category so the list is
+              // navigable. Optional: a listing with no type is still marked up,
+              // just as a general LocalBusiness. Every option is a real type in
+              // the LocalBusiness branch — see schema_types(). ?>
+        <label>Business type <span class="mute" style="font-weight:400">— what Google reads you as</span></label>
+        <select name="business_type">
+          <option value="">Not specified — treated as a general local business</option>
+          <?php foreach (schema_types() as $catId => $types): ?>
+            <optgroup label="<?= e(category_by_id((string)$catId)['label'] ?? ucfirst((string)$catId)) ?>">
+              <?php foreach ($types as $type => $label): ?>
+                <option value="<?= e($type) ?>" <?= $v('business_type') === $type ? 'selected' : '' ?>><?= e($label) ?></option>
+              <?php endforeach; ?>
+            </optgroup>
+          <?php endforeach; ?>
+        </select>
+        <p class="form-note">Pick the closest match. "Plumber" or "Dentist" tells a search engine
+          far more than "business", and it is what puts you in the running for the richer result
+          listings that name a trade.</p>
         <label>Tagline</label>
         <input type="text" name="tagline" value="<?= e($v('tagline')) ?>" maxlength="255" placeholder="One line that sells your business">
         <?php // maxlength is the ceiling, not the guide: a browser-enforced 300

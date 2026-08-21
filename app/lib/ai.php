@@ -128,6 +128,13 @@ function ai_listing_schema(array $categoryIds): array
             'tagline'      => $nullableStr + ['description' => 'One catchy line (max 120 chars) selling the business, drawn from their own messaging'],
             'description'  => $nullableStr + ['description' => '2-4 sentence plain-text description of what the business does, who it serves, and what makes it stand out. Write in third person.'],
             'category_id'  => ['type' => 'string', 'enum' => $categoryIds, 'description' => 'Best-fitting directory category'],
+            // An enum, not free text: this value goes straight into the
+            // page's @type, and a Schema.org type that does not exist is
+            // worse than the general one that does. The empty string is in
+            // the list so "I cannot tell" has somewhere to go.
+            'business_type' => ['type' => 'string', 'enum' => array_merge([''], array_keys(schema_type_labels())),
+                                'description' => 'Schema.org LocalBusiness subtype that best describes this business, '
+                                               . 'e.g. Plumber, Dentist, Attorney. Empty string if none clearly fits.'],
             'country_code' => $nullableStr + ['description' => 'ISO 3166-1 alpha-2 country code of the business location, e.g. US, GB'],
             'us_state'     => $nullableStr + ['description' => 'Full US state name (e.g. Arizona) if the business is in the United States, else null'],
             'city'         => $nullableStr + ['description' => 'City the business operates from'],
@@ -164,7 +171,7 @@ function ai_listing_schema(array $categoryIds): array
                 'additionalProperties' => false,
             ],
         ],
-        'required' => ['name', 'tagline', 'description', 'category_id', 'country_code',
+        'required' => ['name', 'tagline', 'description', 'category_id', 'business_type', 'country_code',
                        'us_state', 'city', 'address', 'phone', 'email', 'founded', 'services', 'social'],
         'additionalProperties' => false,
     ];
@@ -248,6 +255,9 @@ function ai_postprocess(array $f, string $sourceUrl): array
     ];
 
     $out['category_id'] = category_by_id((string)($f['category_id'] ?? '')) ? $f['category_id'] : '';
+    // Checked against our own list rather than trusted: the model is told
+    // the enum, but the value ends up in @type and is worth verifying.
+    $out['business_type'] = schema_type_valid($f['business_type'] ?? null) ? (string)$f['business_type'] : '';
 
     $cc = strtoupper(trim((string)($f['country_code'] ?? '')));
     $out['country'] = (preg_match('/^[A-Z]{2}$/', $cc) && row('SELECT code FROM countries WHERE code = ?', [$cc])) ? $cc : '';

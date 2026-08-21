@@ -167,6 +167,16 @@ SET @ddl = IF((SELECT COUNT(*) FROM information_schema.COLUMNS
   'ALTER TABLE businesses ADD COLUMN profile LONGTEXT NULL AFTER description');
 PREPARE s FROM @ddl; EXECUTE s; DEALLOCATE PREPARE s;
 
+-- The Schema.org business type — Plumber, Dentist, Attorney and so on. The
+-- category is what the site browses by; this is what Google reads. NULL means
+-- nobody has said, and the markup falls back to plain LocalBusiness.
+SET @ddl = IF((SELECT COUNT(*) FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses'
+                  AND COLUMN_NAME = 'business_type') > 0,
+  'DO 0',
+  'ALTER TABLE businesses ADD COLUMN business_type VARCHAR(40) DEFAULT NULL AFTER category_id');
+PREPARE s FROM @ddl; EXECUTE s; DEALLOCATE PREPARE s;
+
 -- v7: cached token balance. token_events above is the source of truth; this is
 -- kept in step with it so every page showing a balance is one column read.
 SET @ddl = IF((SELECT COUNT(*) FROM information_schema.COLUMNS
@@ -307,6 +317,7 @@ UNION ALL SELECT 'users.stripe_customer_id',IF(COUNT(*) > 0, 'OK', 'MISSING') FR
 UNION ALL SELECT 'users.intake_at',          IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'      AND COLUMN_NAME = 'intake_at'
 UNION ALL SELECT 'users.intake_note',        IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'      AND COLUMN_NAME = 'intake_note'
 UNION ALL SELECT 'businesses.review_links', IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'review_links'
-UNION ALL SELECT 'businesses.profile',      IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'profile';
+UNION ALL SELECT 'businesses.profile',      IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'profile'
+UNION ALL SELECT 'businesses.business_type',IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'business_type';
 
 -- Nothing goes below this line. See the note above the report.

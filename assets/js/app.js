@@ -69,6 +69,7 @@ document.addEventListener('DOMContentLoaded', function () {
           setField('tagline', f.tagline);
           setField('description', f.description);
           setField('category_id', f.category_id);
+          setField('business_type', f.business_type);
           setField('country', f.country);
           setField('region', f.region);
           setField('city', f.city);

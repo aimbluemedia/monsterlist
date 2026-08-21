@@ -22,7 +22,10 @@ $enhanced = tier_enhanced($b['tier']);
           <?php if ($b['verified']): ?><span class="badge badge-verified">Verified</span><?php endif; ?>
         </h1>
         <div class="mute">
-          <?= e($b['category_label'] ?? 'Local business') ?>
+          <?php // The specific type when there is one — "Plumber" says more than
+                // "Home & Repair", and it is what the markup on this page claims.
+                // The category is still one click away in Quick facts below. ?>
+          <?= e(schema_type_label($b['business_type'] ?? null) ?: ($b['category_label'] ?? 'Local business')) ?>
           · <?= e($city['name']) ?><?= $region ? ', ' . e($region['name']) : '' ?>, <?= e($country['name']) ?>
           <?php if ((float)$b['rating'] > 0): ?>
             · <span class="stars">★</span> <?= fmt_rating($b['rating']) ?> (<?= (int)$b['review_count'] ?>)
@@ -55,6 +58,9 @@ $enhanced = tier_enhanced($b['tier']);
         <h3>Quick facts</h3>
         <div class="info-row"><span class="mute">Business</span><span><?= e($b['name']) ?></span></div>
         <div class="info-row"><span class="mute">Category</span><span><?= e($b['category_label'] ?? 'Local business') ?></span></div>
+        <?php if (schema_type_label($b['business_type'] ?? null)): ?>
+          <div class="info-row"><span class="mute">Type</span><span><?= e(schema_type_label($b['business_type'])) ?></span></div>
+        <?php endif; ?>
         <div class="info-row"><span class="mute">Location</span><span><?= e($city['name']) ?><?= $region ? ', ' . e($region['name']) : '' ?>, <?= e($country['name']) ?></span></div>
         <?php if ((float)$b['rating'] > 0): ?>
           <div class="info-row"><span class="mute">Rating</span><span><?= fmt_rating($b['rating']) ?> out of 5 (<?= (int)$b['review_count'] ?> review<?= (int)$b['review_count'] === 1 ? '' : 's' ?>)</span></div>

@@ -292,10 +292,17 @@ function listing_form_data(array $user, array $plan, int $exceptId = 0, bool $en
     // sentence that crosses the limit, so what is stored always reads as
     // finished prose. See sentence_cap().
     $maxDesc = $plan['enhanced'] ? 5000 : 300;
+    // What the business actually is, as Schema.org names it. Optional — a
+    // listing with no type is marked up as a plain LocalBusiness, which is
+    // true of all of them. An unrecognised value is dropped rather than
+    // stored: it would go straight into @type, and a type search engines
+    // cannot resolve is worse than the general one they can.
+    $bizType = post('business_type');
     $data = [
-        'name'        => $name,
-        'category_id' => $catId,
-        'city_id'     => $cityId,
+        'name'          => $name,
+        'category_id'   => $catId,
+        'business_type' => schema_type_valid($bizType) ? $bizType : null,
+        'city_id'       => $cityId,
         'tagline'     => mb_substr(post('tagline'), 0, 255),
         'description' => sentence_cap(post('description'), $maxDesc),
         'website'     => clean_url(post('website')),

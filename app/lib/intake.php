@@ -192,11 +192,13 @@ function intake_create_listing(array $user, array $fields): int
     // to be unique within — 0 is the bucket those share until staff place them.
     $slug = unique_business_slug($name, (int)$cityId);
 
-    q('INSERT INTO businesses (owner_id, name, slug, category_id, city_id, tagline, description,
+    q('INSERT INTO businesses (owner_id, name, slug, category_id, business_type, city_id, tagline, description,
                                phone, website, email, address, founded, status, tier)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,"pending",?)',
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,"pending",?)',
       [(int)$user['id'], $name, $slug,
        $fields['category_id'] !== '' ? $fields['category_id'] : null,
+       // Already checked against schema_types() in ai_postprocess.
+       !empty($fields['business_type']) ? $fields['business_type'] : null,
        $cityId,
        $fields['tagline'], $fields['description'], $fields['phone'],
        $fields['website'], $fields['email'], $fields['address'],

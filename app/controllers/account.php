@@ -94,9 +94,9 @@ if ($sub === 'dashboard') {
         [$data, $errors] = listing_form_data($u, $plan);
         if (!$errors) {
             $slug = unique_business_slug($data['name'], (int)$data['city_id']);
-            q('INSERT INTO businesses (owner_id, name, slug, category_id, city_id, tier, status, tagline, description, profile, phone, website, email, address, founded, video_url, social, review_links)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-              [$u['id'], $data['name'], $slug, $data['category_id'], $data['city_id'], $u['plan'], 'pending',
+            q('INSERT INTO businesses (owner_id, name, slug, category_id, business_type, city_id, tier, status, tagline, description, profile, phone, website, email, address, founded, video_url, social, review_links)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+              [$u['id'], $data['name'], $slug, $data['category_id'], $data['business_type'], $data['city_id'], $u['plan'], 'pending',
                $data['tagline'], $data['description'], $data['profile'] ?? null,
                $data['phone'] ?? null, $data['website'], $data['email'] ?? null,
                $data['address'], $data['founded'], $data['video_url'] ?? null, $data['social'] ?? null,
@@ -164,9 +164,9 @@ if ($sub === 'dashboard') {
             $slug = unique_business_slug($data['name'], (int)$data['city_id'], (int)$biz['id']);
             // Edits go back to moderation only if core public fields changed
             $needsReview = $data['name'] !== $biz['name'] || $data['description'] !== (string)$biz['description'];
-            q('UPDATE businesses SET name=?, slug=?, category_id=?, city_id=?, tagline=?, description=?, profile=?, phone=?, website=?, email=?, address=?, founded=?, video_url=?, social=?, review_links=?, status=?
+            q('UPDATE businesses SET name=?, slug=?, category_id=?, business_type=?, city_id=?, tagline=?, description=?, profile=?, phone=?, website=?, email=?, address=?, founded=?, video_url=?, social=?, review_links=?, status=?
                WHERE id=? AND owner_id=?',
-              [$data['name'], $slug, $data['category_id'], $data['city_id'], $data['tagline'], $data['description'],
+              [$data['name'], $slug, $data['category_id'], $data['business_type'], $data['city_id'], $data['tagline'], $data['description'],
                $data['profile'] ?? $biz['profile'],
                // Paid-only fields are absent from $data on a free plan — keep
                // whatever is stored rather than blanking it, so an upgrade

@@ -106,11 +106,11 @@ if ($sub === 'dashboard') {
 
         if (!$errors) {
             $slug = unique_business_slug($data['name'], (int)$data['city_id'], (int)$biz['id']);
-            q('UPDATE businesses SET name=?, slug=?, category_id=?, city_id=?, tagline=?, description=?, profile=?, phone=?,
+            q('UPDATE businesses SET name=?, slug=?, category_id=?, business_type=?, city_id=?, tagline=?, description=?, profile=?, phone=?,
                       website=?, email=?, address=?, founded=?, video_url=?, social=?, review_links=?,
                       status=?, tier=?, verified=?, owner_id=?
                WHERE id=?',
-              [$data['name'], $slug, $data['category_id'], $data['city_id'], $data['tagline'], $data['description'],
+              [$data['name'], $slug, $data['category_id'], $data['business_type'], $data['city_id'], $data['tagline'], $data['description'],
                $data['profile'] ?? $biz['profile'],
                // $staffPlan is enhanced, so these are always present — the
                // fallback keeps this honest if that ever changes.
