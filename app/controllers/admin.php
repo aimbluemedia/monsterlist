@@ -107,7 +107,7 @@ if ($sub === 'dashboard') {
         if (!$errors) {
             $slug = unique_business_slug($data['name'], (int)$data['city_id'], (int)$biz['id']);
             q('UPDATE businesses SET name=?, slug=?, category_id=?, business_type=?, city_id=?, tagline=?, description=?, profile=?, phone=?,
-                      website=?, email=?, address=?, founded=?, video_url=?, social=?, review_links=?,
+                      website=?, email=?, address=?, postcode=?, hours=?, founded=?, video_url=?, social=?, review_links=?,
                       status=?, tier=?, verified=?, owner_id=?
                WHERE id=?',
               [$data['name'], $slug, $data['category_id'], $data['business_type'], $data['city_id'], $data['tagline'], $data['description'],
@@ -115,7 +115,8 @@ if ($sub === 'dashboard') {
                // $staffPlan is enhanced, so these are always present — the
                // fallback keeps this honest if that ever changes.
                $data['phone'] ?? $biz['phone'], $data['website'], $data['email'] ?? $biz['email'],
-               $data['address'], $data['founded'],
+               $data['address'], $data['postcode'] ?? $biz['postcode'], $data['hours'] ?? $biz['hours'],
+               $data['founded'],
                $data['video_url'] ?? $biz['video_url'], $data['social'] ?? $biz['social'],
                array_key_exists('review_links', $data) ? $data['review_links'] : $biz['review_links'],
                $newStatus, $newTier, $verified, $ownerId, $biz['id']]);

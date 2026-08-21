@@ -283,9 +283,29 @@ function jsonld_local_business(array $b, array $city, string $path): array
             'streetAddress'   => $b['address'],
             'addressLocality' => $city['name'],
             'addressRegion'   => $city['region_code'] ?? $city['region_name'] ?? null,
+            // Paid, so gated with the rest of them.
+            'postalCode'      => $enhanced ? ($b['postcode'] ?? null) : null,
             'addressCountry'  => $city['country_code'] ?? $city['ccode'],
         ],
     ];
+    $data['address'] = array_filter($data['address'], fn($v) => $v !== null && $v !== '');
+
+    // openingHoursSpecification, one entry per day the business is open. Closed
+    // days are left out: Schema.org describes when somewhere IS open, and a
+    // day with no entry is already understood as not open.
+    if ($enhanced) {
+        $spec = [];
+        foreach (hours_parse($b['hours'] ?? null) as $day) {
+            if (empty($day['open'])) continue;
+            $spec[] = [
+                '@type'     => 'OpeningHoursSpecification',
+                'dayOfWeek' => $day['d'],
+                'opens'     => $day['from'],
+                'closes'    => $day['to'],
+            ];
+        }
+        if ($spec) $data['openingHoursSpecification'] = $spec;
+    }
     if (!empty($b['lat']) && !empty($b['lng'])) {
         $data['geo'] = ['@type' => 'GeoCoordinates', 'latitude' => (float)$b['lat'], 'longitude' => (float)$b['lng']];
     }

@@ -244,6 +244,104 @@ function refresh_city_count(int $cityId): void
 // ---------------------------------------------------------------------------
 
 /** Find-or-create the city for a submitted location. Returns city id or null. */
+// ---------------------------------------------------------------------------
+// Opening hours.
+//
+// Stored as JSON on businesses.hours: one entry per day, always seven, always
+// in this order. Times are 24-hour "HH:MM" because that is what <input
+// type="time"> gives back and what Schema.org's opens/closes want — the
+// storefront turns them into something readable at the point of display, which
+// is the only place the format is a matter of taste.
+//
+// A closed day is kept rather than dropped. "Closed on Sunday" is information a
+// visitor came for, and a missing Sunday only tells them nobody filled it in.
+// ---------------------------------------------------------------------------
+
+function hours_days(): array
+{
+    return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+}
+
+/**
+ * Read stored hours into a predictable seven-day array.
+ *
+ * Returns [] when nothing usable is stored, so callers can test it as a
+ * boolean. Anything malformed — a hand-edited row, an older shape — is treated
+ * as absent rather than half-rendered.
+ */
+function hours_parse(?string $json): array
+{
+    $raw = json_decode((string)$json, true);
+    if (!is_array($raw)) return [];
+
+    $byDay = [];
+    foreach ($raw as $entry) {
+        if (!is_array($entry)) continue;
+        $day = (string)($entry['d'] ?? '');
+        if (!in_array($day, hours_days(), true)) continue;
+        $byDay[$day] = $entry;
+    }
+    if (!$byDay) return [];
+
+    $out = [];
+    $any = false;
+    foreach (hours_days() as $day) {
+        $e    = $byDay[$day] ?? [];
+        $open = !empty($e['open']);
+        $from = hours_clean((string)($e['from'] ?? ''));
+        $to   = hours_clean((string)($e['to'] ?? ''));
+        // Open with no times is not a statement anybody can act on, so it is
+        // recorded as closed rather than published as an empty promise.
+        if ($open && ($from === '' || $to === '')) $open = false;
+        if ($open) $any = true;
+        $out[] = ['d' => $day, 'open' => $open, 'from' => $from, 'to' => $to];
+    }
+    // Seven closed days is what an untouched form posts. Nobody means it.
+    return $any ? $out : [];
+}
+
+/** "HH:MM" or '' — anything else is not a time this will publish. */
+function hours_clean(string $t): string
+{
+    $t = trim($t);
+    return preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $t) ? $t : '';
+}
+
+/** Read the seven day rows off a posted form. Returns JSON, or null. */
+function hours_from_post(): ?string
+{
+    $out = [];
+    foreach (hours_days() as $day) {
+        $key  = strtolower($day);
+        $out[] = [
+            'd'    => $day,
+            'open' => !empty($_POST['hours_open'][$key]),
+            'from' => hours_clean((string)($_POST['hours_from'][$key] ?? '')),
+            'to'   => hours_clean((string)($_POST['hours_to'][$key] ?? '')),
+        ];
+    }
+    $parsed = hours_parse(json_encode($out));
+    return $parsed ? json_encode($parsed, JSON_UNESCAPED_SLASHES) : null;
+}
+
+/** "9:00 am – 5:30 pm", for a person reading the storefront. */
+function hours_label(array $day): string
+{
+    if (empty($day['open'])) return 'Closed';
+    // Open all day is worth saying in words rather than as 00:00 – 23:59.
+    if ($day['from'] === '00:00' && in_array($day['to'], ['23:59', '00:00'], true)) return 'Open 24 hours';
+    return hours_time($day['from']) . ' – ' . hours_time($day['to']);
+}
+
+function hours_time(string $hhmm): string
+{
+    [$h, $m] = array_pad(explode(':', $hhmm), 2, '00');
+    $h  = (int)$h;
+    $ap = $h < 12 ? 'am' : 'pm';
+    $h12 = $h % 12 === 0 ? 12 : $h % 12;
+    return $m === '00' ? "$h12$ap" : "$h12:$m$ap";
+}
+
 function resolve_city(string $countryCode, string $regionSlug, string $cityName): ?int
 {
     $country = row('SELECT * FROM countries WHERE code = ?', [$countryCode]);
@@ -316,6 +414,15 @@ function listing_form_data(array $user, array $plan, int $exceptId = 0, bool $en
         $data['phone']     = mb_substr(post('phone'), 0, 40);
         $data['email']     = filter_var(post('email'), FILTER_VALIDATE_EMAIL) ?: null;
         $data['video_url'] = clean_url(post('video_url'));
+        // Postcodes vary too much between countries to validate beyond a length
+        // and a character set — "SW1A 1AA", "83702" and "75008" are all correct
+        // and none of them looks like the others.
+        $data['postcode']  = mb_substr(preg_replace('/[^A-Za-z0-9 \-]/', '', post('postcode')), 0, 20) ?: null;
+        // Hours are written only when the form rendered the rows, so a form
+        // without them cannot wipe a week somebody typed in.
+        if (isset($_POST['hours_open']) || isset($_POST['hours_from'])) {
+            $data['hours'] = hours_from_post();
+        }
     }
 
     // The long-form Profile section, paid tiers only. Like the review links it

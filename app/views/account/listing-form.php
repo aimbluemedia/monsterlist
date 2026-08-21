@@ -161,6 +161,21 @@ $revLinks = $editing ? wizard_links($biz['review_links'] ?? null) : [];
             <input type="text" name="address" value="<?= e($v('address')) ?>" maxlength="255">
           </div>
         </div>
+        <?php // Postcode is paid, like the phone below it: kept out of the free
+              // form entirely rather than shown and ignored. Its own field, not
+              // part of the street line, because PostalAddress has a slot for it
+              // and nothing can read one buried in free text. ?>
+        <?php if ($plan['enhanced']): ?>
+          <div class="form-grid">
+            <div>
+              <label>Postcode / ZIP</label>
+              <input type="text" name="postcode" value="<?= e($v('postcode')) ?>" maxlength="20" placeholder="e.g. 83702">
+              <p class="form-note">Published in your listing's structured data, where search engines
+                read it as part of your address.</p>
+            </div>
+            <div></div>
+          </div>
+        <?php endif; ?>
       </div>
 
       <div class="card card-pad ed-card">
@@ -217,6 +232,42 @@ $revLinks = $editing ? wizard_links($biz['review_links'] ?? null) : [];
           <p class="form-note">Add up to <?= max(0, 6 - count($gallery ?? [])) ?> more photos, 5 MB each. They're resized automatically.</p>
           <label>Video URL (YouTube, Vimeo…)</label>
           <input type="text" name="video_url" value="<?= e($v('video_url')) ?>">
+        </div>
+      <?php endif; ?>
+
+      <?php // Opening hours, paid. Seven rows, each a tick and two times —
+            // structured because openingHoursSpecification needs real times,
+            // and because "Mon-Fri 9-5ish, weekends sometimes" is not something
+            // a search engine or a visitor in a hurry can act on. ?>
+      <?php if ($plan['enhanced']): ?>
+        <?php $hoursVal = hours_parse($editing ? ($biz['hours'] ?? null) : null); ?>
+        <div class="card card-pad ed-card">
+          <h3>Opening hours</h3>
+          <p class="mute ed-note">Leave a day unticked to show it as closed. Filled in here, your
+            hours appear on your listing and in the structured data search engines read.</p>
+          <div class="hrs">
+            <?php foreach (hours_days() as $i => $day): ?>
+              <?php
+              $key = strtolower($day);
+              $row = $hoursVal[$i] ?? ['open' => false, 'from' => '09:00', 'to' => '17:00'];
+              // A posted form wins, so a failed save does not throw the week away.
+              if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                  $row = ['open' => !empty($_POST['hours_open'][$key]),
+                          'from' => (string)($_POST['hours_from'][$key] ?? ''),
+                          'to'   => (string)($_POST['hours_to'][$key] ?? '')];
+              }
+              ?>
+              <div class="hrs-row">
+                <label class="hrs-day">
+                  <input type="checkbox" name="hours_open[<?= e($key) ?>]" value="1" <?= !empty($row['open']) ? 'checked' : '' ?>>
+                  <span><?= e($day) ?></span>
+                </label>
+                <input type="time" name="hours_from[<?= e($key) ?>]" value="<?= e((string)($row['from'] ?: '09:00')) ?>" aria-label="<?= e($day) ?> opens">
+                <span class="hrs-to">to</span>
+                <input type="time" name="hours_to[<?= e($key) ?>]" value="<?= e((string)($row['to'] ?: '17:00')) ?>" aria-label="<?= e($day) ?> closes">
+              </div>
+            <?php endforeach; ?>
+          </div>
         </div>
       <?php endif; ?>
 

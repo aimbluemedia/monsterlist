@@ -671,6 +671,21 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
   .tk-strip-actions{width:100%;justify-content:flex-start}
 }
 
+/* ===== opening hours, on the listing form =====
+   Seven rows of tick + time + time. Fixed columns so the day names and the two
+   time boxes line up down the week rather than shifting with the label width. */
+.hrs{display:flex;flex-direction:column;gap:8px}
+.hrs-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:10px;align-items:center}
+.hrs-day{display:flex;align-items:center;gap:8px;margin:0;font-weight:600;cursor:pointer}
+.hrs-day input{width:auto;margin:0}
+.hrs-row input[type=time]{width:auto;margin:0}
+.hrs-to{color:var(--mute);font-size:.85rem}
+@media(max-width:560px){
+  /* the day claims the full first line, the two times share the second */
+  .hrs-row{grid-template-columns:auto 1fr auto 1fr}
+  .hrs-day{grid-column:1 / -1}
+}
+
 /* ===== Superadmin: member intake ===== */
 .intake-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:6px}
 .intake-bulk{margin:10px 0 14px}

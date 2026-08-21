@@ -1,7 +1,10 @@
 <?php
 $social   = json_decode((string)$b['social'], true) ?: [];
-$hours    = json_decode((string)$b['hours'], true) ?: [];
 $enhanced = tier_enhanced($b['tier']);
+// Hours are a paid feature, so a free listing has none to show even when the
+// column holds a week from a lapsed subscription — the same rule the markup
+// follows, because the two have to agree.
+$hours    = $enhanced ? hours_parse($b['hours'] ?? null) : [];
 ?>
 <div class="wrap">
   <nav class="crumbs">
@@ -247,7 +250,10 @@ $enhanced = tier_enhanced($b['tier']);
         <div class="sf-loc">
           <b><?= e($country['name']) ?></b>
           <?php if ($region): ?><span><?= e($region['name']) ?></span><?php endif; ?>
-          <?php if ($b['address']): ?><small><?= e($b['address']) ?></small><?php endif; ?>
+          <?php // Street and postcode are paid; schema publishes exactly this. ?>
+          <?php $street = trim(($enhanced && $b['address'] ? $b['address'] : '')
+                             . ($enhanced && !empty($b['postcode']) ? ', ' . $b['postcode'] : ''), ', '); ?>
+          <?php if ($street !== ''): ?><small><?= e($street) ?></small><?php endif; ?>
         </div>
       </div>
 
@@ -255,7 +261,7 @@ $enhanced = tier_enhanced($b['tier']);
         <div class="card card-pad" style="margin-bottom:14px">
           <h3>Hours</h3>
           <?php foreach ($hours as $h): ?>
-            <div class="info-row"><span class="mute"><?= e($h['d'] ?? '') ?></span><span><?= !empty($h['open']) ? e($h['h'] ?? '') : 'Closed' ?></span></div>
+            <div class="info-row"><span class="mute"><?= e($h['d']) ?></span><span<?= empty($h['open']) ? ' class="mute"' : '' ?>><?= e(hours_label($h)) ?></span></div>
           <?php endforeach; ?>
         </div>
       <?php endif; ?>

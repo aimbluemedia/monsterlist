@@ -126,6 +126,44 @@ $listUrl    = e(listings_url($back, $_GET['q'] ?? ''));
         <input type="text" name="address" value="<?= e($v('address')) ?>" maxlength="255">
       </div>
     </div>
+    <div class="form-grid">
+      <div>
+        <label>Postcode / ZIP</label>
+        <input type="text" name="postcode" value="<?= e($v('postcode')) ?>" maxlength="20">
+      </div>
+      <div></div>
+    </div>
+  </div>
+
+  <?php // Staff get every field whatever the owner pays for, and these two have
+        // to be here for a second reason: the save path treats staff as an
+        // enhanced plan, so a form without them would read them as cleared and
+        // wipe what the owner entered. ?>
+  <div class="card card-pad ed-card">
+    <h3>Opening hours</h3>
+    <div class="hrs">
+      <?php $hoursVal = hours_parse($biz['hours'] ?? null); ?>
+      <?php foreach (hours_days() as $i => $day): ?>
+        <?php
+        $key = strtolower($day);
+        $row = $hoursVal[$i] ?? ['open' => false, 'from' => '09:00', 'to' => '17:00'];
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $row = ['open' => !empty($_POST['hours_open'][$key]),
+                    'from' => (string)($_POST['hours_from'][$key] ?? ''),
+                    'to'   => (string)($_POST['hours_to'][$key] ?? '')];
+        }
+        ?>
+        <div class="hrs-row">
+          <label class="hrs-day">
+            <input type="checkbox" name="hours_open[<?= e($key) ?>]" value="1" <?= !empty($row['open']) ? 'checked' : '' ?>>
+            <span><?= e($day) ?></span>
+          </label>
+          <input type="time" name="hours_from[<?= e($key) ?>]" value="<?= e((string)($row['from'] ?: '09:00')) ?>" aria-label="<?= e($day) ?> opens">
+          <span class="hrs-to">to</span>
+          <input type="time" name="hours_to[<?= e($key) ?>]" value="<?= e((string)($row['to'] ?: '17:00')) ?>" aria-label="<?= e($day) ?> closes">
+        </div>
+      <?php endforeach; ?>
+    </div>
   </div>
 
   <div class="card card-pad ed-card">

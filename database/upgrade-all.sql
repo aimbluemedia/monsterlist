@@ -177,6 +177,16 @@ SET @ddl = IF((SELECT COUNT(*) FROM information_schema.COLUMNS
   'ALTER TABLE businesses ADD COLUMN business_type VARCHAR(40) DEFAULT NULL AFTER category_id');
 PREPARE s FROM @ddl; EXECUTE s; DEALLOCATE PREPARE s;
 
+-- Postcode, kept apart from the street address so it can go in its own
+-- PostalAddress field rather than being buried in free text where nothing can
+-- read it. A paid feature, like the phone and email beside it.
+SET @ddl = IF((SELECT COUNT(*) FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses'
+                  AND COLUMN_NAME = 'postcode') > 0,
+  'DO 0',
+  'ALTER TABLE businesses ADD COLUMN postcode VARCHAR(20) DEFAULT NULL AFTER address');
+PREPARE s FROM @ddl; EXECUTE s; DEALLOCATE PREPARE s;
+
 -- v7: cached token balance. token_events above is the source of truth; this is
 -- kept in step with it so every page showing a balance is one column read.
 SET @ddl = IF((SELECT COUNT(*) FROM information_schema.COLUMNS
@@ -318,6 +328,7 @@ UNION ALL SELECT 'users.intake_at',          IF(COUNT(*) > 0, 'OK', 'MISSING') F
 UNION ALL SELECT 'users.intake_note',        IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'      AND COLUMN_NAME = 'intake_note'
 UNION ALL SELECT 'businesses.review_links', IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'review_links'
 UNION ALL SELECT 'businesses.profile',      IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'profile'
-UNION ALL SELECT 'businesses.business_type',IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'business_type';
+UNION ALL SELECT 'businesses.business_type',IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'business_type'
+UNION ALL SELECT 'businesses.postcode',     IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'postcode';
 
 -- Nothing goes below this line. See the note above the report.
