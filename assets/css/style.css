@@ -686,6 +686,11 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
   .hrs-day{grid-column:1 / -1}
 }
 
+/* the three plan buttons on a member's page — the one they are on is disabled
+   and highlighted, so the control shows the state as well as offering a change */
+.me-plan{display:flex;gap:8px;flex-wrap:wrap}
+.me-plan .btn[disabled]{opacity:1;cursor:default}
+
 /* ===== Superadmin: the monthly Pro / Premium queues ===== */
 .mt-task{border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px}
 .mt-head{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;justify-content:space-between;margin-bottom:10px}

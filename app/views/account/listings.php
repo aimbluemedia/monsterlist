@@ -5,7 +5,19 @@
       <h1>My listings</h1>
       <a class="btn btn-primary" href="/account/listings/new">+ New listing</a>
     </div>
-    <p class="mute"><?= count($listings) ?>/<?= (int)$plan['max_listings'] ?> listings used on the <?= e($plan['label']) ?> plan.</p>
+    <p class="mute">
+      <?= count($listings) ?> listing<?= count($listings) === 1 ? '' : 's' ?> on the <?= e($plan['label']) ?> plan
+      <?php // Only say "of 1" where there is a ceiling to hit. On an unlimited
+            // plan a running total out of nothing is a sum that reads as broken. ?>
+      <?php if (plan_listing_limit($plan)): ?>
+        — <?= e(plan_listings_label($plan)) ?> included.
+        <?php if (plan_more_listings_exist($plan)): ?>
+          <a href="/pricing" style="color:var(--accent);font-weight:700">Pro and Premium carry as many as you like →</a>
+        <?php endif; ?>
+      <?php else: ?>
+        — add as many as you like.
+      <?php endif; ?>
+    </p>
     <?php if (!$listings): ?>
       <div class="card card-pad">No listings yet — <a href="/account/listings/new" style="color:var(--accent);font-weight:700">create one now</a>.</div>
     <?php else: ?>

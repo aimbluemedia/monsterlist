@@ -37,7 +37,7 @@
               // reads — the full detail is in the comparison table below. ?>
         <?php $tk = token_rules($key); ?>
         <ul>
-          <li><?= (int)$p['max_listings'] ?> business listing<?= $p['max_listings'] > 1 ? 's' : '' ?></li>
+          <li><?= e(plan_listing_limit($p) === 0 ? 'Unlimited business listings' : plan_listings_label($p) . ' — one business') ?></li>
           <li><?= number_format((int)$tk['grant']) ?> tokens a month</li>
           <li>Up to <?= (int)$tk['promos_max'] ?> promotions a month</li>
           <?php if ($p['enhanced']): ?>
@@ -77,7 +77,7 @@
 
   $groups = [
     'Your listing' => [
-      ['Business listings',               fn($k) => (int)$planList[$k]['max_listings']],
+      ['Business listings',               fn($k) => plan_listing_limit($planList[$k]) === 0 ? 'Unlimited' : plan_listing_limit($planList[$k])],
       ['Shown in search, city &amp; category pages', fn($k) => $yes(true)],
       ['Link to your website',            fn($k) => $yes(true)],
       ['About section',                   fn($k) => $yes(true)],

@@ -39,8 +39,8 @@ $where   = trim(($cityRow['name'] ?? '') . (!empty($cityRow['region_name']) ? ',
       </div>
     <?php else: ?>
       <p class="up-intro">
-        Everything below applies to <b><?= e($bizName) ?></b>. Your plan covers one listing,
-        so upgrading changes this one.
+        Everything below applies to <b><?= e($bizName) ?></b> — and to every other listing on
+        your account, now and later: Pro and Premium both carry as many as you like.
       </p>
 
       <div class="up-plans">

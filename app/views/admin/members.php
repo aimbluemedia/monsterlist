@@ -7,33 +7,13 @@
   <?php if (!$list): ?><p class="mute">No members found.</p>
   <?php else: ?>
   <table class="table">
-    <tr><th>Member</th><th>Plan</th><th>Listings</th><th>Tokens</th><th>Status</th><th>Joined</th><th></th></tr>
+    <tr><th>Member</th><th>Listings</th><th>Tokens</th><th>Status</th><th>Joined</th><th></th></tr>
     <?php foreach ($list as $m): ?>
       <tr>
         <td><strong><?= e($m['name']) ?></strong><br><span class="mute" style="font-size:.82rem"><?= e($m['email']) ?></span></td>
-        <td>
-          <form method="post" style="display:inline"><?= csrf_field() ?>
-            <input type="hidden" name="id" value="<?= (int)$m['id'] ?>"><input type="hidden" name="action" value="setplan">
-            <select name="plan" onchange="this.form.submit()" style="width:auto;padding:5px 8px">
-              <?php // "Premium" is what we call Featured out loud; the value
-                    // posted is still the plan key the rest of the site uses. ?>
-              <?php foreach (['free' => 'Free', 'pro' => 'Pro', 'featured' => 'Premium'] as $p => $lbl): ?>
-                <option value="<?= $p ?>" <?= $m['plan'] === $p ? 'selected' : '' ?>><?= e($lbl) ?></option>
-              <?php endforeach; ?>
-            </select>
-          </form>
-          <?php // What the plan is doing, not just what it is called: a comp
-                // Stripe cannot cancel, and the date the next month's work
-                // falls due. Both are new columns, so old databases show
-                // nothing here rather than failing. ?>
-          <?php if ($m['plan'] !== 'free' && !empty($m['plan_renews_on'])): ?>
-            <div class="mute" style="font-size:.75rem;margin-top:3px">
-              <?php if (!empty($m['plan_comped'])): ?><span class="badge badge-pro">Comped</span> <?php endif; ?>
-              renews <?= e(date('j M', strtotime((string)$m['plan_renews_on']))) ?>
-            </div>
-          <?php endif; ?>
-        </td>
-        <td><?= (int)$m['listing_count'] ?></td>
+        <?php // The count is the way in: "3 listings" is the thing a staff
+              // member is looking at when they want to open the account. ?>
+        <td><a href="/superadmin/members/edit?id=<?= (int)$m['id'] ?>" style="color:var(--accent);font-weight:700"><?= (int)$m['listing_count'] ?></a></td>
         <td style="white-space:nowrap">
           <strong><?= number_format((int)($m['token_balance'] ?? 0)) ?></strong>
           <form method="post" style="display:inline-flex;gap:4px;margin-left:6px"><?= csrf_field() ?>
@@ -44,9 +24,11 @@
         </td>
         <td><span class="badge <?= $m['status'] === 'active' ? 'badge-live' : 'badge-rejected' ?>"><?= e($m['status']) ?></span></td>
         <td><?= e(date('M j, Y', strtotime($m['created_at']))) ?></td>
+        <?php // One way in, rather than a row of consequential buttons sitting
+              // a stray click apart in a scrolling table. Plan, listings,
+              // suspend and delete are all on the member's own page. ?>
         <td style="white-space:nowrap">
-          <form method="post" style="display:inline"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int)$m['id'] ?>"><input type="hidden" name="action" value="suspend"><button class="btn btn-sm btn-ghost"><?= $m['status'] === 'active' ? 'Suspend' : 'Reactivate' ?></button></form>
-          <form method="post" style="display:inline"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int)$m['id'] ?>"><input type="hidden" name="action" value="delete"><button class="btn btn-sm btn-danger" data-confirm="Delete this account permanently? Their listings will remain, unclaimed.">Delete</button></form>
+          <a class="btn btn-sm btn-primary" href="/superadmin/members/edit?id=<?= (int)$m['id'] ?>">Edit</a>
         </td>
       </tr>
     <?php endforeach; ?>

@@ -209,8 +209,22 @@ function cycle_set_plan(int $userId, string $plan, bool $comped = true): void
 
     q('UPDATE users SET plan_comped = ?, plan_renews_on = ? WHERE id = ?',
       [$comped ? 1 : 0, cycle_add_month(date('Y-m-d')), $userId]);
+
+    // An unfinished cycle from the plan they were on is dropped. Both queues
+    // match a task's plan against the member's current one, so a Pro task left
+    // behind by a move to Premium appears on neither and is owed by nobody —
+    // open forever, and only visible on this member's own page. Finished
+    // months are untouched: those were served.
+    q('DELETE FROM member_tasks WHERE user_id = ? AND done_at IS NULL AND plan <> ?', [$userId, $plan]);
+
     // The first cycle opens now rather than in a month's time: they are on the
     // plan from today, so today is when we start owing them something.
+    //
+    // A month already SERVED on the old plan is left alone and this does
+    // nothing — the unique key absorbs it — so upgrading on the 5th after Pro
+    // work was done on the 1st does not buy a second service in the same
+    // month; the new plan's first cycle is the next one. An unfinished month,
+    // deleted just above, reopens here on the new plan and moves to its queue.
     cycle_open($userId, $plan, date('Y-m-d'));
 }
 

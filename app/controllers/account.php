@@ -79,13 +79,11 @@ if ($sub === 'dashboard') {
 } elseif ($sub === 'listings' && $act === 'new') {
     if (!user_can_add_listing($u)) {
         // Only point at the pricing page when a higher plan actually allows
-        // more. Every plan carries one listing today, so "upgrade to add more"
-        // would send them to a page that does not offer what was promised.
-        $best = max(array_column(plans(), 'max_listings'));
-        $more = $best > (int)$plan['max_listings'];
+        // more, rather than selling an upgrade that changes nothing.
+        $more = plan_more_listings_exist($plan);
         flash_set('error', 'Your ' . $plan['label'] . ' plan covers '
-            . (int)$plan['max_listings'] . ' listing' . ((int)$plan['max_listings'] === 1 ? '' : 's')
-            . ($more ? '. Upgrade to add more.' : ' — edit the one you have, or contact us if you run several businesses.'));
+            . strtolower(plan_listings_label($plan))
+            . ($more ? '. Pro and Premium carry as many as you like.' : ' — contact us if you run several businesses.'));
         redirect($more ? '/pricing' : '/account/listings');
     }
     $errors = [];
@@ -121,10 +119,11 @@ if ($sub === 'dashboard') {
     view('account/listing-form', compact('meta', 'u', 'plan', 'errors', 'biz', 'prefill', 'countries', 'usStates', 'cats'));
 
 } elseif ($sub === 'listings' && $act === 'upgrade') {
-    // Upgrading is sold per listing, not per account. The plan is stored on the
-    // user and every plan carries exactly one listing, so the two are the same
-    // thing — but only one of them is the thing the member came here about, and
-    // it is the one with their business name on it.
+    // Upgrading is sold per listing, not per account: this is the listing the
+    // member pressed the button on, and it is the one they are thinking about.
+    // The plan itself sits on the account and covers everything they own — Pro
+    // and Premium carry as many listings as they like — which the page says
+    // rather than leaving them to find out.
     $biz = own_business((int)($_GET['id'] ?? 0), (int)$u['id']);
     if (!$biz) not_found();
     $offers  = plans_above((string)$u['plan']);

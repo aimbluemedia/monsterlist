@@ -8,9 +8,9 @@ function plans(): array
         'free' => [
             'label'        => 'Free',
             'price'        => 0,
-            // Every plan carries one listing. The paid tiers sell what that one
-            // listing can DO — a full storefront, more promotion, and the
-            // article service — not how many of them you may own.
+            // One listing on Free; paid plans carry as many as you like. 0
+            // means unlimited — read it through plan_listing_limit() and the
+            // helpers beside it rather than comparing to it directly.
             'max_listings' => 1,
             // 'enhanced' is the paid-features gate: phone, public email, logo,
             // photo gallery, video, social links and the long description.
@@ -24,24 +24,24 @@ function plans(): array
         'pro' => [
             'label'        => 'Pro',
             'price'        => (float)setting('price_pro_monthly', '19'),
-            'max_listings' => 1,
+            'max_listings' => 0,   // unlimited
             'enhanced'     => true,
             'featured'     => false,
             'analytics'    => true,
             'profile'      => true,
             'concierge'    => false,
-            'blurb'        => 'A full storefront: a 1,500-word profile, phone and public email, logo, photo gallery, video, verified badge and analytics — plus the tokens to promote it every month.',
+            'blurb'        => 'Unlimited listings, each a full storefront: a 1,500-word profile, phone and public email, logo, photo gallery, video, verified badge and analytics — plus the tokens to promote it every month.',
         ],
         'featured' => [
             'label'        => 'Featured',
             'price'        => (float)setting('price_featured_monthly', '49'),
-            'max_listings' => 1,
+            'max_listings' => 0,   // unlimited
             'enhanced'     => true,
             'featured'     => true,
             'analytics'    => true,
             'profile'      => true,
             'concierge'    => true,
-            'blurb'        => 'Everything in Pro, plus priority placement — and we do the work: one article a month, written for you and posted out across our own channels and yours.',
+            'blurb'        => 'Unlimited listings with everything in Pro, plus priority placement — and we do the work: one article a month, written for you and posted out across our own channels and yours.',
         ],
     ];
 }
@@ -106,6 +106,11 @@ function plan_gains(string $from, string $to): array
     $tb = token_rules($to);
 
     $gains = [];
+    if (plan_listing_limit($b) === 0 && plan_listing_limit($a) > 0) {
+        $gains[] = 'As many listings as you like, instead of ' . plan_listings_label($a);
+    } elseif (plan_listing_limit($b) > plan_listing_limit($a) && plan_listing_limit($a) > 0) {
+        $gains[] = plan_listings_label($b) . ' instead of ' . plan_listings_label($a);
+    }
     if (empty($a['enhanced']) && !empty($b['enhanced'])) {
         $gains[] = 'Your phone number and a public email address on the listing';
         $gains[] = 'Your logo, a photo gallery of up to 6 images, and a video';
@@ -148,9 +153,39 @@ function user_listing_count(int $userId): int
     return (int)scalar('SELECT COUNT(*) FROM businesses WHERE owner_id = ? AND status != "rejected"', [$userId]);
 }
 
+/** How many listings a plan allows. 0 means no limit. */
+function plan_listing_limit(array $plan): int
+{
+    return max(0, (int)($plan['max_listings'] ?? 1));
+}
+
+/** "1 listing" / "Unlimited listings" — the phrase, so no view counts to zero. */
+function plan_listings_label(array $plan): string
+{
+    $n = plan_listing_limit($plan);
+    return $n === 0 ? 'Unlimited listings' : $n . ' listing' . ($n === 1 ? '' : 's');
+}
+
+/** Room for another? Unlimited plans always have room. */
+function plan_has_room(array $plan, int $current): bool
+{
+    $n = plan_listing_limit($plan);
+    return $n === 0 || $current < $n;
+}
+
+/** Does any plan allow more listings than this one? */
+function plan_more_listings_exist(array $plan): bool
+{
+    if (plan_listing_limit($plan) === 0) return false;   // already unlimited
+    foreach (plans() as $p) {
+        if (plan_listing_limit($p) === 0 || plan_listing_limit($p) > plan_listing_limit($plan)) return true;
+    }
+    return false;
+}
+
 function user_can_add_listing(array $user): bool
 {
-    return user_listing_count((int)$user['id']) < plan_for($user)['max_listings'];
+    return plan_has_room(plan_for($user), user_listing_count((int)$user['id']));
 }
 
 /** Keep businesses.tier in sync with the owner's plan (called on plan change). */

@@ -81,7 +81,7 @@ if ($sub === 'dashboard') {
     $errors = [];
 
     // Staff get the full field set regardless of what the owner is paying for.
-    $staffPlan = ['enhanced' => true, 'max_listings' => PHP_INT_MAX, 'label' => 'Staff',
+    $staffPlan = ['enhanced' => true, 'max_listings' => 0, 'label' => 'Staff',
                   'analytics' => true, 'profile' => true, 'concierge' => true];
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -558,6 +558,31 @@ if ($sub === 'dashboard') {
          WHERE $where ORDER BY p.created_at DESC LIMIT 30 OFFSET $offset");
     view_raw('admin/promotions', compact('meta', 'u', 'list', 'status', 'page'));
 
+} elseif ($sub === 'members' && ($segments[2] ?? '') === 'edit') {
+    // One member, everything about them, and every listing they own. The list
+    // page used to carry a plan dropdown per row; the plan belongs here with
+    // the rest of the account, where changing it is a deliberate act rather
+    // than a stray click while scrolling a table.
+    $m = row('SELECT * FROM users WHERE id = ?', [(int)($_GET['id'] ?? 0)]);
+    if (!$m) not_found();
+    if ($m['role'] !== 'member' && !is_superadmin()) not_found();
+
+    $listings = rows(
+        'SELECT b.*, ci.name AS city_name, ci.slug AS city_slug, ci.country_code, r.slug AS region_slug,
+                c.label AS category_label
+           FROM businesses b
+           LEFT JOIN cities ci ON ci.id = b.city_id
+           LEFT JOIN regions r ON r.id = ci.region_id
+           LEFT JOIN categories c ON c.id = b.category_id
+          WHERE b.owner_id = ? ORDER BY b.created_at DESC', [(int)$m['id']]);
+
+    $mPlan   = plan_for($m);
+    $history = cycles_ready()
+        ? rows('SELECT * FROM member_tasks WHERE user_id = ? ORDER BY month DESC LIMIT 12', [(int)$m['id']])
+        : [];
+    $meta['title'] = $m['email'] . " — $site";
+    view_raw('admin/member-edit', compact('meta', 'u', 'm', 'listings', 'mPlan', 'history'));
+
 } elseif ($sub === 'members') {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         csrf_check();
@@ -590,7 +615,12 @@ if ($sub === 'dashboard') {
                 flash_set('success', 'Account deleted. Their listings remain, unclaimed.');
             }
         }
-        redirect('/superadmin/members');
+        // Back to wherever the button was: the member page for everything
+        // except deleting the member, whose page no longer exists.
+        $back = (int)post('back_to') === 1 && $action !== 'delete'
+            ? '/superadmin/members/edit?id=' . (int)post('id')
+            : '/superadmin/members';
+        redirect($back);
     }
     $qstr = trim((string)($_GET['q'] ?? ''));
     $page = page_param();
