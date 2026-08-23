@@ -68,7 +68,11 @@
     <?php endforeach; ?>
   </table>
   </div>
-  <?php if (count($list) === 30): ?><nav class="pager"><a href="<?= e(listings_url($status, $term, $page + 1)) ?>">Next →</a></nav><?php endif; ?>
+  <?php
+  $pgPage = $page; $pgTotal = $total; $pgPer = 30;
+  $pgUrl  = fn(int $n) => listings_url($status, $term, $n);
+  require __DIR__ . '/_pager.php';
+  ?>
   <?php endif; ?>
 </div>
 <?php require __DIR__ . '/_bottom.php'; ?>

@@ -54,7 +54,12 @@
       </tr>
     <?php endforeach; ?>
   </table>
-  <?php if (count($list) === 30): ?><nav class="pager"><a href="/superadmin/members?q=<?= e(urlencode($qstr)) ?>&page=<?= $page + 1 ?>">Next →</a></nav><?php endif; ?>
+  <?php
+  $pgPage = $page; $pgTotal = $total; $pgPer = 30;
+  $pgUrl  = fn(int $n) => '/superadmin/members?' . http_build_query(
+      array_filter(['q' => $qstr, 'page' => $n > 1 ? $n : null], fn($v) => $v !== null && $v !== ''));
+  require __DIR__ . '/_pager.php';
+  ?>
   <?php endif; ?>
 </div>
 <?php require __DIR__ . '/_bottom.php'; ?>

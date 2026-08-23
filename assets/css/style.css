@@ -686,6 +686,28 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
   .hrs-day{grid-column:1 / -1}
 }
 
+/* ===== Superadmin: the shared table pager =====
+   Count on the left, numbers on the right. Prev and Next are always drawn and
+   greyed at the ends, so the control keeps its shape as you walk through it
+   rather than shifting sideways every time a link appears or vanishes. */
+.pgr{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
+  gap:10px 16px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border2)}
+.pgr-count{font-size:.85rem;color:var(--mute)}
+.pgr-links{display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.pgr-num,.pgr-step{display:inline-flex;align-items:center;justify-content:center;
+  min-width:32px;height:32px;padding:0 9px;border-radius:8px;font-size:.85rem;font-weight:700;
+  border:1px solid var(--border);color:var(--ink);background:var(--card)}
+.pgr-num:hover,.pgr-step:hover{border-color:var(--accent);color:var(--accent)}
+.pgr-here{background:var(--accent);border-color:var(--accent);color:#fff}
+.pgr-here:hover{background:var(--accent);color:#fff}
+.pgr-off{color:var(--faint);border-color:var(--border2);background:var(--bg);cursor:default}
+.pgr-off:hover{border-color:var(--border2);color:var(--faint)}
+.pgr-gap{padding:0 4px;color:var(--faint)}
+@media(max-width:560px){
+  .pgr{justify-content:center}
+  .pgr-count{width:100%;text-align:center}
+}
+
 /* Plan, as a badge you can pick out down a column of thirty. The three read as
    a ladder — grey, blue, gold — rather than three unrelated colours. */
 .badge-plan-free{background:var(--border2);color:var(--mute)}

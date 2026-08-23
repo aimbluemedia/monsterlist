@@ -100,6 +100,41 @@ function page_param(): int
     return max(1, (int)($_GET['page'] ?? 1));
 }
 
+/**
+ * A page of numbered links.
+ *
+ * The staff tables all carried a lone "Next →" that appeared only when a page
+ * happened to be full — no page numbers, no way back, and no idea how much
+ * there was. Worse, a last page of exactly 30 rows still offered Next, and a
+ * last page of 29 offered nothing even when you had come from page 4.
+ *
+ * $url is given the page number and returns the href for it, so each caller
+ * keeps its own filters in the link.
+ *
+ * Returns the window of numbers to draw: first and last are always in it, the
+ * current page sits in the middle of a run, and the gaps are marked so a
+ * thousand pages do not print a thousand links.
+ */
+function pager_pages(int $page, int $pages, int $window = 2): array
+{
+    if ($pages < 1) return [];
+    $keep = [1, $pages];
+    for ($i = $page - $window; $i <= $page + $window; $i++) {
+        if ($i >= 1 && $i <= $pages) $keep[] = $i;
+    }
+    $keep = array_values(array_unique($keep));
+    sort($keep);
+
+    $out  = [];
+    $last = 0;
+    foreach ($keep as $n) {
+        if ($last && $n > $last + 1) $out[] = null;   // a gap, drawn as an ellipsis
+        $out[] = $n;
+        $last  = $n;
+    }
+    return $out;
+}
+
 function post(string $key, ?string $default = ''): ?string
 {
     $v = $_POST[$key] ?? $default;

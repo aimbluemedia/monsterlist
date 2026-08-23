@@ -204,12 +204,15 @@ if ($sub === 'dashboard') {
     $sqlWhere = $where ? implode(' AND ', $where) : '1=1';
 
     $page   = page_param();
-    $offset = ($page - 1) * 30;
     $joins  = 'FROM businesses b
                LEFT JOIN users u ON u.id = b.owner_id
                LEFT JOIN cities ci ON ci.id = b.city_id
                LEFT JOIN categories c ON c.id = b.category_id';
     $total = (int)scalar("SELECT COUNT(*) $joins WHERE $sqlWhere", $params);
+    // A page number past the end shows an empty table and no way to tell why.
+    // Land on the last page that has something on it instead.
+    $page   = min($page, max(1, (int)ceil($total / 30)));
+    $offset = ($page - 1) * 30;
     $list  = rows(
         "SELECT b.*, u.email AS owner_email, ci.name AS city_name, c.label AS category_label
          $joins WHERE $sqlWhere ORDER BY b.created_at DESC LIMIT 30 OFFSET $offset", $params);
@@ -660,19 +663,23 @@ if ($sub === 'dashboard') {
     }
     $qstr = trim((string)($_GET['q'] ?? ''));
     $page = page_param();
-    $offset = ($page - 1) * 30;
+    // One WHERE, used by the count and by the page of rows, so the two can
+    // never disagree about how many members there are.
+    $mWhere  = "u.role = 'member'";
+    $mParams = [];
     if ($qstr !== '') {
-        $like = '%' . $qstr . '%';
-        $list = rows("SELECT u.*, (SELECT COUNT(*) FROM businesses WHERE owner_id = u.id) AS listing_count
-                      FROM users u WHERE u.role = 'member' AND (u.email LIKE ? OR u.name LIKE ?)
-                      ORDER BY u.created_at DESC LIMIT 30 OFFSET $offset", [$like, $like]);
-    } else {
-        $list = rows("SELECT u.*, (SELECT COUNT(*) FROM businesses WHERE owner_id = u.id) AS listing_count
-                      FROM users u WHERE u.role = 'member'
-                      ORDER BY u.created_at DESC LIMIT 30 OFFSET $offset");
+        $like    = '%' . str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $qstr) . '%';
+        $mWhere .= ' AND (u.email LIKE ? OR u.name LIKE ?)';
+        $mParams = [$like, $like];
     }
+    $total  = (int)scalar("SELECT COUNT(*) FROM users u WHERE $mWhere", $mParams);
+    $page   = min($page, max(1, (int)ceil($total / 30)));
+    $offset = ($page - 1) * 30;
+    $list   = rows("SELECT u.*, (SELECT COUNT(*) FROM businesses WHERE owner_id = u.id) AS listing_count
+                      FROM users u WHERE $mWhere
+                      ORDER BY u.created_at DESC LIMIT 30 OFFSET $offset", $mParams);
     $domains = member_domains_bulk(array_column($list, 'id'));
-    view_raw('admin/members', compact('meta', 'u', 'list', 'qstr', 'page', 'domains'));
+    view_raw('admin/members', compact('meta', 'u', 'list', 'qstr', 'page', 'domains', 'total'));
 
 } elseif ($sub === 'claims') {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
