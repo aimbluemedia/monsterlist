@@ -140,17 +140,8 @@ CREATE TABLE IF NOT EXISTS intake_domains (
 -- picking one: "Illegal mix of collations ... for operation '='".
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Accounts taken on before the table existed had exactly one domain — the one
--- on the account itself. Move it in, so nothing already in the queue vanishes
--- from it. Skips any that is already there, so re-running changes nothing.
-INSERT INTO intake_domains (user_id, domain, business_id, note, created_at)
-SELECT u.id, u.website,
-       (SELECT b.id FROM businesses b WHERE b.owner_id = u.id ORDER BY b.id LIMIT 1),
-       u.intake_note, u.intake_at
-  FROM users u
- WHERE u.intake_at IS NOT NULL
-   AND u.website IS NOT NULL AND u.website <> ''
-   AND NOT EXISTS (SELECT 1 FROM intake_domains d WHERE d.domain = u.website);
+-- Rows are moved into this table from users.website further down, under
+-- "Backfills" — it has to wait until the columns it reads have been added.
 
 -- One row per paid member per month: the work that plan owes them, and whether
 -- it has been done. Opened on the member's own renewal date rather than on the
@@ -315,6 +306,49 @@ PREPARE s FROM @ddl; EXECUTE s; DEALLOCATE PREPARE s;
 
 
 -- ===========================================================================
+-- Backfills — moving existing data into the shapes added above.
+--
+-- These come after the columns section on purpose. They read columns that
+-- section adds, and on a database that does not have them yet, a statement
+-- naming one fails outright:
+--   #1054 - Unknown column 'u.intake_note' in 'field list'
+-- The guards above cannot help: they decide whether to run an ALTER, not
+-- whether the rest of the file may mention the column.
+-- ===========================================================================
+
+-- Accounts taken on before intake_domains existed had exactly one domain — the
+-- one on the account itself. Move it in, so nothing already in the queue
+-- vanishes from it. Skips any that is already there, so re-running is safe.
+--
+-- The last clause is the one that needs explaining. Nothing ever stopped two
+-- accounts being created against the same website, and on a live database some
+-- were: the same domain typed in twice, months apart. u_domain allows a domain
+-- once, so such a pair fails the whole statement with
+--   #1062 - Duplicate entry 'example.com' for key 'u_domain'
+-- and none of the backfill lands. The NOT EXISTS does not catch it, because it
+-- only knows about rows already in the table, not about the second row this
+-- same SELECT is about to produce.
+--
+-- So the domain goes to the account that registered it first, and the later
+-- ones are left out. That is the same rule the site itself applies — adding a
+-- domain already queued elsewhere is refused with "already queued for ..." —
+-- and it has to be some rule, because one website cannot become two listings.
+-- The report at the end of this file names every account left out, so you can
+-- see them rather than having to trust that they were the right ones.
+INSERT INTO intake_domains (user_id, domain, business_id, note, created_at)
+SELECT u.id, u.website,
+       (SELECT b.id FROM businesses b WHERE b.owner_id = u.id ORDER BY b.id LIMIT 1),
+       u.intake_note, u.intake_at
+  FROM users u
+ WHERE u.intake_at IS NOT NULL
+   AND u.website IS NOT NULL AND u.website <> ''
+   AND NOT EXISTS (SELECT 1 FROM intake_domains d WHERE d.domain = u.website)
+   AND u.id = (SELECT MIN(u2.id) FROM users u2
+                WHERE u2.website = u.website
+                  AND u2.intake_at IS NOT NULL);
+
+
+-- ===========================================================================
 -- v7 + v8 — token economics. All of it editable later in Superadmin -> Settings,
 -- so these are starting values: "value = value" means a setting you have
 -- already changed is left exactly as you set it.
@@ -394,6 +428,18 @@ SET @rep = CONCAT(
   '''feed_boost_pro'',''feed_boost_featured'')');
 PREPARE r FROM @rep; EXECUTE r; DEALLOCATE PREPARE r;
 
+-- Websites registered to more than one account. The queue gave each to the
+-- account that registered it first; this says which, and who else had it.
+-- An empty result — "MySQL returned an empty result set" — is the good answer
+-- and means every intake account's website is its own.
+SELECT d.domain                                             AS shared_domain,
+       (SELECT u1.email FROM users u1 WHERE u1.id = d.user_id) AS queued_for,
+       (SELECT GROUP_CONCAT(u2.email ORDER BY u2.id SEPARATOR ', ')
+          FROM users u2 WHERE u2.website = d.domain AND u2.id <> d.user_id) AS not_queued_for
+  FROM intake_domains d
+ WHERE EXISTS (SELECT 1 FROM users u2 WHERE u2.website = d.domain AND u2.id <> d.user_id)
+ ORDER BY d.domain;
+
 SELECT 'blocklist table'          AS piece, IF(COUNT(*) > 0, 'OK', 'MISSING') AS state FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'blocklist'
 UNION ALL SELECT 'token_events table',      IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'token_events'
 UNION ALL SELECT 'promotion_views table',   IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'promotion_views'
@@ -408,6 +454,7 @@ UNION ALL SELECT 'businesses.review_links', IF(COUNT(*) > 0, 'OK', 'MISSING') FR
 UNION ALL SELECT 'businesses.profile',      IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'profile'
 UNION ALL SELECT 'businesses.business_type',IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'business_type'
 UNION ALL SELECT 'businesses.postcode',     IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'postcode'
+UNION ALL SELECT 'intake_domains table',    IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'intake_domains'
 UNION ALL SELECT 'member_tasks table',      IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'member_tasks'
 UNION ALL SELECT 'users.plan_renews_on',    IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'      AND COLUMN_NAME = 'plan_renews_on'
 UNION ALL SELECT 'users.plan_comped',       IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'      AND COLUMN_NAME = 'plan_comped';
