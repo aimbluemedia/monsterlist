@@ -95,6 +95,17 @@ if ($sub === 'dashboard') {
 
     if ($aiRun) {
         csrf_check();
+        // The button is only drawn on a paid listing, but the request is worth
+        // checking rather than trusting: this one costs money to serve.
+        $aiTier = in_array(post('tier'), ['free','pro','featured'], true) ? post('tier') : $biz['tier'];
+    }
+
+    // Nothing researched and nothing charged for. Falling into the save branch
+    // would be wrong too — Save changes is not the button that was pressed.
+    if ($aiRun && !tier_enhanced($aiTier)) {
+        $errors[] = 'Profile is a Pro and Premium section. Set the tier above and save before writing one.';
+
+    } elseif ($aiRun) {
         $research = array_merge($biz, [
             'name'          => post('name')          ?: $biz['name'],
             'website'       => post('website')       ?: $biz['website'],
