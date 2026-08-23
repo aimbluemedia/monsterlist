@@ -686,6 +686,22 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
   .hrs-day{grid-column:1 / -1}
 }
 
+/* ===== Superadmin: the Members table's first column =====
+   Email on top because it identifies the account; the websites under it
+   because they are what the account is for. */
+.mb-email{display:block;font-weight:800;color:var(--ink);word-break:break-all}
+.mb-email:hover{color:var(--accent)}
+.mb-dom{font-size:.8rem;color:var(--mute);word-break:break-all;margin-top:2px}
+.mb-dom .badge{margin-left:4px;vertical-align:1px}
+.mb-none{font-size:.78rem;margin-top:2px;font-style:italic}
+/* <details>, so show/hide needs no script and survives a page without one */
+.mb-more{margin-top:2px}
+.mb-more summary{cursor:pointer;font-size:.8rem;font-weight:700;color:var(--accent);list-style:none}
+.mb-more summary::-webkit-details-marker{display:none}
+.mb-more summary::before{content:"▸ ";font-size:.85em}
+.mb-more[open] summary::before{content:"▾ "}
+.mb-more[open] summary{margin-bottom:2px}
+
 /* the three plan buttons on a member's page — the one they are on is disabled
    and highlighted, so the control shows the state as well as offering a change */
 .me-plan{display:flex;gap:8px;flex-wrap:wrap}

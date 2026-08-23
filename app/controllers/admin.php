@@ -671,7 +671,8 @@ if ($sub === 'dashboard') {
                       FROM users u WHERE u.role = 'member'
                       ORDER BY u.created_at DESC LIMIT 30 OFFSET $offset");
     }
-    view_raw('admin/members', compact('meta', 'u', 'list', 'qstr', 'page'));
+    $domains = member_domains_bulk(array_column($list, 'id'));
+    view_raw('admin/members', compact('meta', 'u', 'list', 'qstr', 'page', 'domains'));
 
 } elseif ($sub === 'claims') {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {

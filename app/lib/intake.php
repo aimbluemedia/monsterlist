@@ -303,6 +303,50 @@ function intake_member_domains(int $userId): array
 }
 
 /**
+ * Every domain held by each of several members, in one pair of queries.
+ *
+ * The per-member version is fine for one account; a list of thirty would run
+ * sixty queries to draw one column. Returns [user_id => [ {domain, state,
+ * listing, biz_id}, ... ]], listings first because those are real and a queued
+ * row is only an intention.
+ */
+function member_domains_bulk(array $userIds): array
+{
+    $userIds = array_values(array_unique(array_map('intval', $userIds)));
+    if (!$userIds) return [];
+    $in  = implode(',', array_fill(0, count($userIds), '?'));
+    $out = array_fill_keys($userIds, []);
+    $seen = [];   // user id => [host => true], so one website is listed once
+
+    foreach (rows("SELECT owner_id, id, name, website, status FROM businesses
+                    WHERE owner_id IN ($in) ORDER BY owner_id, id DESC", $userIds) as $b) {
+        $host = normalize_domain($b['website'] ?? null);
+        if ($host === null) continue;
+        $uid = (int)$b['owner_id'];
+        $key = mb_strtolower($host);
+        if (isset($seen[$uid][$key])) continue;
+        $seen[$uid][$key] = true;
+        $out[$uid][] = ['domain' => $host, 'state' => (string)$b['status'],
+                        'listing' => $b['name'], 'biz_id' => (int)$b['id']];
+    }
+
+    // Queued domains have no listing yet, so they come after the ones that do.
+    if (table_exists('intake_domains')) {
+        foreach (rows("SELECT user_id, domain FROM intake_domains
+                        WHERE user_id IN ($in) AND business_id IS NULL
+                        ORDER BY user_id, id DESC", $userIds) as $d) {
+            $uid = (int)$d['user_id'];
+            $key = mb_strtolower((string)$d['domain']);
+            if (isset($seen[$uid][$key])) continue;
+            $seen[$uid][$key] = true;
+            $out[$uid][] = ['domain' => $d['domain'], 'state' => 'queued',
+                            'listing' => null, 'biz_id' => 0];
+        }
+    }
+    return $out;
+}
+
+/**
  * Read a queued domain with AI and create the listing for it.
  *
  * Always lands as `pending`, never live: this is a machine's reading of

@@ -10,7 +10,31 @@
     <tr><th>Member</th><th>Listings</th><th>Tokens</th><th>Status</th><th>Joined</th><th></th></tr>
     <?php foreach ($list as $m): ?>
       <tr>
-        <td><strong><?= e($m['name']) ?></strong><br><span class="mute" style="font-size:.82rem"><?= e($m['email']) ?></span></td>
+        <?php // The email identifies the account, so it leads. The websites
+              // under it are what the account is FOR, and there can be several
+              // now — more than one collapses, because a members list is read
+              // by scanning down the emails, not by reading everybody's
+              // domains on the way past. ?>
+        <?php $doms = $domains[(int)$m['id']] ?? []; ?>
+        <td>
+          <a href="/superadmin/members/edit?id=<?= (int)$m['id'] ?>" class="mb-email"><?= e($m['email']) ?></a>
+          <?php if (!$doms): ?>
+            <div class="mute mb-none">no domains yet</div>
+          <?php elseif (count($doms) === 1): ?>
+            <div class="mb-dom"><?= e($doms[0]['domain']) ?>
+              <span class="badge badge-<?= $doms[0]['state'] === 'queued' ? 'pending' : e($doms[0]['state']) ?>"><?= e($doms[0]['state']) ?></span>
+            </div>
+          <?php else: ?>
+            <details class="mb-more">
+              <summary><?= count($doms) ?> domains</summary>
+              <?php foreach ($doms as $d): ?>
+                <div class="mb-dom"><?= e($d['domain']) ?>
+                  <span class="badge badge-<?= $d['state'] === 'queued' ? 'pending' : e($d['state']) ?>"><?= e($d['state']) ?></span>
+                </div>
+              <?php endforeach; ?>
+            </details>
+          <?php endif; ?>
+        </td>
         <?php // The count is the way in: "3 listings" is the thing a staff
               // member is looking at when they want to open the account. ?>
         <td><a href="/superadmin/members/edit?id=<?= (int)$m['id'] ?>" style="color:var(--accent);font-weight:700"><?= (int)$m['listing_count'] ?></a></td>
