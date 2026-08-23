@@ -275,6 +275,13 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 .aifill-row input[readonly]{background:#eef2f9;color:var(--mute);cursor:not-allowed;border-style:dashed}
 .aifill-row input[readonly]:focus{outline:none;border-color:var(--border)}
 .aifill-card a{color:var(--accent);font-weight:700;text-decoration:underline}
+/* The staff Profile card, wearing the same accent as the member form's AI
+   panel: this is the one field on the page that gets written for you. */
+.prof-card{background:var(--accent-soft);border-color:var(--accent)}
+.prof-card textarea{background:#fff}
+/* the "not saved yet" line, which would otherwise be blue on blue */
+.prof-card .aiprof-note{background:#fff;border:1px solid var(--accent)}
+
 /* "Write it with AI" under the staff Profile box. The button and its
    explanation sit on one line where there is room and stack where there is
    not, so the note never squeezes the button down to two words. */

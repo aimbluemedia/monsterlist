@@ -88,24 +88,36 @@ $listUrl    = e(listings_url($back, $_GET['q'] ?? ''));
     <input type="text" name="tagline" value="<?= e($v('tagline')) ?>" maxlength="255">
     <label>Description</label>
     <textarea name="description" rows="5" maxlength="5000"><?= e($v('description')) ?></textarea>
-    <?php // Profile belongs to the paid tiers, and so does the cost of writing
-          // one. Read the tier off the form rather than the database, so
-          // switching the dropdown above and saving is all it takes to open the
-          // section — and switching it back closes it again.
-          //
-          // Leaving the field out is safe for a listing that already has a
-          // profile: listing_form_data() only touches the column when the field
-          // was actually posted, so text written while a listing was Pro
-          // survives a spell on Free and comes back when it goes up again. ?>
+    <div class="form-grid">
+      <div><label>Website</label><input type="text" name="website" value="<?= e($v('website')) ?>" placeholder="https://…"></div>
+      <div><label>Year founded</label><input type="number" name="founded" value="<?= e($v('founded')) ?>" min="1800" max="<?= date('Y') ?>"></div>
+    </div>
+  </div>
+
+  <?php // Profile gets a card of its own, and the accent treatment the member
+        // form gives its AI panel — this is the one box on the page that gets
+        // written for you, and it reads as an aside when it is buried in Basics
+        // between Description and Website.
+        //
+        // Paid tiers only, and so is the cost of writing one. The tier is read
+        // off the form rather than the database, so switching the dropdown above
+        // and saving is all it takes to open the section — and switching it back
+        // closes it again.
+        //
+        // Leaving the field out is safe for a listing that already has a
+        // profile: listing_form_data() only touches the column when the field
+        // was actually posted, so text written while a listing was Pro survives
+        // a spell on Free and comes back when it goes up again. ?>
+  <div class="card card-pad ed-card prof-card">
+    <h3>Profile <span class="badge badge-pro">Pro</span> <span class="badge badge-featured">Premium</span></h3>
     <?php if (tier_enhanced($vTier)): ?>
-      <label>Profile <span class="badge badge-pro">Pro</span> <span class="badge badge-featured">Premium</span></label>
-      <p class="form-note" style="margin:0 0 6px">Long-form section, up to <?= number_format(PROFILE_MAX_WORDS) ?> words,
-        shown as its own block on the storefront. Blank lines make paragraphs.</p>
+      <p class="mute ed-note">Long-form section, up to <?= number_format(PROFILE_MAX_WORDS) ?> words, shown as
+        its own block on the storefront. Blank lines make paragraphs.</p>
       <?php if ($aiNotice): ?><p class="aiprof-note"><?= e($aiNotice) ?></p><?php endif; ?>
-      <textarea name="profile" rows="10"><?= e($v('profile')) ?></textarea>
+      <textarea name="profile" rows="12"><?= e($v('profile')) ?></textarea>
       <?php if (ai_configured()): ?>
-        <?php // Posts this same form, so anything typed above survives the round
-              // trip. The answer lands in the box; saving is still a separate act. ?>
+        <?php // Posts this same form, so anything typed elsewhere survives the
+              // round trip. The answer lands in the box; saving is separate. ?>
         <div class="aiprof-row">
           <button class="btn btn-sm btn-primary" name="ai_profile" value="1"
                   data-confirm="Research <?= e($v('name') ?: 'this business') ?> and write a new Profile? This replaces what is in the box, and takes a minute or two.">
@@ -117,16 +129,11 @@ $listUrl    = e(listings_url($back, $_GET['q'] ?? ''));
         </div>
       <?php endif; ?>
     <?php else: ?>
-      <label>Profile <span class="badge badge-pro">Pro</span> <span class="badge badge-featured">Premium</span></label>
-      <p class="form-note" style="margin:0 0 6px">Only on the paid tiers. Set <strong>Tier</strong> above to
-        Pro or Featured and save, and the box — and the AI writer — appear here.<?php
-        if (trim((string)$biz['profile']) !== ''): ?> This listing already has a profile written;
-        it is kept, and comes back when the tier does.<?php endif; ?></p>
+      <p class="mute ed-note" style="margin:0">Only on the paid tiers. Set <strong>Tier</strong> at the top of
+        this page to Pro or Featured and save, and the box — and the AI writer — appear here.<?php
+        if (trim((string)$biz['profile']) !== ''): ?> This listing already has a profile written; it is
+        kept, and comes back when the tier does.<?php endif; ?></p>
     <?php endif; ?>
-    <div class="form-grid">
-      <div><label>Website</label><input type="text" name="website" value="<?= e($v('website')) ?>" placeholder="https://…"></div>
-      <div><label>Year founded</label><input type="number" name="founded" value="<?= e($v('founded')) ?>" min="1800" max="<?= date('Y') ?>"></div>
-    </div>
   </div>
 
   <div class="card card-pad ed-card">
