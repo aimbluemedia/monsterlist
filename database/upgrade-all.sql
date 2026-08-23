@@ -115,6 +115,43 @@ CREATE TABLE IF NOT EXISTS articles (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
+-- One row per domain waiting to become a listing. The intake queue is built
+-- from this rather than from the member, because a member can own several
+-- websites now and each is its own piece of work.
+--   business_id — filled in when AI builds the listing. NULL means still to do.
+--   note        — why the last build attempt failed, so a stuck row says so.
+-- The unique key on domain is what stops the same website being queued twice
+-- under two accounts.
+CREATE TABLE IF NOT EXISTS intake_domains (
+  id          INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id     INT UNSIGNED NOT NULL,
+  domain      VARCHAR(255) NOT NULL,
+  business_id INT UNSIGNED DEFAULT NULL,
+  note        VARCHAR(255) DEFAULT NULL,
+  added_by    INT UNSIGNED DEFAULT NULL,
+  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY u_domain (domain),
+  KEY k_user (user_id, id),
+  KEY k_open (business_id, id)
+-- The collation is spelled out because this table's `domain` is compared to
+-- users.website, which is utf8mb4_unicode_ci. Left to the server default the
+-- two can differ, and MySQL refuses the comparison outright rather than
+-- picking one: "Illegal mix of collations ... for operation '='".
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Accounts taken on before the table existed had exactly one domain — the one
+-- on the account itself. Move it in, so nothing already in the queue vanishes
+-- from it. Skips any that is already there, so re-running changes nothing.
+INSERT INTO intake_domains (user_id, domain, business_id, note, created_at)
+SELECT u.id, u.website,
+       (SELECT b.id FROM businesses b WHERE b.owner_id = u.id ORDER BY b.id LIMIT 1),
+       u.intake_note, u.intake_at
+  FROM users u
+ WHERE u.intake_at IS NOT NULL
+   AND u.website IS NOT NULL AND u.website <> ''
+   AND NOT EXISTS (SELECT 1 FROM intake_domains d WHERE d.domain = u.website);
+
 -- One row per paid member per month: the work that plan owes them, and whether
 -- it has been done. Opened on the member's own renewal date rather than on the
 -- 1st, so somebody who joined on the 20th comes due on the 20th.

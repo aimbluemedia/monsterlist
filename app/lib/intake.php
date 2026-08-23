@@ -19,7 +19,10 @@
 function intake_ready(): bool
 {
     static $ok = null;
-    if ($ok === null) $ok = column_exists('users', 'intake_at') && column_exists('users', 'intake_note');
+    if ($ok === null) {
+        $ok = column_exists('users', 'intake_at') && column_exists('users', 'intake_note')
+              && table_exists('intake_domains');
+    }
     return $ok;
 }
 
@@ -99,6 +102,10 @@ function intake_create_member(string $email, string $password, string $domain): 
       [$email, password_hash($password, PASSWORD_DEFAULT), mb_substr($host, 0, 140), $host]);
 
     $user = row('SELECT * FROM users WHERE email = ?', [$email]);
+    // The domain they arrived with is their first queued one. Everything after
+    // this — the queue, the Build button, the errors — works off that row, so
+    // an account without one would be invisible to the page that made it.
+    q('INSERT INTO intake_domains (user_id, domain) VALUES (?,?)', [(int)$user['id'], $host]);
     $user['plain_password'] = $password;   // for this request only, never stored
     return [$user, []];
 }
@@ -121,34 +128,104 @@ function intake_parse_bulk(string $text): array
 }
 
 /**
- * Members added this way that still need something doing, newest first.
+ * Domains waiting to become listings, newest first.
  *
- * A queue is work outstanding, so an approved member leaves it: once the
- * listing is live there is nothing left here to press. Rejected ones stay —
- * that listing is decided but the account is not, and somebody still has to
- * delete it or fix it and resubmit.
+ * One row per DOMAIN, not per member: a member can own several websites, and
+ * each is its own piece of work. Built when the join was one listing per
+ * member, this returned a member twice the moment they had two.
  *
- * There is no way to see the finished ones from here, deliberately: once a
- * listing is live it is an ordinary listing and an ordinary member, and the
- * Listings and Members pages already hold them better than a second copy on
- * this one would.
+ * A domain leaves the queue when its listing is live. Rejected ones stay —
+ * that listing is decided but the domain is not, and somebody still has to
+ * drop it or fix it and resubmit.
  */
 function intake_queue(int $limit = 200): array
 {
     if (!intake_ready()) return [];
     return rows(
-        "SELECT u.id, u.email, u.website, u.intake_at, u.intake_note, u.plan,
-                b.id AS business_id, b.name AS business_name, b.status AS business_status,
+        "SELECT d.id, d.user_id, d.domain, d.note, d.created_at, d.business_id,
+                u.email, u.name AS member_name, u.plan,
+                b.name AS business_name, b.status AS business_status,
                 b.city_id, b.category_id
-           FROM users u
-           LEFT JOIN businesses b ON b.owner_id = u.id
-          WHERE u.intake_at IS NOT NULL AND (b.id IS NULL OR b.status <> 'live')
-          ORDER BY u.intake_at DESC, u.id DESC
+           FROM intake_domains d
+           JOIN users u ON u.id = d.user_id
+           LEFT JOIN businesses b ON b.id = d.business_id
+          WHERE b.id IS NULL OR b.status <> 'live'
+          ORDER BY d.created_at DESC, d.id DESC
           LIMIT " . max(1, $limit));
 }
 
+/** One queue row. */
+function intake_domain(int $id): ?array
+{
+    if (!intake_ready()) return null;
+    return row('SELECT * FROM intake_domains WHERE id = ?', [$id]);
+}
+
 /**
- * Read the member's website with AI and create their listing from it.
+ * Queue a domain against an existing member.
+ *
+ * Returns [row id or 0, error]. The domain goes through the same two calls the
+ * sign-up form uses, so intake and signup agree on what a domain is, and it is
+ * refused if it is already queued, already an account, or already a listing —
+ * all three would end in two storefronts for one business.
+ */
+function intake_add_domain(int $userId, string $domain, int $byUserId = 0): array
+{
+    if (!intake_ready()) return [0, 'Member intake is not installed — run database/upgrade-all.sql.'];
+
+    $member = row('SELECT * FROM users WHERE id = ?', [$userId]);
+    if (!$member) return [0, 'No such member.'];
+
+    $host = normalize_domain($domain);
+    if ($host === null || !domain_is_valid($host)) return [0, '"' . $domain . '" is not a domain name.'];
+
+    if ($existing = row('SELECT d.*, u.email FROM intake_domains d JOIN users u ON u.id = d.user_id WHERE d.domain = ?', [$host])) {
+        return [0, $host . ' is already queued for ' . $existing['email'] . '.'];
+    }
+    if ($dupe = listing_with_domain($host)) {
+        return [0, $host . ' is already listed as "' . $dupe['name'] . '".'];
+    }
+    if ($acct = account_with_domain($host)) {
+        if ((int)$acct['id'] !== $userId) return [0, $host . ' is registered to ' . $acct['email'] . '.'];
+    }
+
+    q('INSERT INTO intake_domains (user_id, domain, added_by) VALUES (?,?,?)',
+      [$userId, $host, $byUserId ?: null]);
+    // An account that gained a domain this way is an intake account from now
+    // on, whether it started as one or not — that is what puts it in the queue.
+    if (empty($member['intake_at'])) q('UPDATE users SET intake_at = NOW() WHERE id = ?', [$userId]);
+    return [(int)db()->lastInsertId(), ''];
+}
+
+/** Drop a queued domain. Only while it has no listing — that is the point. */
+function intake_remove_domain(int $id): bool
+{
+    $d = intake_domain($id);
+    if (!$d || $d['business_id']) return false;
+    q('DELETE FROM intake_domains WHERE id = ?', [$id]);
+    return true;
+}
+
+/**
+ * Members a domain can be added to, with what they already own.
+ *
+ * Everyone, not only intake accounts: staff adding a second website for a
+ * member who signed up themselves is the ordinary case, not the exception.
+ */
+function intake_members(): array
+{
+    if (!intake_ready()) return [];
+    return rows(
+        "SELECT u.id, u.email, u.name, u.plan,
+                (SELECT COUNT(*) FROM businesses b WHERE b.owner_id = u.id) AS listing_count,
+                (SELECT COUNT(*) FROM intake_domains d WHERE d.user_id = u.id AND d.business_id IS NULL) AS queued
+           FROM users u
+          WHERE u.role = 'member' AND u.status = 'active'
+          ORDER BY u.email");
+}
+
+/**
+ * Read a queued domain with AI and create the listing for it.
  *
  * Always lands as `pending`, never live: this is a machine's reading of
  * somebody else's website, and it goes past a person before the public sees
@@ -158,20 +235,25 @@ function intake_queue(int $limit = 200): array
  *
  * Returns [business id or 0, error string].
  */
-function intake_build_listing(array $user): array
+function intake_build_listing(array $d): array
 {
-    if (empty($user['website'])) return [0, 'This member has no domain to read.'];
+    $user = row('SELECT * FROM users WHERE id = ?', [(int)$d['user_id']]);
+    if (!$user) return [0, 'That member no longer exists.'];
+    if (empty($d['domain'])) return [0, 'This row has no domain to read.'];
+    if (!empty($d['business_id'])) return [(int)$d['business_id'], ''];   // already built
 
-    $existing = row('SELECT id FROM businesses WHERE owner_id = ?', [(int)$user['id']]);
-    if ($existing) return [(int)$existing['id'], ''];   // already built; nothing to redo
-
-    $fields = ai_extract_listing((string)$user['website'], $aiError);
+    $fields = ai_extract_listing((string)$d['domain'], $aiError);
     if ($fields === null) {
         $err = $aiError ?: 'AI could not read that website.';
-        q('UPDATE users SET intake_note = ? WHERE id = ?', [mb_substr($err, 0, 255), (int)$user['id']]);
+        q('UPDATE intake_domains SET note = ? WHERE id = ?', [mb_substr($err, 0, 255), (int)$d['id']]);
         return [0, $err];
     }
-    return [intake_create_listing($user, $fields), ''];
+    // Built for THIS domain, not for whatever the account was registered with:
+    // a member can own several, and they are different businesses.
+    $user['website'] = $d['domain'];
+    $bizId = intake_create_listing($user, $fields);
+    q('UPDATE intake_domains SET business_id = ?, note = NULL WHERE id = ?', [$bizId, (int)$d['id']]);
+    return [$bizId, ''];
 }
 
 /**

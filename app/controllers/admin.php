@@ -250,18 +250,40 @@ if ($sub === 'dashboard') {
             redirect('/superadmin/intake');
         }
 
-        if ($action === 'build') {
-            $target = row('SELECT * FROM users WHERE id = ? AND intake_at IS NOT NULL', [(int)post('id')]);
-            if (!$target) {
-                flash_set('error', 'No such intake member.');
+        if ($action === 'adddomain') {
+            // Superadmin only, and only onto a member who already exists — this
+            // adds a website to an account, it does not create one.
+            [$rowId, $err] = intake_add_domain((int)post('member_id'), post('domain'), (int)$u['id']);
+            if ($rowId) {
+                $who  = row('SELECT email, plan FROM users WHERE id = ?', [(int)post('member_id')]);
+                $mPlan = plans()[$who['plan']] ?? plans()['free'];
+                $owned = user_listing_count((int)post('member_id'));
+                flash_set('success', 'Queued for ' . $who['email'] . '. Build it below.'
+                    // Say it now rather than at the moment the build fails: the
+                    // limit is on the plan, and staff can lift it or leave it.
+                    . (!plan_has_room($mPlan, $owned)
+                        ? ' Note: their ' . $mPlan['label'] . ' plan covers '
+                          . strtolower(plan_listings_label($mPlan)) . ' and they already have '
+                          . $owned . '. Move them to Pro or Premium first.'
+                        : ''));
             } else {
-                [$bizId, $err] = intake_build_listing($target);
+                flash_set('error', $err);
+            }
+            redirect('/superadmin/intake');
+        }
+
+        if ($action === 'build') {
+            $d = intake_domain((int)post('id'));
+            if (!$d) {
+                flash_set('error', 'No such queued domain.');
+            } else {
+                [$bizId, $err] = intake_build_listing($d);
                 if ($bizId) {
-                    flash_set('success', 'Listing built for ' . $target['website']
+                    flash_set('success', 'Listing built for ' . $d['domain']
                         . ' and left pending — check it before it goes live.');
                     redirect('/superadmin/listings/edit?id=' . $bizId . '&back=pending');
                 }
-                flash_set('error', 'Could not build ' . $target['website'] . ': ' . $err);
+                flash_set('error', 'Could not build ' . $d['domain'] . ': ' . $err);
             }
             redirect('/superadmin/intake');
         }
@@ -269,18 +291,15 @@ if ($sub === 'dashboard') {
         if ($action === 'approve') {
             // The same approval the Listings page performs, offered here so a
             // built listing that needs no correction can be waved through
-            // without a detour — and once it is live the row leaves the queue,
-            // because there is nothing left on it to press.
-            $target = row('SELECT * FROM users WHERE id = ? AND intake_at IS NOT NULL', [(int)post('id')]);
-            $biz    = $target ? row('SELECT * FROM businesses WHERE owner_id = ?', [(int)$target['id']]) : null;
+            // without a detour — and once it is live the row leaves the queue.
+            $d   = intake_domain((int)post('id'));
+            $biz = $d && $d['business_id'] ? row('SELECT * FROM businesses WHERE id = ?', [(int)$d['business_id']]) : null;
             if (!$biz) {
-                flash_set('error', 'Nothing to approve — that member has no listing yet.');
+                flash_set('error', 'Nothing to approve — that domain has no listing yet.');
             } elseif ($biz['status'] === 'live') {
                 flash_set('error', '"' . $biz['name'] . '" is already live.');
             } else {
                 q('UPDATE businesses SET status = "live", verified = IF(tier != "free", 1, verified) WHERE id = ?', [$biz['id']]);
-                // Approving reverses an earlier rejection, so lift the blocks it
-                // put in place — otherwise the owner is live but locked out.
                 $lifted = listing_unblock($biz);
                 notify_listing_decision($biz, true);
                 if ($biz['city_id']) refresh_city_count((int)$biz['city_id']);
@@ -293,16 +312,14 @@ if ($sub === 'dashboard') {
         }
 
         if ($action === 'delete') {
-            // Only while it is still just an account. Once there is a listing
-            // this is an ordinary member and belongs on the Members page, where
+            // Drops the queued domain, not the account: a member can own
+            // several, and the account belongs to the Members page, where
             // deleting one has the rest of its consequences to think about.
-            $id = (int)post('id');
-            $target = row('SELECT * FROM users WHERE id = ? AND intake_at IS NOT NULL', [$id]);
-            if ($target && !scalar('SELECT id FROM businesses WHERE owner_id = ?', [$id])) {
-                q('DELETE FROM users WHERE id = ?', [$id]);
-                flash_set('success', 'Removed ' . $target['email'] . '.');
+            $d = intake_domain((int)post('id'));
+            if ($d && intake_remove_domain((int)$d['id'])) {
+                flash_set('success', 'Removed ' . $d['domain'] . ' from the queue.');
             } else {
-                flash_set('error', 'That member already has a listing — use the Members page.');
+                flash_set('error', 'That domain already has a listing — edit or reject it instead.');
             }
             redirect('/superadmin/intake');
         }
@@ -314,10 +331,11 @@ if ($sub === 'dashboard') {
         }
     }
 
-    $queue  = intake_queue();
-    $apiKey = intake_ready() ? intake_api_key() : '';
+    $queue   = intake_queue();
+    $members = intake_members();
+    $apiKey  = intake_ready() ? intake_api_key() : '';
     $meta['title'] = "Member intake — $site";
-    view_raw('admin/intake', compact('meta', 'u', 'queue', 'apiKey'));
+    view_raw('admin/intake', compact('meta', 'u', 'queue', 'members', 'apiKey'));
 
 } elseif ($sub === 'pro' || $sub === 'premium') {
     // The monthly service queues. "Premium" is the Featured plan wearing the
@@ -392,10 +410,10 @@ if ($sub === 'dashboard') {
     ];
 
     $checks[] = [
-        'label'  => 'users.intake_at',
+        'label'  => 'intake_domains + users.intake_at',
         'ok'     => intake_ready(),
         'fix'    => 'Import database/upgrade-all.sql',
-        'detail' => 'Member intake — accounts added by staff or through the API, and the queue their listings are built from.',
+        'detail' => 'Member intake — accounts and domains added by staff or through the API, and the queue their listings are built from.',
     ];
 
     $schemaOk = true;
