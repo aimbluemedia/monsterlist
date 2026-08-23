@@ -225,6 +225,84 @@ function intake_members(): array
 }
 
 /**
+ * Find members by email, name, or by a domain they hold.
+ *
+ * Searching a domain has to reach the member who owns it, which means looking
+ * in three places: the account's own domain, the websites on their listings,
+ * and anything already queued. Somebody typing a domain into this box does not
+ * know or care which of the three it currently lives in.
+ */
+function intake_find_members(string $q): array
+{
+    if (!intake_ready()) return [];
+    $q = trim($q);
+    if ($q === '') return [];
+    $like = '%' . $q . '%';
+    // A pasted URL is reduced to its host first, so "https://acme.com/about"
+    // finds the member holding acme.com.
+    $host = normalize_domain($q);
+    $hostLike = $host !== null ? '%' . $host . '%' : $like;
+
+    return rows(
+        "SELECT u.id, u.email, u.name, u.plan,
+                (SELECT COUNT(*) FROM businesses b WHERE b.owner_id = u.id) AS listing_count,
+                (SELECT COUNT(*) FROM intake_domains d WHERE d.user_id = u.id AND d.business_id IS NULL) AS queued
+           FROM users u
+          WHERE u.role = 'member' AND u.status = 'active'
+            AND (u.email LIKE ? OR u.name LIKE ? OR u.website LIKE ?
+                 OR EXISTS (SELECT 1 FROM businesses b  WHERE b.owner_id = u.id AND b.website LIKE ?)
+                 OR EXISTS (SELECT 1 FROM intake_domains d WHERE d.user_id = u.id AND d.domain LIKE ?))
+          ORDER BY u.email
+          LIMIT 25", [$like, $like, $hostLike, $hostLike, $hostLike]);
+}
+
+/**
+ * Every domain a member holds, whatever state it is in.
+ *
+ * Queued rows and listings are two different tables and a member's websites are
+ * spread across both — a listing they made themselves has no queue row at all.
+ * Showing one without the other is how a domain gets added twice.
+ */
+function intake_member_domains(int $userId): array
+{
+    if (!intake_ready()) return [];
+    $out = [];
+
+    foreach (rows(
+        'SELECT d.*, b.name AS business_name, b.status AS business_status
+           FROM intake_domains d
+           LEFT JOIN businesses b ON b.id = d.business_id
+          WHERE d.user_id = ? ORDER BY d.id DESC', [$userId]) as $d) {
+        $out[mb_strtolower((string)$d['domain'])] = [
+            'domain'   => $d['domain'],
+            'state'    => $d['business_id'] ? (string)$d['business_status'] : 'queued',
+            'listing'  => $d['business_name'],
+            'biz_id'   => (int)$d['business_id'],
+            'note'     => $d['note'],
+            'queue_id' => (int)$d['id'],
+        ];
+    }
+
+    // Listings whose website never went through the queue — anything the member
+    // typed in themselves.
+    foreach (rows('SELECT id, name, website, status FROM businesses WHERE owner_id = ? ORDER BY id DESC', [$userId]) as $b) {
+        $host = normalize_domain($b['website'] ?? null);
+        if ($host === null) continue;
+        $key = mb_strtolower($host);
+        if (isset($out[$key])) continue;
+        $out[$key] = [
+            'domain'   => $host,
+            'state'    => (string)$b['status'],
+            'listing'  => $b['name'],
+            'biz_id'   => (int)$b['id'],
+            'note'     => null,
+            'queue_id' => 0,
+        ];
+    }
+    return array_values($out);
+}
+
+/**
  * Read a queued domain with AI and create the listing for it.
  *
  * Always lands as `pending`, never live: this is a machine's reading of

@@ -269,7 +269,9 @@ if ($sub === 'dashboard') {
             } else {
                 flash_set('error', $err);
             }
-            redirect('/superadmin/intake');
+            // Back to the same member, so a second and third domain go in
+            // without hunting for them again.
+            redirect('/superadmin/intake?member=' . (int)post('member_id'));
         }
 
         if ($action === 'build') {
@@ -334,8 +336,24 @@ if ($sub === 'dashboard') {
     $queue   = intake_queue();
     $members = intake_members();
     $apiKey  = intake_ready() ? intake_api_key() : '';
+
+    // Picking a member: by id from the dropdown, or by a search that can be an
+    // email, a name or any domain they hold. A search matching exactly one
+    // member selects them outright — making somebody click their own single
+    // result is a step that exists only because the code could not decide.
+    $mq      = trim((string)($_GET['mq'] ?? ''));
+    $matches = $mq !== '' ? intake_find_members($mq) : [];
+    $picked  = null;
+    if (($pid = (int)($_GET['member'] ?? 0)) > 0) {
+        $picked = row('SELECT * FROM users WHERE id = ? AND role = "member"', [$pid]);
+    } elseif (count($matches) === 1) {
+        $picked = row('SELECT * FROM users WHERE id = ?', [(int)$matches[0]['id']]);
+    }
+    $pickedDomains = $picked ? intake_member_domains((int)$picked['id']) : [];
+    $pickedPlan    = $picked ? plan_for($picked) : null;
     $meta['title'] = "Member intake — $site";
-    view_raw('admin/intake', compact('meta', 'u', 'queue', 'members', 'apiKey'));
+    view_raw('admin/intake', compact('meta', 'u', 'queue', 'members', 'apiKey',
+                                     'mq', 'matches', 'picked', 'pickedDomains', 'pickedPlan'));
 
 } elseif ($sub === 'pro' || $sub === 'premium') {
     // The monthly service queues. "Premium" is the Featured plan wearing the

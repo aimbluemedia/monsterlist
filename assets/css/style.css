@@ -710,6 +710,22 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 .intake-bulk{margin:10px 0 14px}
 .intake-bulk summary{cursor:pointer;font-weight:700;font-size:.9rem;color:var(--accent)}
 .intake-bulk textarea{width:100%;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem}
+/* search / dropdown / go, on one line where there is room for one */
+.ad-find{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.4fr) auto;gap:12px;align-items:end}
+.ad-find label{margin-top:0}
+/* the selected member: their domains and the box that adds another */
+.ad-member{border:1px solid var(--accent);border-radius:var(--radius);padding:16px;margin-top:16px;
+  background:var(--accent-soft)}
+.ad-member-head{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.ad-member .table{background:var(--card)}
+.ad-member .table-wrap{background:var(--card);border-radius:10px;margin-bottom:14px}
+.ad-sub{margin:0 0 8px;font-size:.78rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#3f63a8}
+/* the add box sits at the bottom of the results, which is where the eye ends up */
+.ad-add{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:end;margin:0}
+@media(max-width:700px){
+  .ad-find,.ad-add{grid-template-columns:minmax(0,1fr)}
+}
+
 .intake-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .intake-actions form{margin:0}
 /* Build is the button that spends an AI call and reads somebody else's site,

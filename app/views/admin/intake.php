@@ -85,48 +85,131 @@
   <?php endif; ?>
 </div>
 
-<div class="card card-pad ed-card">
+<div class="card card-pad ed-card" id="adddomain">
   <h3>Add a domain to a member</h3>
   <p class="mute ed-note">For a member who already has an account — a second website, or one they
-    told you about after signing up. This adds the domain to the queue above; nothing is read from
-    it until you press <strong>Build listing</strong>.</p>
+    told you about after signing up. Search by email or by any domain they already hold, or pick
+    them from the list. This adds the domain to the queue above; nothing is read from it until you
+    press <strong>Build listing</strong>.</p>
 
-  <?php if (!$members): ?>
-    <p class="mute" style="margin:0">No members yet. Create one below first.</p>
-  <?php else: ?>
-    <form method="post"><?= csrf_field() ?>
-      <input type="hidden" name="action" value="adddomain">
-      <div class="intake-fields">
+  <?php // Two ways to the same member. The search reaches domains as well as
+        // emails, because "which account owns acme.com?" is the question staff
+        // actually arrive with. ?>
+  <form method="get" class="ad-find">
+    <div>
+      <label>Search</label>
+      <input type="text" name="mq" value="<?= e($mq) ?>" placeholder="email, name, or a domain they hold">
+    </div>
+    <div>
+      <label>…or choose</label>
+      <select name="member" onchange="this.form.submit()">
+        <option value="">Choose a member…</option>
+        <?php foreach ($members as $mem): ?>
+          <option value="<?= (int)$mem['id'] ?>" <?= $picked && (int)$picked['id'] === (int)$mem['id'] ? 'selected' : '' ?>>
+            <?= e($mem['email']) ?>
+            — <?= e($mem['plan'] === 'featured' ? 'Premium' : ucfirst((string)$mem['plan'])) ?>,
+            <?= (int)$mem['listing_count'] ?> listing<?= (int)$mem['listing_count'] === 1 ? '' : 's' ?><?php
+              if ((int)$mem['queued']) echo ', ' . (int)$mem['queued'] . ' queued'; ?>
+          </option>
+        <?php endforeach; ?>
+      </select>
+    </div>
+    <div style="display:flex;align-items:flex-end;gap:8px">
+      <button class="btn btn-primary">Find</button>
+      <?php if ($picked || $mq !== ''): ?>
+        <a class="btn btn-ghost" href="/superadmin/intake">Clear</a>
+      <?php endif; ?>
+    </div>
+  </form>
+
+  <?php if ($mq !== '' && !$matches): ?>
+    <p class="flash flash-error" style="margin:14px 0 0">Nothing matched "<?= e($mq) ?>" — no member
+      with that email or name, and no account holding that domain.</p>
+  <?php endif; ?>
+
+  <?php // Several hits: choose. One hit selected itself further up. ?>
+  <?php if (count($matches) > 1 && !$picked): ?>
+    <p class="mute ed-note" style="margin-top:14px"><?= count($matches) ?> members matched. Pick one:</p>
+    <div class="table-wrap table-narrow">
+      <table class="table">
+        <tr><th>Member</th><th>Plan</th><th>Listings</th><th>Queued</th><th></th></tr>
+        <?php foreach ($matches as $mm): ?>
+          <tr>
+            <td><strong><?= e($mm['email']) ?></strong></td>
+            <td><?= e($mm['plan'] === 'featured' ? 'Premium' : ucfirst((string)$mm['plan'])) ?></td>
+            <td><?= (int)$mm['listing_count'] ?></td>
+            <td><?= (int)$mm['queued'] ?></td>
+            <td><a class="btn btn-sm btn-primary" href="/superadmin/intake?member=<?= (int)$mm['id'] ?>#adddomain">Select</a></td>
+          </tr>
+        <?php endforeach; ?>
+      </table>
+    </div>
+  <?php endif; ?>
+
+  <?php if ($picked): ?>
+    <?php $owned = user_listing_count((int)$picked['id']); $room = plan_has_room($pickedPlan, $owned); ?>
+    <div class="ad-member">
+      <div class="ad-member-head">
         <div>
-          <label>Member</label>
-          <?php // What they already own is on the option itself: adding a second
-                // website to somebody on Free is allowed, but it is worth
-                // knowing before rather than after. ?>
-          <select name="member_id" required>
-            <option value="">Choose a member…</option>
-            <?php foreach ($members as $mem): ?>
-              <option value="<?= (int)$mem['id'] ?>">
-                <?= e($mem['email']) ?>
-                — <?= e($mem['plan'] === 'featured' ? 'Premium' : ucfirst((string)$mem['plan'])) ?>,
-                <?= (int)$mem['listing_count'] ?> listing<?= (int)$mem['listing_count'] === 1 ? '' : 's' ?><?php
-                  if ((int)$mem['queued']) echo ', ' . (int)$mem['queued'] . ' queued'; ?>
-              </option>
-            <?php endforeach; ?>
-          </select>
+          <b><?= e($picked['email']) ?></b>
+          <div class="mute" style="font-size:.82rem">
+            <?= e($pickedPlan['label'] === 'Featured' ? 'Premium' : $pickedPlan['label']) ?> plan ·
+            <?= e(plan_listings_label($pickedPlan)) ?> · <?= (int)$owned ?> in use
+          </div>
         </div>
+        <a class="btn btn-sm btn-ghost" href="/superadmin/members/edit?id=<?= (int)$picked['id'] ?>">Member page</a>
+      </div>
+
+      <?php // Everything they already hold, so the same website is not queued
+            // twice under two spellings of the same idea. ?>
+      <p class="ad-sub">Domains on this account (<?= count($pickedDomains) ?>)</p>
+      <?php if (!$pickedDomains): ?>
+        <p class="mute" style="margin:0 0 12px">None yet.</p>
+      <?php else: ?>
+        <div class="table-wrap table-narrow">
+          <table class="table">
+            <tr><th>Domain</th><th>State</th><th>Listing</th><th></th></tr>
+            <?php foreach ($pickedDomains as $d): ?>
+              <tr>
+                <td class="intake-domain"><strong><?= e($d['domain']) ?></strong></td>
+                <td><span class="badge badge-<?= $d['state'] === 'queued' ? 'pending' : e($d['state']) ?>"><?= e($d['state']) ?></span></td>
+                <td>
+                  <?= $d['listing'] ? e($d['listing']) : '<span class="mute">—</span>' ?>
+                  <?php if (!empty($d['note'])): ?><br><small class="intake-err"><?= e((string)$d['note']) ?></small><?php endif; ?>
+                </td>
+                <td style="white-space:nowrap">
+                  <?php if ($d['biz_id']): ?>
+                    <a class="btn btn-sm btn-ghost" href="/superadmin/listings/edit?id=<?= (int)$d['biz_id'] ?>&back=all">Edit listing</a>
+                  <?php endif; ?>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          </table>
+        </div>
+      <?php endif; ?>
+
+      <?php if (!$room): ?>
+        <p class="flash flash-error" style="margin:0 0 12px">Their <?= e($pickedPlan['label']) ?> plan
+          covers <?= e(strtolower(plan_listings_label($pickedPlan))) ?> and <?= (int)$owned ?> is in use.
+          You can still queue a domain, but move them to Pro or Premium before it goes live.</p>
+      <?php endif; ?>
+
+      <form method="post" class="ad-add"><?= csrf_field() ?>
+        <input type="hidden" name="action" value="adddomain">
+        <input type="hidden" name="member_id" value="<?= (int)$picked['id'] ?>">
         <div>
-          <label>Domain</label>
-          <input type="text" name="domain" placeholder="theirsecondsite.com" required>
+          <label>New domain for <?= e($picked['email']) ?></label>
+          <input type="text" name="domain" placeholder="theirsecondsite.com" required autofocus>
         </div>
         <div style="display:flex;align-items:flex-end">
           <button class="btn btn-primary btn-block">Add to queue</button>
         </div>
-      </div>
-      <p class="form-note">Refused if the domain is already queued, already a listing, or registered
-        to a different account — all three would end in two storefronts for one business. Free
-        carries one listing; Pro and Premium carry as many as the member likes.</p>
-    </form>
+      </form>
+    </div>
   <?php endif; ?>
+
+  <p class="form-note">Refused if the domain is already queued, already a listing, or registered to a
+    different account — all three would end in two storefronts for one business.</p>
 </div>
 
 <div class="card card-pad ed-card">
