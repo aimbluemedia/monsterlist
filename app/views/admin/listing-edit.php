@@ -85,10 +85,25 @@ $listUrl    = e(listings_url($back, $_GET['q'] ?? ''));
     <input type="text" name="tagline" value="<?= e($v('tagline')) ?>" maxlength="255">
     <label>Description</label>
     <textarea name="description" rows="5" maxlength="5000"><?= e($v('description')) ?></textarea>
-    <label>Profile <span class="badge badge-pro">Pro</span></label>
+    <label>Profile <span class="badge badge-pro">Pro</span> <span class="badge badge-featured">Premium</span></label>
     <p class="form-note" style="margin:0 0 6px">Long-form section, up to <?= number_format(PROFILE_MAX_WORDS) ?> words.
-      Only shown on the storefront for paid tiers.</p>
+      Shown on the storefront for Pro and Premium listings; written here for any of them, so it is
+      ready if the listing moves up.</p>
+    <?php if ($aiNotice): ?><p class="aiprof-note"><?= e($aiNotice) ?></p><?php endif; ?>
     <textarea name="profile" rows="10"><?= e($v('profile')) ?></textarea>
+    <?php if (ai_configured()): ?>
+      <?php // Posts this same form, so anything typed above survives the round
+            // trip. The answer lands in the box; saving is still a separate act. ?>
+      <div class="aiprof-row">
+        <button class="btn btn-sm btn-primary" name="ai_profile" value="1"
+                data-confirm="Research <?= e($v('name') ?: 'this business') ?> and write a new Profile? This replaces what is in the box, and takes a minute or two.">
+          <?= trim($v('profile')) === '' ? 'Write it with AI' : 'Rewrite it with AI' ?>
+        </button>
+        <span class="form-note">Reads the website, searches for what else is public, and writes
+          1,000–1,500 words. It lands in the box above for you to check — nothing saves until you
+          press Save changes.</span>
+      </div>
+    <?php endif; ?>
     <div class="form-grid">
       <div><label>Website</label><input type="text" name="website" value="<?= e($v('website')) ?>" placeholder="https://…"></div>
       <div><label>Year founded</label><input type="number" name="founded" value="<?= e($v('founded')) ?>" min="1800" max="<?= date('Y') ?>"></div>

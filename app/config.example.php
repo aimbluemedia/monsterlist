@@ -22,11 +22,14 @@ return [
         'webhook_secret'  => '',   // whsec_... (Developers → Webhooks)
     ],
 
-    // Anthropic Claude API — powers "AI fill" on the listing form.
+    // Anthropic Claude API — powers "AI fill" on the listing form, and
+    // "Write it with AI" under the Profile box in the staff listing editor.
+    // The Profile writer uses Claude's web search, which has to be switched on
+    // for the key at platform.claude.com → Settings.
     // Get a key at https://platform.claude.com → API keys. Leave empty to disable.
     'anthropic' => [
         'api_key' => '',                    // sk-ant-...
-        'model'   => 'claude-opus-4-8',
+        'model'   => 'claude-opus-5',
     ],
 
     // Transactional email (password resets, notifications)

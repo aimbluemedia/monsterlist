@@ -42,7 +42,7 @@ no build step.
 - On the New Listing form, members paste their website URL and AI reads the site
   and pre-fills the whole form: name, category, city/state/country, contact details,
   description, tagline, social links, year founded. Members review, then submit.
-- Powered by the Anthropic Claude API (`claude-opus-4-8`) with structured outputs —
+- Powered by the Anthropic Claude API (`claude-opus-5`) with structured outputs —
   the extraction is schema-validated, then re-validated server-side against the
   directory's own categories/countries/states before it touches the form.
 - Setup: paste your Anthropic API key in **Superadmin panel → Settings** (or in `app/config.php`
@@ -50,6 +50,22 @@ no build step.
   quietly hides; everything else works.
 - Safety: SSRF-guarded fetcher (public hosts only, redirect re-validation, 1 MB cap),
   10 fills/hour per member, the AI is instructed never to invent contact details.
+
+**✍️ AI-written Profile** (staff only)
+- "Write it with AI" under the Profile box in **Superadmin panel → Listings → edit**
+  researches a business — the rest of its own site via web fetch, then whatever else
+  is public via web search — and writes the 1,000–1,500 word Profile section that
+  Pro and Premium storefronts show.
+- Everything the directory already holds (services, products, category, city, review
+  and social profiles) is handed over as established fact, so the profile agrees with
+  the rest of the page instead of re-deriving it.
+- Nothing is saved: the text lands in the edit box for staff to read and change, and
+  saving is the same Save changes button as any other edit. Whatever is typed
+  elsewhere on the form survives the round trip.
+- The prompt forbids invented facts, contact details, prices, hours and unsupported
+  superlatives, and requires sources to be tied to *this* business by domain, address
+  or phone — same-name businesses in other towns are a real failure mode. Markdown is
+  stripped on the way in, because the storefront prints the text as written.
 
 **Member area** (`/account`)
 - Dashboard, listing CRUD with plan limits, analytics (views / website clicks / calls,

@@ -275,6 +275,15 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 .aifill-row input[readonly]{background:#eef2f9;color:var(--mute);cursor:not-allowed;border-style:dashed}
 .aifill-row input[readonly]:focus{outline:none;border-color:var(--border)}
 .aifill-card a{color:var(--accent);font-weight:700;text-decoration:underline}
+/* "Write it with AI" under the staff Profile box. The button and its
+   explanation sit on one line where there is room and stack where there is
+   not, so the note never squeezes the button down to two words. */
+.aiprof-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:10px}
+.aiprof-row .btn{flex:none}
+.aiprof-row .form-note{flex:1 1 260px;margin:0}
+/* Said once, above the box it refers to: this text is new and unsaved. */
+.aiprof-note{margin:0 0 8px;padding:8px 12px;border-radius:8px;font-size:.88rem;
+  background:var(--accent-soft);color:var(--accent);font-weight:600}
 .btn-xl{padding:15px 30px;font-size:1.05rem;border-radius:12px;font-weight:800;
   box-shadow:0 8px 20px rgba(37,99,235,.28)}
 .btn-xl:disabled{opacity:.6;cursor:progress;box-shadow:none}

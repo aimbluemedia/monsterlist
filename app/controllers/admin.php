@@ -84,7 +84,50 @@ if ($sub === 'dashboard') {
     $staffPlan = ['enhanced' => true, 'max_listings' => 0, 'label' => 'Staff',
                   'analytics' => true, 'profile' => true, 'concierge' => true];
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $aiNotice = '';
+
+    // "Write it with AI" posts the whole form, so nothing typed is lost, and
+    // saves nothing: the researched text goes into the Profile box for a person
+    // to read, cut about and then save like any other edit. A draft on screen
+    // until somebody presses Save changes — which is why it is a branch of its
+    // own rather than a step inside the save.
+    $aiRun = $_SERVER['REQUEST_METHOD'] === 'POST' && post('ai_profile') !== '';
+
+    if ($aiRun) {
+        csrf_check();
+        $research = array_merge($biz, [
+            'name'          => post('name')          ?: $biz['name'],
+            'website'       => post('website')       ?: $biz['website'],
+            'tagline'       => post('tagline')       ?: $biz['tagline'],
+            'description'   => post('description')   ?: $biz['description'],
+            'address'       => post('address')       ?: $biz['address'],
+            'founded'       => post('founded')       ?: $biz['founded'],
+            'business_type' => post('business_type') ?: $biz['business_type'],
+        ]);
+        $cat = category_by_id((string)(post('category_id') ?: $biz['category_id']));
+        $research['category_label'] = $cat['label'] ?? '';
+        // The state and country come off the saved city, so they only belong
+        // with the town they were read from. Staff who have typed a different
+        // city and not saved it yet get the name alone rather than the old
+        // city's state stitched onto the new town.
+        $place = $biz['city_id'] ? city_full((int)$biz['city_id']) : null;
+        $typedCity = post('city');
+        $sameCity  = $place && ($typedCity === '' || strcasecmp($typedCity, (string)$place['name']) === 0);
+        $research['city_name']    = $typedCity ?: ($place['name'] ?? '');
+        $research['region_name']  = $sameCity ? ($place['region_name']  ?? '') : '';
+        $research['country_name'] = $sameCity ? ($place['country_name'] ?? '') : '';
+
+        $aiError = null;
+        $profile = ai_write_profile($research, $aiError);
+        if ($profile === null) {
+            $errors[] = $aiError;
+        } else {
+            $_POST['profile'] = $profile;   // $v('profile') reads POST on a POST
+            $aiNotice = number_format(preg_match_all('/\S+/u', $profile))
+                      . ' words, researched just now. Read it before you save — nothing has been saved yet.';
+        }
+
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
         csrf_check();
         // Staff bypass the blocklist and duplicate check — they curate both.
         [$data, $errors] = listing_form_data($u, $staffPlan, (int)$biz['id'], false);
@@ -145,7 +188,7 @@ if ($sub === 'dashboard') {
     $cityRow   = $biz['city_id'] ? city_full((int)$biz['city_id']) : null;
     $owner     = $biz['owner_id'] ? row('SELECT email FROM users WHERE id = ?', [$biz['owner_id']]) : null;
     $meta      = ['title' => 'Edit listing — ' . $site, 'robots' => 'noindex'];
-    view_raw('admin/listing-edit', compact('meta', 'u', 'biz', 'errors', 'countries', 'usStates', 'cats', 'gallery', 'cityRow', 'owner', 'back'));
+    view_raw('admin/listing-edit', compact('meta', 'u', 'biz', 'errors', 'aiNotice', 'countries', 'usStates', 'cats', 'gallery', 'cityRow', 'owner', 'back'));
 
 } elseif ($sub === 'listings') {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {

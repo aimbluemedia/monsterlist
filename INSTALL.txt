@@ -137,6 +137,14 @@ Cost guide: each fill is one Claude API call (typically a few cents).
 Members are limited to 10 fills per hour. Leave the key empty to
 disable the feature — the form works normally without it.
 
+The same key also powers "Write it with AI" under the Profile box in
+Superadmin -> Listings -> edit, which researches a business and writes
+its 1,000-1,500 word Profile section. That one uses Claude's web search
+and web fetch tools, so it costs more than a fill (roughly the price of
+a short article) and takes a minute or two. If it reports that it could
+not search, web search is switched off for the key: turn it on at
+https://platform.claude.com -> Settings.
+
 STEP 7 — GO-LIVE CHECKLIST
 --------------------------
   [ ] https:// works (the .htaccess already forces HTTPS)
