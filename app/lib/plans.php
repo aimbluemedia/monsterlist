@@ -52,6 +52,21 @@ function plan_for(array $user): array
     return $p[$user['plan']] ?? $p['free'];
 }
 
+/**
+ * What a plan is called out loud.
+ *
+ * "Featured" is the key everywhere in the data and always will be — renaming a
+ * column across a live database to change a word on a screen is a bad trade.
+ * "Premium" is the word we use to people. One function, because the same
+ * ternary written inline in six views is five chances to disagree with itself.
+ */
+function plan_public_label(string $plan): string
+{
+    if ($plan === 'featured') return 'Premium';
+    $all = plans();
+    return $all[$plan]['label'] ?? ucfirst($plan);
+}
+
 /** The three plan keys, cheapest first. The one place the order is written down. */
 function plan_ladder(): array
 {

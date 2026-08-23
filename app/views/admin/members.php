@@ -7,7 +7,7 @@
   <?php if (!$list): ?><p class="mute">No members found.</p>
   <?php else: ?>
   <table class="table">
-    <tr><th>Member</th><th>Listings</th><th>Tokens</th><th>Status</th><th>Joined</th><th></th></tr>
+    <tr><th>Member</th><th>Plan</th><th>Listings</th><th>Tokens</th><th>Status</th><th>Joined</th><th></th></tr>
     <?php foreach ($list as $m): ?>
       <tr>
         <?php // The email identifies the account, so it leads. The websites
@@ -35,17 +35,14 @@
             </details>
           <?php endif; ?>
         </td>
+        <?php // Shown, not set. The dropdown that used to live in this table
+              // changed what somebody pays from a scrolling list; changing a
+              // plan is a deliberate act and belongs on the member's page. ?>
+        <td><span class="badge badge-plan-<?= e((string)$m['plan']) ?>"><?= e(plan_public_label((string)$m['plan'])) ?></span></td>
         <?php // The count is the way in: "3 listings" is the thing a staff
               // member is looking at when they want to open the account. ?>
         <td><a href="/superadmin/members/edit?id=<?= (int)$m['id'] ?>" style="color:var(--accent);font-weight:700"><?= (int)$m['listing_count'] ?></a></td>
-        <td style="white-space:nowrap">
-          <strong><?= number_format((int)($m['token_balance'] ?? 0)) ?></strong>
-          <form method="post" style="display:inline-flex;gap:4px;margin-left:6px"><?= csrf_field() ?>
-            <input type="hidden" name="id" value="<?= (int)$m['id'] ?>"><input type="hidden" name="action" value="tokens">
-            <input type="number" name="delta" value="" placeholder="±" style="width:64px;padding:4px 6px;font-size:.82rem">
-            <button class="btn btn-sm btn-ghost" title="Add or remove tokens">Set</button>
-          </form>
-        </td>
+        <td><strong><?= number_format((int)($m['token_balance'] ?? 0)) ?></strong></td>
         <td><span class="badge <?= $m['status'] === 'active' ? 'badge-live' : 'badge-rejected' ?>"><?= e($m['status']) ?></span></td>
         <td><?= e(date('M j, Y', strtotime($m['created_at']))) ?></td>
         <?php // One way in, rather than a row of consequential buttons sitting

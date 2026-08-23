@@ -686,6 +686,12 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
   .hrs-day{grid-column:1 / -1}
 }
 
+/* Plan, as a badge you can pick out down a column of thirty. The three read as
+   a ladder — grey, blue, gold — rather than three unrelated colours. */
+.badge-plan-free{background:var(--border2);color:var(--mute)}
+.badge-plan-pro{background:var(--accent-soft);color:var(--accent)}
+.badge-plan-featured{background:var(--gold-soft);color:var(--gold)}
+
 /* ===== Superadmin: the Members table's first column =====
    Email on top because it identifies the account; the websites under it
    because they are what the account is for. */

@@ -21,7 +21,7 @@
             <td class="intake-domain"><strong><?= e((string)$r['domain']) ?></strong></td>
             <td>
               <a href="/superadmin/members/edit?id=<?= (int)$r['user_id'] ?>" style="color:var(--accent);font-weight:700"><?= e($r['email']) ?></a>
-              <br><small class="mute"><?= e($r['plan'] === 'featured' ? 'Premium' : ucfirst((string)$r['plan'])) ?></small>
+              <br><small class="mute"><?= e(plan_public_label((string)$r['plan'])) ?></small>
             </td>
             <td>
               <?php if ($r['business_id']): ?>
@@ -107,7 +107,7 @@
         <?php foreach ($members as $mem): ?>
           <option value="<?= (int)$mem['id'] ?>" <?= $picked && (int)$picked['id'] === (int)$mem['id'] ? 'selected' : '' ?>>
             <?= e($mem['email']) ?>
-            — <?= e($mem['plan'] === 'featured' ? 'Premium' : ucfirst((string)$mem['plan'])) ?>,
+            — <?= e(plan_public_label((string)$mem['plan'])) ?>,
             <?= (int)$mem['listing_count'] ?> listing<?= (int)$mem['listing_count'] === 1 ? '' : 's' ?><?php
               if ((int)$mem['queued']) echo ', ' . (int)$mem['queued'] . ' queued'; ?>
           </option>
@@ -136,7 +136,7 @@
         <?php foreach ($matches as $mm): ?>
           <tr>
             <td><strong><?= e($mm['email']) ?></strong></td>
-            <td><?= e($mm['plan'] === 'featured' ? 'Premium' : ucfirst((string)$mm['plan'])) ?></td>
+            <td><?= e(plan_public_label((string)$mm['plan'])) ?></td>
             <td><?= (int)$mm['listing_count'] ?></td>
             <td><?= (int)$mm['queued'] ?></td>
             <td><a class="btn btn-sm btn-primary" href="/superadmin/intake?member=<?= (int)$mm['id'] ?>#adddomain">Select</a></td>
@@ -153,7 +153,7 @@
         <div>
           <b><?= e($picked['email']) ?></b>
           <div class="mute" style="font-size:.82rem">
-            <?= e($pickedPlan['label'] === 'Featured' ? 'Premium' : $pickedPlan['label']) ?> plan ·
+            <?= e(plan_public_label((string)$picked['plan'])) ?> plan ·
             <?= e(plan_listings_label($pickedPlan)) ?> · <?= (int)$owned ?> in use
           </div>
         </div>

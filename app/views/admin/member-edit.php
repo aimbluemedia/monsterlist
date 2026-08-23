@@ -26,7 +26,7 @@
 
   <div class="info-row"><span class="mute">Now on</span>
     <span>
-      <strong><?= e($mPlan['label'] === 'Featured' ? 'Premium' : $mPlan['label']) ?></strong>
+      <strong><?= e(plan_public_label((string)$m['plan'])) ?></strong>
       <?php if (!empty($m['plan_comped'])): ?><span class="badge badge-pro">Comped</span><?php endif; ?>
     </span></div>
   <div class="info-row"><span class="mute">Listings allowed</span><span><?= e(plan_listings_label($mPlan)) ?></span></div>
@@ -104,7 +104,7 @@
         <?php foreach ($history as $h): ?>
           <tr>
             <td><?= e(date('F Y', strtotime($h['month'] . '-01'))) ?></td>
-            <td><?= e($h['plan'] === 'featured' ? 'Premium' : ucfirst((string)$h['plan'])) ?></td>
+            <td><?= e(plan_public_label((string)$h['plan'])) ?></td>
             <td><?= e(date('j M', strtotime((string)$h['due_on']))) ?></td>
             <td><?= $h['done_at']
                   ? '<span class="badge badge-live">done ' . e(date('j M', strtotime((string)$h['done_at']))) . '</span>'
