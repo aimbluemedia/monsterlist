@@ -65,6 +65,19 @@
                   </form>
                 <?php endif; ?>
                 <a class="btn btn-sm btn-ghost" href="/superadmin/members/edit?id=<?= (int)$r['user_id'] ?>">Member</a>
+                <?php // The site itself, before deciding whether to spend an AI
+                      // call on it — and the first thing worth looking at when a
+                      // build came back with an error. New tab, because losing
+                      // the queue to a parked domain would be irritating.
+                      //
+                      // rel="noopener" is the point of the rel here: without it
+                      // the opened page gets a handle on this one through
+                      // window.opener and can navigate it somewhere else.
+                      $siteUrl = clean_url((string)$r['domain']); ?>
+                <?php if ($siteUrl): ?>
+                  <a class="btn btn-sm btn-ghost" href="<?= e($siteUrl) ?>"
+                     target="_blank" rel="noopener noreferrer">View website</a>
+                <?php endif; ?>
                 <?php if (!$r['business_id']): ?>
                   <form method="post"><?= csrf_field() ?>
                     <input type="hidden" name="action" value="delete">
