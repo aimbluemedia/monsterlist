@@ -385,6 +385,68 @@ function intake_build_listing(array $d): array
  * the slug, the blank-means-blank rules — can be exercised without a website
  * and an API key on the other end of it.
  */
+/**
+ * A starting name for a listing nobody has read the website of.
+ *
+ * Hyphens are word breaks — "granite-works.com" comes out as "Granite Works",
+ * which is usually right. A run-together domain has no breaks to find, so
+ * "theexecutivecarservice.com" comes out as one capitalised word: obviously a
+ * placeholder, which is the honest thing for it to look like. Either way it is
+ * the first field in the editor you land in, waiting to be corrected.
+ */
+function intake_placeholder_name(string $domain): string
+{
+    $host  = preg_replace('#^www\.#i', '', (string)normalize_domain($domain) ?: $domain);
+    $label = explode('.', $host)[0] ?? $host;
+    $words = trim(preg_replace('/[-_]+/', ' ', $label));
+    return $words === '' ? $domain : mb_substr(ucwords($words), 0, 180);
+}
+
+/**
+ * The field set intake_create_listing() expects, with nothing in it.
+ *
+ * Manual creation goes through the same function the AI path does, rather than
+ * its own INSERT: one place that knows how a listing is made from an intake
+ * row, so the two cannot drift into disagreeing about slugs, tiers or which
+ * columns may be null.
+ */
+function intake_blank_fields(string $domain): array
+{
+    return [
+        'name' => intake_placeholder_name($domain), 'tagline' => '', 'description' => '',
+        'category_id' => '', 'business_type' => '', 'country' => '', 'region' => '', 'city' => '',
+        'address' => '', 'phone' => '', 'email' => '', 'website' => (string)$domain,
+        'founded' => '', 'services' => [],
+    ];
+}
+
+/**
+ * Make an empty listing for a queued domain, for staff to fill in by hand.
+ *
+ * The escape hatch for a website we cannot read. Some sites sit behind a
+ * firewall that refuses every automated reader whatever headers it sends, and
+ * without this the row is simply stuck: the member is real, the business is
+ * real, and the queue has no way to move on.
+ *
+ * What it makes is what the AI path makes on a bad day — a pending listing with
+ * the owner, the domain and gaps — so everything downstream, approving and
+ * rejecting included, behaves the same.
+ *
+ * Returns [business id or 0, error string].
+ */
+function intake_create_manual(array $d): array
+{
+    $user = row('SELECT * FROM users WHERE id = ?', [(int)$d['user_id']]);
+    if (!$user) return [0, 'That member no longer exists.'];
+    if (empty($d['domain'])) return [0, 'This row has no domain to build from.'];
+    if (!empty($d['business_id'])) return [(int)$d['business_id'], ''];   // already has one
+
+    $user['website'] = $d['domain'];
+    $bizId = intake_create_listing($user, intake_blank_fields((string)$d['domain']));
+    q('UPDATE intake_domains SET business_id = ?, note = NULL WHERE id = ?', [$bizId, (int)$d['id']]);
+    return [$bizId, ''];
+}
+
 function intake_create_listing(array $user, array $fields): int
 {
     $name = $fields['name'] !== '' ? $fields['name'] : (string)$user['website'];

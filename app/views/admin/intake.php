@@ -63,6 +63,16 @@
                     <button class="btn btn-sm intake-build"
                             data-confirm="Read <?= e((string)$r['domain']) ?> with AI and build the listing?">Build listing</button>
                   </form>
+                  <?php // The way out when the website cannot be read at all —
+                        // some sit behind a firewall that refuses every reader,
+                        // and without this the row is stuck for good. Makes the
+                        // empty listing and opens it. ?>
+                  <form method="post"><?= csrf_field() ?>
+                    <input type="hidden" name="action" value="manual">
+                    <input type="hidden" name="id" value="<?= (int)$r['id'] ?>">
+                    <button class="btn btn-sm btn-ghost"
+                            data-confirm="Create an empty listing for <?= e((string)$r['domain']) ?> and fill it in by hand?">Create manually</button>
+                  </form>
                 <?php endif; ?>
                 <a class="btn btn-sm btn-ghost" href="/superadmin/members/edit?id=<?= (int)$r['user_id'] ?>">Member</a>
                 <?php // The site itself, before deciding whether to spend an AI
@@ -93,6 +103,8 @@
     </div>
     <p class="form-note">Building reads the website, asks AI for the listing fields, and saves the
       result as <strong>pending</strong> — never live. You land in the staff editor with it open.
+      <strong>Create manually</strong> makes the same pending listing with nothing in it, for a
+      website that refuses to be read — the row leaves the queue the same way once approved.
       Approving puts the listing live and takes the row off this queue; a rejected one stays,
       because the listing is decided but the account is not.</p>
   <?php endif; ?>

@@ -347,6 +347,25 @@ if ($sub === 'dashboard') {
             redirect('/superadmin/intake');
         }
 
+        if ($action === 'manual') {
+            // For a website nothing can read. Makes the empty listing and hands
+            // you straight to the editor, which is where the work is anyway —
+            // the alternative was a row stuck in the queue for good.
+            $d = intake_domain((int)post('id'));
+            if (!$d) {
+                flash_set('error', 'No such queued domain.');
+            } else {
+                [$bizId, $err] = intake_create_manual($d);
+                if ($bizId) {
+                    flash_set('success', 'Empty listing created for ' . $d['domain']
+                        . '. Fill it in here — it stays pending until you approve it.');
+                    redirect('/superadmin/listings/edit?id=' . $bizId . '&back=pending');
+                }
+                flash_set('error', 'Could not create a listing for ' . $d['domain'] . ': ' . $err);
+            }
+            redirect('/superadmin/intake');
+        }
+
         if ($action === 'approve') {
             // The same approval the Listings page performs, offered here so a
             // built listing that needs no correction can be waved through
