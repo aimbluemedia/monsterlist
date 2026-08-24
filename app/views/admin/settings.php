@@ -60,6 +60,18 @@
   <input type="password" name="anthropic_api_key" value="<?= e(setting('anthropic_api_key')) ?>" placeholder="sk-ant-..." autocomplete="off">
   <p class="form-note">Leave empty to hide the AI fill feature from members.</p>
 
+  <?php // Some sites answer 403 to anything that does not look like a browser.
+        // What satisfies them changes, so the string is editable rather than
+        // compiled in — and the default is shown so it can be pasted back. ?>
+  <label style="margin-top:14px">How we identify ourselves to websites</label>
+  <input type="text" name="fetch_user_agent" value="<?= e(setting('fetch_user_agent')) ?>"
+         placeholder="<?= e(fetch_user_agent()) ?>">
+  <p class="form-note">The User-Agent sent when reading a member's website. Leave empty for the
+    default, which says we are a browser and names us as the bot doing it. If a site keeps
+    answering <strong>HTTP 403</strong>, the firewall in front of it is refusing that string —
+    changing it here is the thing to try. Currently sending:
+    <br><code style="font-size:.78rem;word-break:break-all"><?= e(fetch_user_agent()) ?></code></p>
+
   <h3 style="margin-top:24px">Stripe price IDs</h3>
   <p class="mute" style="font-size:.85rem">Create two recurring monthly Prices in your Stripe dashboard and paste their IDs (price_…). API keys live in <code>app/config.php</code>.</p>
   <div class="form-grid">

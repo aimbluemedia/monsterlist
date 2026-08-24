@@ -94,6 +94,69 @@ function ai_text_blocks(array $data): string
 }
 
 /**
+ * What we tell a website we are.
+ *
+ * The first version of this sent "MonsterListBot/1.0 (+https://…)" and nothing
+ * else, and a good number of real sites answered 403. Not because they mind
+ * being read — a person opening the same page in a browser sees it fine — but
+ * because the firewalls in front of them (Cloudflare, Sucuri, Wordfence and the
+ * rest) treat a bare non-browser User-Agent as reason enough to refuse.
+ *
+ * So the string leads with the tokens those firewalls look for, and still says
+ * who we are and where to complain. That is the honest shape: identified, but
+ * speaking the dialect. What it is NOT is a pretence at being some other named
+ * crawler — claiming to be Googlebot would be a lie about identity, and a
+ * different thing entirely from admitting we render like a browser.
+ *
+ * Editable in Settings, because the right answer here is a moving target and
+ * changing it should not need a file upload.
+ */
+function fetch_user_agent(): string
+{
+    $custom = setting('fetch_user_agent');
+    if ($custom !== '') return $custom;
+
+    return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+         . 'Chrome/126.0.0.0 Safari/537.36 ' . preg_replace('/\s+/', '', setting('site_name'))
+         . 'Bot/1.0 (+' . site_url('/') . ')';
+}
+
+/**
+ * The rest of the headers a browser sends and our first attempt did not.
+ *
+ * Any one of these missing is a signal to a bot filter; all of them missing is
+ * a request that looks like exactly what it was.
+ */
+function fetch_headers(): array
+{
+    return [
+        'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        'Accept-Language: en-GB,en;q=0.9',
+        'Upgrade-Insecure-Requests: 1',
+        'Sec-Fetch-Dest: document',
+        'Sec-Fetch-Mode: navigate',
+        'Sec-Fetch-Site: none',
+        'Sec-Fetch-User: ?1',
+        'Cache-Control: no-cache',
+        'Pragma: no-cache',
+    ];
+}
+
+/** An HTTP status, said in a way that suggests what to do about it. */
+function fetch_http_error(int $status, string $host): string
+{
+    $base = "That website returned an error (HTTP $status).";
+    if ($status === 403 || $status === 406 || $status === 429) {
+        return $base . ' The site is refusing automated readers — it will still open fine in your '
+             . 'own browser. Try again in a minute; if it keeps happening, ' . $host . ' is behind '
+             . 'a firewall that blocks us, and the listing has to be written by hand.';
+    }
+    if ($status === 404) return $base . ' There is no page at that address — check the domain.';
+    if ($status >= 500)  return $base . ' That is a fault at their end, not ours. Try again later.';
+    return $base;
+}
+
+/**
  * Fetch a public website with SSRF protection: http(s) only, standard ports,
  * public IPs only, redirects re-validated hop by hop, response capped at 1 MB.
  * Returns HTML or null (with $error set).
@@ -126,15 +189,23 @@ function fetch_website(string $url, ?string &$error = null): ?string
             }
         }
 
-        $ch = curl_init($url);
-        curl_setopt_array($ch, [
+        $opts = [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => false,     // redirects handled manually so each hop is re-validated
-            CURLOPT_TIMEOUT        => 15,
+            CURLOPT_TIMEOUT        => 20,
             CURLOPT_CONNECTTIMEOUT => 8,
-            CURLOPT_USERAGENT      => setting('site_name') . 'Bot/1.0 (+' . site_url('/') . ')',
-            CURLOPT_HTTPHEADER     => ['Accept: text/html,application/xhtml+xml'],
-        ]);
+            CURLOPT_USERAGENT      => fetch_user_agent(),
+            CURLOPT_HTTPHEADER     => fetch_headers(),
+            // Ask for compression and let curl undo it. Some servers reject a
+            // request that does not offer any, and every real browser does.
+            CURLOPT_ENCODING       => '',
+        ];
+        // Browsers speak HTTP/2 to anything that offers it; a firewall watching
+        // for that sees HTTP/1.1 as one more thing that is not a browser.
+        if (defined('CURL_HTTP_VERSION_2TLS')) $opts[CURLOPT_HTTP_VERSION] = CURL_HTTP_VERSION_2TLS;
+
+        $ch = curl_init($url);
+        curl_setopt_array($ch, $opts);
         $body   = curl_exec($ch);
         $status = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
         $redir  = curl_getinfo($ch, CURLINFO_REDIRECT_URL);
@@ -142,7 +213,7 @@ function fetch_website(string $url, ?string &$error = null): ?string
 
         if ($body === false) { $error = 'We could not reach that website. Is it online?'; return null; }
         if ($status >= 300 && $status < 400 && $redir) { $url = $redir; continue; }
-        if ($status >= 400) { $error = "That website returned an error (HTTP $status)."; return null; }
+        if ($status >= 400) { $error = fetch_http_error($status, $parts['host']); return null; }
         return mb_substr($body, 0, 1024 * 1024);
     }
     $error = 'Too many redirects on that website.';

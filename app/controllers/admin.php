@@ -916,7 +916,7 @@ if ($sub === 'dashboard') {
     require_superadmin();
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         csrf_check();
-        foreach (['site_name','site_tagline','price_pro_monthly','price_featured_monthly','stripe_price_pro','stripe_price_featured','anthropic_api_key',
+        foreach (['site_name','site_tagline','price_pro_monthly','price_featured_monthly','stripe_price_pro','stripe_price_featured','anthropic_api_key','fetch_user_agent',
                   'tokens_cost_promo',
                   'tokens_grant_free','tokens_grant_pro','tokens_grant_featured',
                   'tokens_earn_free','tokens_earn_pro','tokens_earn_featured',
