@@ -110,8 +110,18 @@
   <?php endif; ?>
 </div>
 
-<div class="card card-pad ed-card" id="adddomain">
-  <h3>Add a domain to a member</h3>
+<?php // The three cards below are the ones you use occasionally: the page is
+      // opened to work the queue, and everything under it was pushing the queue
+      // off the top of the screen. <details> rather than script, so the toggle
+      // works on a page whose JavaScript did not load, and so the browser gives
+      // us the keyboard behaviour for free.
+      //
+      // This one has to open itself when there is anything to show. Searching
+      // reloads the page, and a closed card would hide the results of the
+      // search that reloaded it — Find would look broken. ?>
+<details class="card card-pad ed-card foldcard" id="adddomain"
+         <?= ($picked || $mq !== '' || $matches) ? 'open' : '' ?>>
+  <summary><h3>Add a domain to a member</h3><span class="foldcard-hint"><span class="fc-show">show</span><span class="fc-hide">hide</span></span></summary>
   <p class="mute ed-note">For a member who already has an account — a second website, or one they
     told you about after signing up. Search by email or by any domain they already hold, or pick
     them from the list. This adds the domain to the queue above; nothing is read from it until you
@@ -235,10 +245,12 @@
 
   <p class="form-note">Refused if the domain is already queued, already a listing, or registered to a
     different account — all three would end in two storefronts for one business.</p>
-</div>
+</details>
 
-<div class="card card-pad ed-card">
-  <h3>Add members</h3>
+<?php // Adding members redirects and reports through the flash bar at the top
+      // of the page, so nothing here needs the card left open to be read. ?>
+<details class="card card-pad ed-card foldcard">
+  <summary><h3>Add members</h3><span class="foldcard-hint"><span class="fc-show">show</span><span class="fc-hide">hide</span></span></summary>
   <p class="mute ed-note">An email, a password and a domain make an account. Nothing is read from
     the domain yet — that is the <strong>Build listing</strong> button in the queue above, one
     member at a time, so you see what AI made of a website before the public does.</p>
@@ -267,10 +279,12 @@ someone@shop.co.uk, Chosen-Pass-99, shop.co.uk"></textarea>
       green message after this form is submitted — copy them then, because no page here can show
       them again. A member who loses one resets it from the login page.</p>
   </form>
-</div>
+</details>
 
-<div class="card card-pad ed-card">
-  <h3>API</h3>
+<?php // Read once when something is being wired up, and never again. Also the
+      // card holding the API key, which is no worse for being behind a click. ?>
+<details class="card card-pad ed-card foldcard">
+  <summary><h3>API</h3><span class="foldcard-hint"><span class="fc-show">show</span><span class="fc-hide">hide</span></span></summary>
   <p class="mute ed-note">The same thing from somewhere else. It creates the account only; the
     listing is still built from the queue at the top of this page.</p>
 
@@ -295,5 +309,5 @@ someone@shop.co.uk, Chosen-Pass-99, shop.co.uk"></textarea>
     <input type="hidden" name="action" value="rotate_key">
     <button class="btn btn-sm btn-ghost">Generate a new key</button>
   </form>
-</div>
+</details>
 <?php require __DIR__ . '/_bottom.php'; ?>
