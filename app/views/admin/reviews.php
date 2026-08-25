@@ -3,6 +3,7 @@
 <div class="card card-pad">
   <?php if (!$list): ?><p class="mute">No reviews yet.</p>
   <?php else: ?>
+  <div class="table-wrap">
   <table class="table">
     <tr><th>Business</th><th>Author</th><th>Rating</th><th>Review</th><th>Status</th><th>Date</th><th></th></tr>
     <?php foreach ($list as $r): ?>
@@ -20,6 +21,7 @@
       </tr>
     <?php endforeach; ?>
   </table>
+  </div>
   <?php if (count($list) === 30): ?><nav class="pager"><a href="/superadmin/reviews?page=<?= $page + 1 ?>">Next →</a></nav><?php endif; ?>
   <?php endif; ?>
 </div>

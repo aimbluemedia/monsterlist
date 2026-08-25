@@ -8,6 +8,7 @@
 <div class="card card-pad">
   <?php if (!$list): ?><p class="mute">No promotions with status “<?= e($status) ?>”.</p>
   <?php else: ?>
+  <div class="table-wrap">
   <table class="table">
     <tr><th>Promotion</th><th>Channel</th><th>Business</th><th>Submitted by</th><th>Clicks</th><th>Status</th><th></th></tr>
     <?php foreach ($list as $p): ?>
@@ -36,6 +37,7 @@
       </tr>
     <?php endforeach; ?>
   </table>
+  </div>
   <?php if (count($list) === 30): ?><nav class="pager"><a href="/superadmin/promotions?status=<?= e($status) ?>&page=<?= $page + 1 ?>">Next →</a></nav><?php endif; ?>
   <?php endif; ?>
 </div>

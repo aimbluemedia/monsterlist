@@ -3,6 +3,7 @@
 <div class="card card-pad">
   <?php if (!$list): ?><p class="mute">No claims yet. Claims appear when a member requests ownership of an unclaimed listing.</p>
   <?php else: ?>
+  <div class="table-wrap">
   <table class="table">
     <tr><th>Business</th><th>Claimant</th><th>Message</th><th>Status</th><th>Date</th><th></th></tr>
     <?php foreach ($list as $c): ?>
@@ -21,6 +22,7 @@
       </tr>
     <?php endforeach; ?>
   </table>
+  </div>
   <?php endif; ?>
 </div>
 <?php require __DIR__ . '/_bottom.php'; ?>
