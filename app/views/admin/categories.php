@@ -20,6 +20,10 @@
 
 <div class="two-col">
   <div class="card card-pad">
+    <?php // Six columns now, and the panel underneath holds a table of its own.
+          // table-narrow so it does not force the 960px scroller a wide table
+          // gets, but still scrolls inside the card rather than the page. ?>
+    <div class="table-wrap table-narrow">
     <table class="table cat-table">
       <tr><th>Icon</th><th>Label</th><th>ID</th><th>Listings</th><th>Subcategories</th><th></th></tr>
       <?php foreach ($list as $c): ?>
@@ -118,6 +122,7 @@
         <?php endif; ?>
       <?php endforeach; ?>
     </table>
+    </div>
   </div>
 
   <div class="card card-pad">
