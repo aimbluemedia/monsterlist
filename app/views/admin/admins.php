@@ -2,6 +2,10 @@
 <h1>Admin accounts <span class="badge badge-featured">Superadmin</span></h1>
 <div class="two-col">
   <div class="card card-pad">
+    <?php // Five columns is more than a phone has room for. table-narrow so it
+          // does not force the 960px scroller a genuinely wide table gets, but
+          // still scrolls inside the card rather than taking the page with it. ?>
+    <div class="table-wrap table-narrow">
     <table class="table">
       <tr><th>Name</th><th>Email</th><th>Role</th><th>Last login</th><th></th></tr>
       <?php foreach ($list as $a): ?>
@@ -23,6 +27,7 @@
         </tr>
       <?php endforeach; ?>
     </table>
+    </div>
   </div>
 
   <?php if (!empty($edit)): ?>
