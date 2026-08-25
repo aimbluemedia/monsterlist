@@ -6,7 +6,11 @@
   <div class="card stat"><div class="n"><?= $stats['members'] ?></div><div class="l">Members</div></div>
   <div class="card stat"><div class="n"><?= $stats['paid'] ?></div><div class="l">Paying members</div></div>
 </div>
-<div class="stat-row" style="grid-template-columns:repeat(4,1fr)">
+<?php // No inline grid here. It said what .stat-row already says, and being
+      // inline it outranked the media query that drops the row to two columns
+      // on a phone — so this row stayed four across at 390px and took the page
+      // sideways with it. ?>
+<div class="stat-row">
   <div class="card stat"><div class="n"><?= $stats['views7'] ?></div><div class="l">Listing views (7d)</div></div>
   <div class="card stat"><div class="n"><?= $stats['reviews'] ?></div><div class="l">New reviews (7d)</div></div>
   <div class="card stat"><div class="n"><?= $stats['claims'] ?></div><div class="l">Pending claims</div></div>
@@ -16,6 +20,7 @@
   <div class="section-head"><h3>Moderation queue</h3><a href="/superadmin/listings?status=pending" class="mute">All pending →</a></div>
   <?php if (!$pending): ?><p class="mute">Queue is empty — nothing waiting for review.</p>
   <?php else: ?>
+  <div class="table-wrap table-narrow">
   <table class="table">
     <tr><th>Business</th><th>Category</th><th>City</th><th>Owner</th><th>Submitted</th><th></th></tr>
     <?php foreach ($pending as $b): ?>
@@ -38,6 +43,7 @@
       </tr>
     <?php endforeach; ?>
   </table>
+  </div>
   <?php endif; ?>
 </div>
 <?php require __DIR__ . '/_bottom.php'; ?>
