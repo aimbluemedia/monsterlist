@@ -1215,3 +1215,39 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
   .nav-actions .btn{padding:8px 12px;font-size:.84rem;border-radius:9px}
   .logo{font-size:1.02rem}
 }
+
+/* ---------------------------------------------------------------------------
+   Categories, two levels deep. The category row stays a table row; opening one
+   drops a panel underneath it holding its edit form and its subcategories, so
+   the two levels read as nested rather than as two lists side by side.
+   --------------------------------------------------------------------------- */
+.cat-table td{vertical-align:middle}
+.cat-icon{font-size:1.2rem}
+.cat-open>td{background:var(--accent-soft)}
+.cat-acts{display:flex;gap:6px;align-items:center;white-space:nowrap}
+.cat-acts form{margin:0}
+.cat-panel-row>td{padding:0;background:var(--accent-soft)}
+.cat-panel{padding:16px 14px 18px}
+.cat-panel h4{margin:0 0 10px;font-size:.95rem}
+.cat-panel .table{background:#fff}
+/* label / icon / id / button on one line where there is room */
+.cat-edit{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,.6fr) minmax(0,1fr) auto;
+  gap:10px;align-items:end;margin-bottom:4px}
+.cat-edit input{margin:0}
+.cat-edit input:disabled{background:#eef2f9;color:var(--mute);cursor:not-allowed;border-style:dashed}
+.cat-edit-go{padding-bottom:1px}
+
+/* the subcategory form, used for both add and edit */
+.ct-form{margin:0}
+.ct-form-new{margin-top:6px;padding:12px 14px;background:#fff;border:1px solid var(--border);border-radius:10px}
+.ct-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1.6fr) 90px auto;
+  gap:10px;align-items:end}
+.ct-grid input,.ct-grid select{margin:0}
+.ct-go{padding-bottom:1px}
+.ct-editrow{background:var(--accent-soft);padding:12px 14px}
+.ct-type{font-size:.78rem;background:#eef2f9;padding:2px 6px;border-radius:5px}
+
+@media(max-width:900px){
+  .cat-edit,.ct-grid{grid-template-columns:minmax(0,1fr)}
+  .cat-acts{flex-wrap:wrap}
+}

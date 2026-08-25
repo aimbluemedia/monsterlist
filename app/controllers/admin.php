@@ -820,19 +820,68 @@ if ($sub === 'dashboard') {
             } else {
                 flash_set('error', 'Invalid or duplicate category.');
             }
+        } elseif ($action === 'edit') {
+            // The id is left alone on purpose. It is what businesses.category_id
+            // holds and what every category URL is built from, so renaming it
+            // would orphan the listings and break the links at once. The label
+            // is the part anybody reads, and that is editable.
+            $cat = category_by_id((string)post('id'));
+            $label = mb_substr(post('label'), 0, 120);
+            if (!$cat) {
+                flash_set('error', 'No such category.');
+            } elseif ($label === '') {
+                flash_set('error', 'A category needs a label.');
+            } else {
+                q('UPDATE categories SET label = ?, icon = ? WHERE id = ?',
+                  [$label, mb_substr(post('icon'), 0, 16), $cat['id']]);
+                flash_set('success', 'Saved "' . $label . '".');
+            }
         } elseif ($action === 'delete') {
             $inUse = (int)scalar('SELECT COUNT(*) FROM businesses WHERE category_id = ?', [post('id')]);
+            $subs  = category_types_ready()
+                ? (int)scalar('SELECT COUNT(*) FROM category_types WHERE category_id = ?', [post('id')]) : 0;
             if ($inUse > 0) {
                 flash_set('error', "Can't delete — $inUse listing(s) use this category.");
             } else {
+                // Its subcategories go with it. They are meaningless on their
+                // own — a trade under no category is not browsable — and the
+                // listing count above has already proved nothing points here.
+                if ($subs) q('DELETE FROM category_types WHERE category_id = ?', [post('id')]);
                 q('DELETE FROM categories WHERE id = ?', [post('id')]);
-                flash_set('success', 'Category deleted.');
+                flash_set('success', 'Category deleted.' . ($subs ? " Its $subs subcategory(ies) went with it." : ''));
             }
+
+        } elseif ($action === 'type_save') {
+            [$id, $err] = category_type_save((int)post('type_id'), (string)post('category_id'),
+                                             (string)post('schema_type'), (string)post('label'),
+                                             (int)post('sort'));
+            flash_set($id ? 'success' : 'error',
+                      $id ? 'Saved "' . post('label') . '".' : $err);
+
+        } elseif ($action === 'type_delete') {
+            [$done, $err] = category_type_delete((int)post('type_id'));
+            flash_set($done ? 'success' : 'error', $done ? 'Subcategory removed.' : $err);
+
+        } elseif ($action === 'type_seed') {
+            $n = category_types_seed();
+            flash_set($n ? 'success' : 'error', $n
+                ? 'Planted ' . $n . ' subcategories from the built-in list.'
+                : 'Nothing to plant — they are already there, or the table is missing.');
         }
-        redirect('/superadmin/categories');
+        redirect('/superadmin/categories' . (post('open') !== '' ? '#cat-' . post('open') : ''));
     }
+
+    // First visit after the upgrade SQL: the table is there and empty, so fill
+    // it from the list that used to be compiled in. Doing it here rather than
+    // in the SQL keeps one copy of those hundred and eight rows, in PHP, where
+    // it is also the fallback for a site that has not upgraded yet.
+    if (category_types_ready() && !(int)scalar('SELECT COUNT(*) FROM category_types')) category_types_seed();
+
     $list = rows('SELECT c.*, (SELECT COUNT(*) FROM businesses WHERE category_id = c.id) AS in_use FROM categories c ORDER BY c.label');
-    view_raw('admin/categories', compact('meta', 'u', 'list'));
+    $subs = category_types_grouped();
+    $editing = (string)($_GET['edit'] ?? '');
+    $editType = (int)($_GET['type'] ?? 0);
+    view_raw('admin/categories', compact('meta', 'u', 'list', 'subs', 'editing', 'editType'));
 
 } elseif ($sub === 'admins') {
     require_superadmin();

@@ -349,6 +349,43 @@ SELECT u.id, u.website,
 
 
 -- ===========================================================================
+-- Subcategories — the trades under a category, and the Schema.org type each
+-- one tells Google it is.
+-- ===========================================================================
+
+-- These lived in PHP as a hard-coded list, which meant adding "Locksmith"
+-- needed a code change and an upload. Now they are rows.
+--   schema_type — a real Schema.org LocalBusiness subtype, or empty. This one
+--                 is not free text: it is published in the JSON-LD, and a name
+--                 Schema.org does not define is markup Google discards. Empty
+--                 is always safe and means the listing is a plain LocalBusiness,
+--                 which is what to use when no type fits.
+--   label       — what people read. Yours to word however you like.
+--   sort        — hand ordering within a category; ties fall back to label.
+-- The unique key is (category_id, label): the same trade can sit under two
+-- categories, and two Schema types can share a category, but one category
+-- listing "Plumber" twice is a mistake every time.
+CREATE TABLE IF NOT EXISTS category_types (
+  id          INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  category_id VARCHAR(40) NOT NULL,
+  schema_type VARCHAR(60) NOT NULL DEFAULT '',
+  label       VARCHAR(120) NOT NULL,
+  sort        INT NOT NULL DEFAULT 0,
+  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY u_cat_label (category_id, label),
+  KEY k_cat (category_id, sort, label),
+  KEY k_type (schema_type)
+-- Spelled out to match `categories`.`id`, which this is compared against.
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- The 108 that were in the code are seeded by PHP rather than listed here:
+-- app/lib/seo.php holds them as schema_types_builtin(), and the Categories page
+-- plants them the first time it finds this table empty. One copy of the list,
+-- and it stays the fallback for a site that has not run this file yet.
+
+
+-- ===========================================================================
 -- v7 + v8 — token economics. All of it editable later in Superadmin -> Settings,
 -- so these are starting values: "value = value" means a setting you have
 -- already changed is left exactly as you set it.
@@ -455,6 +492,7 @@ UNION ALL SELECT 'businesses.profile',      IF(COUNT(*) > 0, 'OK', 'MISSING') FR
 UNION ALL SELECT 'businesses.business_type',IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'business_type'
 UNION ALL SELECT 'businesses.postcode',     IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'postcode'
 UNION ALL SELECT 'intake_domains table',    IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'intake_domains'
+UNION ALL SELECT 'category_types table',    IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'category_types'
 UNION ALL SELECT 'member_tasks table',      IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'member_tasks'
 UNION ALL SELECT 'users.plan_renews_on',    IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'      AND COLUMN_NAME = 'plan_renews_on'
 UNION ALL SELECT 'users.plan_comped',       IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'      AND COLUMN_NAME = 'plan_comped';

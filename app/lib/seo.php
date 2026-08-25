@@ -18,7 +18,7 @@
  * shelf a listing sits on, the type says what the business actually is, and
  * only the second one is a thing Google already understands.
  */
-function schema_types(): array
+function schema_types_builtin(): array
 {
     return [
         'auto' => [
@@ -164,6 +164,68 @@ function schema_types(): array
     ];
 }
 
+/** Is the editable subcategory table there? Same rule as tokens and intake. */
+function category_types_ready(): bool
+{
+    static $ok = null;
+    if ($ok === null) $ok = table_exists('category_types');
+    return $ok;
+}
+
+/**
+ * The live list: whatever is in category_types, or the built-in one.
+ *
+ * The fallback is the point of keeping schema_types_builtin() around. A site
+ * that has not run database/upgrade-all.sql yet has no table to read, and the
+ * listing forms still need their type list — so it degrades to the hundred and
+ * eight that used to be compiled in, exactly as before, rather than offering an
+ * empty dropdown.
+ *
+ * An empty table is treated the same as a missing one. That is deliberate: it
+ * makes "delete the lot and start again" a thing you can do without the forms
+ * going blank, and the Categories page offers to re-seed from here.
+ */
+function schema_types(): array
+{
+    static $live = null;
+    if ($live !== null) return $live;
+
+    if (!category_types_ready()) return $live = schema_types_builtin();
+
+    $out = [];
+    foreach (rows('SELECT category_id, schema_type, label FROM category_types ORDER BY category_id, sort, label') as $r) {
+        // The key is the Schema.org type, which is what a listing stores. Rows
+        // with no type are keyed by label instead, so a subcategory that maps
+        // to nothing Schema.org knows about is still selectable — it just ends
+        // up as a plain LocalBusiness in the markup, which is honest.
+        $key = $r['schema_type'] !== '' ? $r['schema_type'] : 'x-' . slugify($r['label']);
+        $out[$r['category_id']][$key] = $r['label'];
+    }
+    return $live = ($out ?: schema_types_builtin());
+}
+
+/**
+ * Types the picker may offer, as type => label.
+ *
+ * The catalogue is the built-in list, because every name in it is a real
+ * Schema.org type that has been checked. Inventing one here would put a name
+ * into the JSON-LD that Schema.org does not define, and a search engine that
+ * cannot resolve an @type discards the block rather than guessing — so a
+ * subcategory with no matching type is better off with none at all.
+ */
+function schema_type_catalog(): array
+{
+    static $flat = null;
+    if ($flat === null) {
+        $flat = [];
+        foreach (schema_types_builtin() as $group) {
+            foreach ($group as $type => $label) $flat[$type] = $label;
+        }
+        asort($flat, SORT_NATURAL | SORT_FLAG_CASE);
+    }
+    return $flat;
+}
+
 /** Every valid type, flattened. A type may appear under several categories. */
 function schema_type_labels(): array
 {
@@ -177,15 +239,31 @@ function schema_type_labels(): array
     return $flat;
 }
 
+/**
+ * Is this a type we are willing to publish?
+ *
+ * Checked against the catalogue of real Schema.org names, not against whatever
+ * is in the table. A subcategory keyed "x-something" is a real choice on the
+ * form and a real thing to browse by, but it is not a Schema.org type, so it
+ * must not reach the markup — business_schema_type() turns it into
+ * LocalBusiness instead.
+ */
 function schema_type_valid(?string $type): bool
 {
-    return $type !== null && $type !== '' && isset(schema_type_labels()[$type]);
+    return $type !== null && $type !== '' && isset(schema_type_catalog()[$type]);
 }
 
-/** The human name for a stored type, or '' when there is not one. */
+/**
+ * The human name for a stored type, or '' when there is not one.
+ *
+ * Reads the live list first, so renaming a subcategory renames it everywhere it
+ * is shown; falls back to the catalogue for a type no longer listed, which
+ * still deserves its proper name on the listings that already have it.
+ */
 function schema_type_label(?string $type): string
 {
-    return schema_type_valid($type) ? schema_type_labels()[$type] : '';
+    if ($type === null || $type === '') return '';
+    return schema_type_labels()[$type] ?? (schema_type_catalog()[$type] ?? '');
 }
 
 /**
@@ -340,4 +418,126 @@ function render_jsonld(array $blocks): void
            . json_encode($b, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
            . '</script>' . "\n";
     }
+}
+
+// ---------------------------------------------------------------------------
+// Editing the subcategories. Everything below is the staff Categories page
+// talking to category_types; nothing public reads it.
+// ---------------------------------------------------------------------------
+
+/** Every subcategory with its category and how many listings use it. */
+function category_type_rows(?string $categoryId = null): array
+{
+    if (!category_types_ready()) return [];
+    $sql = 'SELECT t.*, (SELECT COUNT(*) FROM businesses b WHERE b.business_type = t.schema_type
+                          AND t.schema_type <> "") AS in_use
+              FROM category_types t';
+    $args = [];
+    if ($categoryId !== null) { $sql .= ' WHERE t.category_id = ?'; $args[] = $categoryId; }
+    return rows($sql . ' ORDER BY t.category_id, t.sort, t.label', $args);
+}
+
+/** The same, grouped by category id, for a page that draws them in nests. */
+function category_types_grouped(): array
+{
+    $out = [];
+    foreach (category_type_rows() as $r) $out[$r['category_id']][] = $r;
+    return $out;
+}
+
+/**
+ * Plant the built-in list, once.
+ *
+ * Runs when the table exists and is empty, which is the state a site is in the
+ * moment the upgrade SQL has been run and before anybody has touched this page.
+ * INSERT IGNORE rather than a count check inside the loop: the unique key on
+ * (category_id, label) already says what may not happen twice, so a second run
+ * changes nothing.
+ *
+ * Skips a category the site does not have. The built-in list names our sixteen;
+ * a site that deleted one should not have it silently rebuilt as a dangling
+ * subcategory pointing at a category that is not there.
+ */
+function category_types_seed(): int
+{
+    if (!category_types_ready()) return 0;
+
+    $have = [];
+    foreach (rows('SELECT id FROM categories') as $c) $have[$c['id']] = true;
+
+    $n = 0;
+    foreach (schema_types_builtin() as $catId => $types) {
+        if (!isset($have[$catId])) continue;
+        $sort = 0;
+        foreach ($types as $type => $label) {
+            q('INSERT IGNORE INTO category_types (category_id, schema_type, label, sort) VALUES (?,?,?,?)',
+              [$catId, $type, $label, $sort += 10]);
+            $n += db()->lastInsertId() ? 1 : 0;
+        }
+    }
+    return $n;
+}
+
+/**
+ * Add or change one subcategory. Returns [id, error].
+ *
+ * The Schema.org type is checked against the catalogue rather than trusted,
+ * because this is the field that ends up in the JSON-LD. Empty is allowed and
+ * means "no type" — the listing stays a plain LocalBusiness, which is true of
+ * every listing here and therefore never wrong.
+ */
+function category_type_save(int $id, string $categoryId, string $schemaType, string $label, int $sort): array
+{
+    if (!category_types_ready()) return [0, 'Subcategories are not installed — run database/upgrade-all.sql.'];
+
+    $label = trim(preg_replace('/\s+/u', ' ', $label));
+    if ($label === '') return [0, 'Give the subcategory a name.'];
+    $label = mb_substr($label, 0, 120);
+
+    if (!category_by_id($categoryId)) return [0, 'No such category.'];
+    if ($schemaType !== '' && !schema_type_valid($schemaType)) {
+        return [0, '"' . $schemaType . '" is not a Schema.org business type. Leave it blank if none fits.'];
+    }
+
+    $clash = row('SELECT id FROM category_types WHERE category_id = ? AND label = ? AND id <> ?',
+                 [$categoryId, $label, $id]);
+    if ($clash) return [0, '"' . $label . '" is already under that category.'];
+
+    if ($id) {
+        q('UPDATE category_types SET category_id=?, schema_type=?, label=?, sort=? WHERE id=?',
+          [$categoryId, $schemaType, $label, $sort, $id]);
+        return [$id, ''];
+    }
+    q('INSERT INTO category_types (category_id, schema_type, label, sort) VALUES (?,?,?,?)',
+      [$categoryId, $schemaType, $label, $sort]);
+    return [(int)db()->lastInsertId(), ''];
+}
+
+/**
+ * Remove a subcategory. Refused while listings still claim its type.
+ *
+ * Deleting it would not clear businesses.business_type, so those listings would
+ * keep publishing a type with nothing on this page explaining it. Say the
+ * number instead and let staff decide.
+ */
+function category_type_delete(int $id): array
+{
+    if (!category_types_ready()) return [false, 'Subcategories are not installed.'];
+    $t = row('SELECT * FROM category_types WHERE id = ?', [$id]);
+    if (!$t) return [false, 'No such subcategory.'];
+
+    if ($t['schema_type'] !== '') {
+        $inUse = (int)scalar('SELECT COUNT(*) FROM businesses WHERE business_type = ?', [$t['schema_type']]);
+        // Only blocks when this is the last row offering that type: the same
+        // Schema.org type can sit under two categories, and removing one of
+        // them leaves the listings a home.
+        $others = (int)scalar('SELECT COUNT(*) FROM category_types WHERE schema_type = ? AND id <> ?',
+                              [$t['schema_type'], $id]);
+        if ($inUse > 0 && $others === 0) {
+            return [false, 'Cannot delete — ' . $inUse . ' listing' . ($inUse === 1 ? '' : 's')
+                         . ' still set to "' . $t['label'] . '". Change those first.'];
+        }
+    }
+    q('DELETE FROM category_types WHERE id = ?', [$id]);
+    return [true, ''];
 }
