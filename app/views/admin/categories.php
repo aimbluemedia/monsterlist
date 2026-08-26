@@ -140,10 +140,16 @@
       <h3>Subcategories</h3>
       <p class="mute ed-note">Open a category on the left to see and edit the trades under it.
         Each one can carry a <strong>Schema.org type</strong>, which is what tells Google the
-        business is a plumber rather than a business. The list of types is fixed — they are
-        names Schema.org defines, and one it does not know is markup a search engine throws
-        away. When none fits, leave it blank: the listing stays a plain LocalBusiness, which
-        is true of every listing here.</p>
+        business is a plumber rather than a business.</p>
+      <p class="mute ed-note"><strong>The name picks the type for you.</strong> Call a subcategory
+        "Locksmith" or "Hair salon" and the matching type is filled in on save — rename it and the
+        type follows. Choose one yourself and that choice sticks, renames included, because a type
+        that disagrees with its name was somebody's decision rather than a guess. Clearing it by
+        hand sticks the same way: nothing will quietly put a type back.</p>
+      <p class="mute ed-note">The list of types is fixed at <?= count(schema_type_catalog()) ?> —
+        they are names Schema.org defines, and one it does not know is markup a search engine
+        throws away rather than a worse rich result. When none fits, leave it blank: the listing
+        stays a plain LocalBusiness, which is true of every listing here.</p>
       <form method="post" style="margin-top:10px"><?= csrf_field() ?>
         <input type="hidden" name="action" value="type_seed">
         <button class="btn btn-sm btn-ghost"

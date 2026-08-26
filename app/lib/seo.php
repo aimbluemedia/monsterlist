@@ -205,25 +205,170 @@ function schema_types(): array
 }
 
 /**
- * Types the picker may offer, as type => label.
+ * Every Schema.org type a subcategory may claim, as type => label.
  *
- * The catalogue is the built-in list, because every name in it is a real
- * Schema.org type that has been checked. Inventing one here would put a name
- * into the JSON-LD that Schema.org does not define, and a search engine that
- * cannot resolve an @type discards the block rather than guessing — so a
- * subcategory with no matching type is better off with none at all.
+ * This is a closed vocabulary, and that is the whole point of it being a list
+ * rather than a text box. @type is not a label: a search engine resolves it
+ * against schema.org and, finding nothing, discards the block rather than
+ * guessing. So a made-up name does not give you a worse rich result, it gives
+ * you none — silently, with the page still looking perfectly fine.
+ *
+ * Which is also why nothing here is derived from a category name by machine.
+ * "Real Estate Broker" would CamelCase into RealEstateBroker, which looks
+ * exactly right and is not a type schema.org defines. Plausible-and-wrong is
+ * worse than absent, because nobody goes back to check it.
+ *
+ * Everything below is a real type in the LocalBusiness branch (plus the school
+ * types, which are Organization but are what a school should publish). Where a
+ * trade has no type of its own, the honest answer is no type at all: the
+ * listing stays a LocalBusiness, which is true of every listing here.
  */
 function schema_type_catalog(): array
 {
-    static $flat = null;
-    if ($flat === null) {
-        $flat = [];
-        foreach (schema_types_builtin() as $group) {
-            foreach ($group as $type => $label) $flat[$type] = $label;
+    static $cat = null;
+    if ($cat !== null) return $cat;
+
+    $cat = [
+        // Motor trade
+        'AutomotiveBusiness' => 'Automotive business (general)',
+        'AutoBodyShop' => 'Auto body shop', 'AutoDealer' => 'Car dealership',
+        'AutoPartsStore' => 'Auto parts store', 'AutoRental' => 'Car rental',
+        'AutoRepair' => 'Auto repair shop', 'AutoWash' => 'Car wash',
+        'GasStation' => 'Petrol / gas station', 'MotorcycleDealer' => 'Motorcycle dealer',
+        'MotorcycleRepair' => 'Motorcycle repair', 'TireShop' => 'Tyre shop',
+
+        // Health & beauty
+        'HealthAndBeautyBusiness' => 'Health & beauty (general)',
+        'BeautySalon' => 'Beauty salon', 'DaySpa' => 'Day spa', 'HairSalon' => 'Hair salon',
+        'NailSalon' => 'Nail salon', 'TattooParlor' => 'Tattoo studio',
+
+        // Schools
+        'Preschool' => 'Preschool / nursery', 'School' => 'School',
+        'ElementarySchool' => 'Primary / elementary school', 'MiddleSchool' => 'Middle school',
+        'HighSchool' => 'Secondary / high school', 'CollegeOrUniversity' => 'College or university',
+        'ChildCare' => 'Childcare / nursery', 'Library' => 'Library',
+
+        // Emergency & public
+        'EmergencyService' => 'Emergency service', 'FireStation' => 'Fire station',
+        'PoliceStation' => 'Police station', 'Hospital' => 'Hospital',
+        'GovernmentOffice' => 'Government office', 'PostOffice' => 'Post office',
+        'RecyclingCenter' => 'Recycling centre', 'AnimalShelter' => 'Animal shelter',
+        'ArchiveOrganization' => 'Archive',
+
+        // Going out
+        'EntertainmentBusiness' => 'Entertainment (general)',
+        'AdultEntertainment' => 'Adult entertainment', 'AmusementPark' => 'Amusement park',
+        'ArtGallery' => 'Art gallery', 'Casino' => 'Casino', 'ComedyClub' => 'Comedy club',
+        'MovieTheater' => 'Cinema / movie theater', 'NightClub' => 'Nightclub',
+
+        // Money
+        'FinancialService' => 'Financial service (general)',
+        'AccountingService' => 'Accountant', 'AutomatedTeller' => 'Cash machine / ATM',
+        'BankOrCreditUnion' => 'Bank or credit union', 'InsuranceAgency' => 'Insurance agency',
+
+        // Food & drink
+        'FoodEstablishment' => 'Food business (general)', 'Bakery' => 'Bakery',
+        'BarOrPub' => 'Bar or pub', 'Brewery' => 'Brewery',
+        'CafeOrCoffeeShop' => 'Cafe / coffee shop', 'Distillery' => 'Distillery',
+        'FastFoodRestaurant' => 'Fast food', 'IceCreamShop' => 'Ice cream shop',
+        'Restaurant' => 'Restaurant', 'Winery' => 'Winery',
+
+        // Trades
+        'HomeAndConstructionBusiness' => 'Home & construction (general)',
+        'Electrician' => 'Electrician', 'GeneralContractor' => 'General contractor',
+        'HVACBusiness' => 'Heating & air conditioning', 'HousePainter' => 'Painter & decorator',
+        'Locksmith' => 'Locksmith', 'MovingCompany' => 'Removals / moving company',
+        'Plumber' => 'Plumber', 'RoofingContractor' => 'Roofer',
+
+        // Law
+        'LegalService' => 'Legal service (general)', 'Attorney' => 'Solicitor / attorney',
+        'Notary' => 'Notary',
+
+        // Staying
+        'LodgingBusiness' => 'Accommodation (general)', 'BedAndBreakfast' => 'B&B',
+        'Campground' => 'Campsite', 'Hostel' => 'Hostel', 'Hotel' => 'Hotel',
+        'Motel' => 'Motel', 'Resort' => 'Resort',
+
+        // Health
+        'MedicalBusiness' => 'Health practice (general)', 'Dentist' => 'Dentist',
+        'CommunityHealth' => 'Community health', 'Dermatology' => 'Dermatology',
+        'DietNutrition' => 'Dietitian / nutrition', 'Geriatric' => 'Geriatrics',
+        'Gynecologic' => 'Gynaecology', 'MedicalClinic' => 'Medical clinic',
+        'Midwifery' => 'Midwifery', 'Nursing' => 'Nursing', 'Obstetric' => 'Obstetrics',
+        'Oncologic' => 'Oncology', 'Optician' => 'Optician', 'Optometric' => 'Optometrist',
+        'Otolaryngologic' => 'ENT', 'Pediatric' => 'Paediatrics', 'Pharmacy' => 'Pharmacy',
+        'Physician' => 'Doctor / physician', 'Physiotherapy' => 'Physiotherapy',
+        'PlasticSurgery' => 'Plastic surgery', 'Podiatric' => 'Podiatry / chiropody',
+        'PrimaryCare' => 'GP / primary care', 'Psychiatric' => 'Mental health practice',
+        'PublicHealth' => 'Public health', 'VeterinaryCare' => 'Vet',
+
+        // Services
+        'ProfessionalService' => 'Professional service (general)',
+        'EmploymentAgency' => 'Recruitment agency', 'TravelAgency' => 'Travel agency',
+        'DryCleaningOrLaundry' => 'Dry cleaner / laundry', 'SelfStorage' => 'Self storage',
+        'InternetCafe' => 'Internet cafe', 'RealEstateAgent' => 'Estate agent / realtor',
+        'TouristInformationCenter' => 'Tourist information',
+        'RadioStation' => 'Radio station', 'TelevisionStation' => 'Television station',
+
+        // Sport & fitness
+        'SportsActivityLocation' => 'Sports venue (general)', 'BowlingAlley' => 'Bowling alley',
+        'ExerciseGym' => 'Gym', 'GolfCourse' => 'Golf course', 'HealthClub' => 'Health club',
+        'PublicSwimmingPool' => 'Swimming pool', 'SkiResort' => 'Ski resort',
+        'SportsClub' => 'Sports club', 'StadiumOrArena' => 'Stadium or arena',
+        'TennisComplex' => 'Tennis centre',
+
+        // Shops
+        'Store' => 'Shop (general)', 'BikeStore' => 'Bike shop', 'BookStore' => 'Bookshop',
+        'ClothingStore' => 'Clothes shop', 'ComputerStore' => 'Computer shop',
+        'ConvenienceStore' => 'Convenience store', 'DepartmentStore' => 'Department store',
+        'ElectronicsStore' => 'Electronics shop', 'Florist' => 'Florist',
+        'FurnitureStore' => 'Furniture shop', 'GardenStore' => 'Garden centre',
+        'GroceryStore' => 'Grocery shop', 'HardwareStore' => 'Hardware / DIY shop',
+        'HobbyShop' => 'Hobby shop', 'HomeGoodsStore' => 'Homeware shop',
+        'JewelryStore' => 'Jeweller', 'LiquorStore' => 'Off licence / liquor store',
+        'MensClothingStore' => "Men's clothing", 'MobilePhoneStore' => 'Mobile phone shop',
+        'MovieRentalStore' => 'Video rental', 'MusicStore' => 'Music shop',
+        'OfficeEquipmentStore' => 'Office supplies', 'OutletStore' => 'Outlet shop',
+        'PawnShop' => 'Pawnbroker', 'PetStore' => 'Pet shop', 'ShoeStore' => 'Shoe shop',
+        'ShoppingCenter' => 'Shopping centre', 'SportingGoodsStore' => 'Sports shop',
+        'ToyStore' => 'Toy shop', 'WholesaleStore' => 'Wholesaler',
+    ];
+    asort($cat, SORT_NATURAL | SORT_FLAG_CASE);
+    return $cat;
+}
+
+/**
+ * The type a subcategory name points at, or '' when nothing does.
+ *
+ * Matches the name against both the type names and their labels, ignoring case,
+ * spaces and punctuation — so "Hair salon", "hair-salon" and "HairSalon" all
+ * land on HairSalon. It only ever returns something already in the catalogue,
+ * which is what stops it inventing one.
+ *
+ * A name that describes rather than names a trade — "Plumbing (emergency)",
+ * "Marketing / media agency" — matches nothing, and that is the right answer:
+ * those are the ones a person should look at.
+ */
+function schema_type_guess(string $name): string
+{
+    static $index = null;
+    if ($index === null) {
+        $index = [];
+        foreach (schema_type_catalog() as $type => $label) {
+            // Types first, then labels, and neither overwrites an earlier key —
+            // so an exact type name always wins over somebody else's label.
+            $index[schema_name_key($type)]  = $index[schema_name_key($type)] ?? $type;
+            $index[schema_name_key($label)] = $index[schema_name_key($label)] ?? $type;
         }
-        asort($flat, SORT_NATURAL | SORT_FLAG_CASE);
     }
-    return $flat;
+    $key = schema_name_key($name);
+    return $key === '' ? '' : ($index[$key] ?? '');
+}
+
+/** Down to letters and digits, so spelling variations meet in the middle. */
+function schema_name_key(string $s): string
+{
+    return strtolower(preg_replace('/[^a-z0-9]/i', '', $s));
 }
 
 /** Every valid type, flattened. A type may appear under several categories. */
@@ -486,8 +631,10 @@ function category_types_seed(): int
  * means "no type" — the listing stays a plain LocalBusiness, which is true of
  * every listing here and therefore never wrong.
  */
-function category_type_save(int $id, string $categoryId, string $schemaType, string $label, int $sort): array
+function category_type_save(int $id, string $categoryId, string $schemaType, string $label, int $sort,
+                            ?string &$note = null): array
 {
+    $note = null;
     if (!category_types_ready()) return [0, 'Subcategories are not installed — run database/upgrade-all.sql.'];
 
     $label = trim(preg_replace('/\s+/u', ' ', $label));
@@ -502,6 +649,30 @@ function category_type_save(int $id, string $categoryId, string $schemaType, str
     $clash = row('SELECT id FROM category_types WHERE category_id = ? AND label = ? AND id <> ?',
                  [$categoryId, $label, $id]);
     if ($clash) return [0, '"' . $label . '" is already under that category.'];
+
+    $was = $id ? row('SELECT * FROM category_types WHERE id = ?', [$id]) : null;
+
+    // The name picks the type, unless a person has picked one themselves.
+    //
+    // Two cases get it: a new subcategory with nothing chosen, and a rename
+    // whose old type was the one the old name would have given anyway — that
+    // one was the machine's guess, so the machine may revise it. A type that
+    // disagreed with its name was somebody's decision, and renaming is not the
+    // moment to overrule it.
+    //
+    // Changing the dropdown in the same save always wins: that is a person
+    // saying which one they want, in the clearest way the form allows.
+    $typeTouched = $was && $schemaType !== (string)$was['schema_type'];
+    $renamed     = $was && $label !== (string)$was['label'];
+    $wasGuess    = $was && (string)$was['schema_type'] === schema_type_guess((string)$was['label']);
+
+    if (!$typeTouched && ($was === null ? $schemaType === '' : ($renamed && $wasGuess))) {
+        $guess = schema_type_guess($label);
+        if ($guess !== '' && $guess !== $schemaType) {
+            $note = 'Matched "' . $label . '" to ' . $guess . ' (' . schema_type_catalog()[$guess] . ').';
+            $schemaType = $guess;
+        }
+    }
 
     if ($id) {
         q('UPDATE category_types SET category_id=?, schema_type=?, label=?, sort=? WHERE id=?',

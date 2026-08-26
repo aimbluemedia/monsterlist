@@ -852,11 +852,14 @@ if ($sub === 'dashboard') {
             }
 
         } elseif ($action === 'type_save') {
+            $note = null;
             [$id, $err] = category_type_save((int)post('type_id'), (string)post('category_id'),
                                              (string)post('schema_type'), (string)post('label'),
-                                             (int)post('sort'));
+                                             (int)post('sort'), $note);
+            // Say when the name chose the type, because it is the one thing on
+            // this form that changed without being typed.
             flash_set($id ? 'success' : 'error',
-                      $id ? 'Saved "' . post('label') . '".' : $err);
+                      $id ? 'Saved "' . post('label') . '".' . ($note ? ' ' . $note : '') : $err);
 
         } elseif ($action === 'type_delete') {
             [$done, $err] = category_type_delete((int)post('type_id'));
