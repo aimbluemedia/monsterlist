@@ -47,10 +47,10 @@
             <br><small class="faint"><?= e($b['email']) ?></small>
           <?php endif; ?>
         </td>
-        <td><?php if (!empty($b['website'])): ?>
-          <?php $host = preg_replace('#^(?:[a-z][a-z0-9+.-]*://)?(?:www\.)?#i', '', rtrim((string)$b['website'], '/')); ?>
-          <small class="trunc" title="<?= e($b['website']) ?>"><?= e($host) ?></small>
-        <?php else: ?>—<?php endif; ?></td>
+        <td><?php $host = display_host($b['website']); ?>
+          <?php if ($host !== ''): ?>
+            <small class="trunc" title="<?= e($b['website']) ?>"><?= e($host) ?></small>
+          <?php else: ?>—<?php endif; ?></td>
         <td><?= e(ucfirst($b['tier'])) ?></td>
         <td><span class="badge badge-<?= e($b['status']) ?>"><?= e($b['status']) ?></span></td>
         <td style="white-space:nowrap">

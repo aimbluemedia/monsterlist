@@ -7,7 +7,7 @@
 <title><?= e($meta['title']) ?></title>
 <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/style.css">
+<link rel="stylesheet" href="<?= e(asset('/assets/css/style.css')) ?>">
 <style>
   body{background:#14161c;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}
   .admin-login{width:100%;max-width:400px;padding:36px;background:#1c1f27;border:1px solid #2c303b;border-radius:16px;color:#e8eaf0}

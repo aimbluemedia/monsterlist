@@ -240,6 +240,35 @@ function client_ip(): string
 }
 
 /** Basic URL validation for member-supplied links. */
+/**
+ * An asset URL that changes when the release does.
+ *
+ * Without this every release shipped new CSS at the same address, so a browser
+ * that had the old one kept using it — and the symptom is the worst kind:
+ * current HTML styled by stale rules, which does not look like a caching
+ * problem, it looks like the layout is broken. Appending the build number
+ * means a new release is a new URL and the question never comes up.
+ */
+function asset(string $path): string
+{
+    return $path . '?v=' . (defined('ML_BUILD') ? ML_BUILD : '1');
+}
+
+/**
+ * A website address as a person would say it: no scheme, no www, no trailing
+ * slash. "https://www.bluepeake.com/" becomes "bluepeake.com".
+ *
+ * Returns '' for anything that is not a usable address, so a caller can fall
+ * back to a name rather than printing an empty gap.
+ */
+function display_host(?string $url): string
+{
+    $url = trim((string)$url);
+    if ($url === '') return '';
+    $host = preg_replace('#^(?:[a-z][a-z0-9+.-]*://)?(?:www\.)?#i', '', rtrim($url, '/'));
+    return (string)$host;
+}
+
 function clean_url(string $url): ?string
 {
     $url = trim($url);

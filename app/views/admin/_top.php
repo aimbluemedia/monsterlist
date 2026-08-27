@@ -27,7 +27,7 @@ $saNav = [
 <title><?= e($meta['title'] ?? 'Admin') ?></title>
 <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/style.css">
+<link rel="stylesheet" href="<?= e(asset('/assets/css/style.css')) ?>">
 </head>
 <body class="sa-body">
 <div class="sa-shell">

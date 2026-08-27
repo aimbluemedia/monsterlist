@@ -29,8 +29,13 @@ $listUrl    = e(listings_url($back, $_GET['q'] ?? ''));
 ?>
 <div class="lbar">
   <div class="lbar-top">
+    <?php // The domain, not the trading name. Two listings called "BluePeake"
+          // are told apart by their website and by nothing else, and the name
+          // is in the first field of the form ten lines below anyway. Falls
+          // back to the name when there is no website to show. ?>
+    <?php $barTitle = display_host($biz['website']) ?: $biz['name']; ?>
     <div class="lbar-id">
-      <strong><?= e($biz['name']) ?></strong>
+      <strong class="lbar-name" title="<?= e($biz['name']) ?>"><?= e($barTitle) ?></strong>
       <span class="badge badge-<?= e($biz['status']) ?>"><?= e($biz['status']) ?></span>
       <?php if ($biz['verified']): ?><span class="badge badge-verified">✓ verified</span><?php endif; ?>
       <span class="badge badge-<?= $biz['tier'] === 'free' ? 'pending' : ($biz['tier'] === 'pro' ? 'pro' : 'featured') ?>"><?= e(ucfirst($biz['tier'])) ?></span>

@@ -32,6 +32,6 @@
     <span>© <?= date('Y') ?> <?= e(setting('site_name')) ?>. All rights reserved.</span>
   </div>
 </footer>
-<script src="/assets/js/app.js" defer></script>
+<script src="<?= e(asset('/assets/js/app.js')) ?>" defer></script>
 </body>
 </html>
