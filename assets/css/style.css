@@ -1277,8 +1277,13 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 .lbar-id strong{font-size:1.1rem}
 .lbar-acts{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .lbar-acts form{margin:0}
-.lbar-acts .btn{background:#fff}
-.lbar-acts .intake-approve,.lbar-acts .btn-danger,.lbar-acts .btn-primary{background:''}
+/* Only the outline buttons get a white fill, so they read against the tint.
+   This said `.btn{background:#fff}` with a second rule meant to un-set it for
+   the coloured ones — but `background:''` is not valid CSS, so it was dropped
+   and View storefront and Delete were painted white on white: still there,
+   still clickable, completely invisible. Scope the fill instead of trying to
+   take it back. */
+.lbar-acts .btn-ghost{background:#fff}
 .lbar-off{opacity:.5;cursor:not-allowed}
 
 /* owner strip: the token counter, then who they are and the two controls */
