@@ -54,15 +54,11 @@
         <td><?= e(ucfirst($b['tier'])) ?></td>
         <td><span class="badge badge-<?= e($b['status']) ?>"><?= e($b['status']) ?></span></td>
         <td style="white-space:nowrap">
+          <?php // One button. Approve, Reject, Verify and Delete moved to the
+                // top of the edit page: they are decisions about a listing, and
+                // taking one from a table row means taking it without having
+                // looked at the listing. ?>
           <a class="btn btn-sm btn-ghost" href="/superadmin/listings/edit?id=<?= (int)$b['id'] ?>&back=<?= e($status) ?>&q=<?= e($term) ?>">Edit</a>
-          <?php if ($b['status'] !== 'live'): ?>
-          <form method="post" style="display:inline"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int)$b['id'] ?>"><input type="hidden" name="action" value="approve"><input type="hidden" name="back" value="<?= e($status) ?>"><input type="hidden" name="q" value="<?= e($term) ?>"><button class="btn btn-sm btn-primary">Approve</button></form>
-          <?php endif; ?>
-          <?php if ($b['status'] !== 'rejected'): ?>
-          <form method="post" style="display:inline"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int)$b['id'] ?>"><input type="hidden" name="action" value="reject"><input type="hidden" name="back" value="<?= e($status) ?>"><input type="hidden" name="q" value="<?= e($term) ?>"><button class="btn btn-sm btn-ghost">Reject</button></form>
-          <?php endif; ?>
-          <form method="post" style="display:inline"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int)$b['id'] ?>"><input type="hidden" name="action" value="verify"><input type="hidden" name="back" value="<?= e($status) ?>"><input type="hidden" name="q" value="<?= e($term) ?>"><button class="btn btn-sm btn-ghost">✓ Verify</button></form>
-          <form method="post" style="display:inline"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int)$b['id'] ?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="back" value="<?= e($status) ?>"><input type="hidden" name="q" value="<?= e($term) ?>"><button class="btn btn-sm btn-danger" data-confirm="Delete this listing permanently?">Delete</button></form>
         </td>
       </tr>
     <?php endforeach; ?>

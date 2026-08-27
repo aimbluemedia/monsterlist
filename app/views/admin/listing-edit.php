@@ -20,6 +20,92 @@ $listUrl    = e(listings_url($back, $_GET['q'] ?? ''));
 </div>
 <?php foreach ($errors as $er): ?><div class="flash flash-error"><?= e($er) ?></div><?php endforeach; ?>
 
+<?php // Everything that used to be a button in the listings table, plus the two
+      // owner controls that used to be on the member page. It sits above the
+      // form and outside it: these are separate decisions, taken with one press,
+      // and none of them should be able to ride along with Save changes.
+      $storefront = $biz['status'] === 'live' && $biz['city_id'] ? business_url_by_id((int)$biz['id']) : null;
+      $ownerTokens = ($owner && tokens_ready()) ? (int)$owner['token_balance'] : null;
+?>
+<div class="lbar">
+  <div class="lbar-top">
+    <div class="lbar-id">
+      <strong><?= e($biz['name']) ?></strong>
+      <span class="badge badge-<?= e($biz['status']) ?>"><?= e($biz['status']) ?></span>
+      <?php if ($biz['verified']): ?><span class="badge badge-verified">✓ verified</span><?php endif; ?>
+      <span class="badge badge-<?= $biz['tier'] === 'free' ? 'pending' : ($biz['tier'] === 'pro' ? 'pro' : 'featured') ?>"><?= e(ucfirst($biz['tier'])) ?></span>
+    </div>
+    <div class="lbar-acts">
+      <?php if ($storefront): ?>
+        <a class="btn btn-sm btn-primary" href="<?= e($storefront) ?>" target="_blank" rel="noopener noreferrer">View storefront</a>
+      <?php else: ?>
+        <span class="btn btn-sm btn-ghost lbar-off" title="<?= $biz['city_id'] ? 'Not live yet' : 'No city set yet' ?>">View storefront</span>
+      <?php endif; ?>
+      <?php if ($biz['status'] !== 'live'): ?>
+        <form method="post"><?= csrf_field() ?><input type="hidden" name="bar" value="approve">
+          <button class="btn btn-sm intake-approve" data-confirm="Put &quot;<?= e($biz['name']) ?>&quot; live?">Approve</button></form>
+      <?php endif; ?>
+      <?php if ($biz['status'] !== 'rejected'): ?>
+        <form method="post"><?= csrf_field() ?><input type="hidden" name="bar" value="reject">
+          <button class="btn btn-sm btn-ghost" data-confirm="Reject &quot;<?= e($biz['name']) ?>&quot;? This also blocks the owner's email and domain.">Reject</button></form>
+      <?php endif; ?>
+      <form method="post"><?= csrf_field() ?><input type="hidden" name="bar" value="verify">
+        <button class="btn btn-sm btn-ghost"><?= $biz['verified'] ? 'Un-verify' : '✓ Verify' ?></button></form>
+      <form method="post"><?= csrf_field() ?><input type="hidden" name="bar" value="delete">
+        <button class="btn btn-sm btn-danger" data-confirm="Delete &quot;<?= e($biz['name']) ?>&quot; permanently? This cannot be undone.">Delete</button></form>
+    </div>
+  </div>
+
+  <?php if ($owner): ?>
+    <div class="lbar-owner">
+      <?php if ($ownerTokens !== null): ?>
+        <?php // The counter, big, because it is the number staff come here to
+              // read. It belongs to the owner rather than this listing — a
+              // member with three listings has one balance, not three. ?>
+        <div class="lbar-tok">
+          <div class="lbar-tok-n"><?= number_format($ownerTokens) ?></div>
+          <div class="lbar-tok-l">tokens</div>
+        </div>
+      <?php endif; ?>
+
+      <div class="lbar-owner-body">
+        <div class="lbar-owner-who">
+          <a href="/superadmin/members/edit?id=<?= (int)$owner['id'] ?>"><?= e($owner['email']) ?></a>
+          <span class="mute">· <?= e(plan_listings_label($ownerPlan)) ?></span>
+          <?php if (!empty($owner['plan_comped'])): ?><span class="badge badge-pro">Comped</span><?php endif; ?>
+          <?php if (!empty($owner['plan_renews_on'])): ?>
+            <span class="mute">· renews <?= e(date('j M Y', strtotime((string)$owner['plan_renews_on']))) ?></span>
+          <?php endif; ?>
+        </div>
+
+        <div class="lbar-owner-rows">
+          <form method="post" class="lbar-plan"><?= csrf_field() ?>
+            <input type="hidden" name="bar" value="plan">
+            <span class="lbar-lab">Plan</span>
+            <?php foreach (['free' => 'Free', 'pro' => 'Pro', 'featured' => 'Premium'] as $k => $lbl): ?>
+              <button class="btn btn-sm <?= $owner['plan'] === $k ? 'btn-primary' : 'btn-ghost' ?>"
+                      name="plan" value="<?= e($k) ?>" <?= $owner['plan'] === $k ? 'disabled' : '' ?>
+                      data-confirm="Move <?= e($owner['email']) ?> to <?= e($lbl) ?>? This comps the plan — Stripe cannot take it away."><?= e($lbl) ?></button>
+            <?php endforeach; ?>
+          </form>
+
+          <?php if ($ownerTokens !== null): ?>
+            <form method="post" class="lbar-tokform"><?= csrf_field() ?>
+              <input type="hidden" name="bar" value="tokens">
+              <span class="lbar-lab">Tokens</span>
+              <input type="number" name="delta" value="0" step="1" aria-label="Tokens to add or take away">
+              <input type="text" name="note" maxlength="200" placeholder="Why (optional)">
+              <button class="btn btn-sm btn-ghost">Apply</button>
+            </form>
+          <?php endif; ?>
+        </div>
+      </div>
+    </div>
+  <?php else: ?>
+    <p class="lbar-none">Unclaimed — no owner account, so no plan or tokens. Set an owner email below to attach one.</p>
+  <?php endif; ?>
+</div>
+
 <form method="post" enctype="multipart/form-data"><?= csrf_field() ?>
 
   <div class="card card-pad ed-card">

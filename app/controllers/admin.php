@@ -93,6 +93,61 @@ if ($sub === 'dashboard') {
     // own rather than a step inside the save.
     $aiRun = $_SERVER['REQUEST_METHOD'] === 'POST' && post('ai_profile') !== '';
 
+    // The bar at the top of this page: the decisions about a listing, and the
+    // two things about its owner that used to be buried on the member page.
+    // They live here because this is where somebody has actually looked at the
+    // listing before deciding anything about it.
+    $barAction = $_SERVER['REQUEST_METHOD'] === 'POST' ? post('bar') : '';
+    if ($barAction !== '') {
+        csrf_check();
+        $owner = $biz['owner_id'] ? row('SELECT * FROM users WHERE id = ?', [(int)$biz['owner_id']]) : null;
+
+        if ($barAction === 'approve') {
+            q('UPDATE businesses SET status = "live", verified = IF(tier != "free", 1, verified) WHERE id = ?', [$biz['id']]);
+            $lifted = listing_unblock($biz);
+            notify_listing_decision($biz, true);
+            if ($url = business_url_by_id((int)$biz['id'])) indexnow_ping([$url]);
+            flash_set('success', '"' . $biz['name'] . '" is now live.'
+                . ($lifted ? ' Unblocked ' . implode(', ', $lifted) . '.' : ''));
+
+        } elseif ($barAction === 'reject') {
+            q('UPDATE businesses SET status = "rejected" WHERE id = ?', [$biz['id']]);
+            $blocked = listing_block($biz, (int)$u['id']);
+            notify_listing_decision($biz, false);
+            flash_set('success', '"' . $biz['name'] . '" rejected.'
+                . ($blocked ? ' Blocked ' . implode(', ', $blocked) . ' — manage at /superadmin/blocked.'
+                            : ' Nothing to block: no owner, contact email or website.'));
+
+        } elseif ($barAction === 'verify') {
+            q('UPDATE businesses SET verified = 1 - verified WHERE id = ?', [$biz['id']]);
+            flash_set('success', $biz['verified'] ? 'Verified badge removed.' : 'Marked as verified.');
+
+        } elseif ($barAction === 'delete') {
+            q('DELETE FROM businesses WHERE id = ?', [$biz['id']]);
+            if ($biz['city_id']) refresh_city_count((int)$biz['city_id']);
+            flash_set('success', '"' . $biz['name'] . '" deleted.');
+            redirect(listings_url($back, $_GET['q'] ?? ''));   // its page is gone
+
+        } elseif ($barAction === 'plan' && $owner && in_array(post('plan'), ['free','pro','featured'], true)) {
+            // Comped, exactly as it was on the member page: a renewal date a
+            // month out, this month's cycle opened, and Stripe cannot undo it.
+            cycle_set_plan((int)$owner['id'], post('plan'), true);
+            flash_set('success', 'Owner moved to ' . plan_public_label(post('plan')) . '.'
+                . (post('plan') === 'free' ? ' Any open monthly task is closed.'
+                    : ' Renews ' . date('j M Y', strtotime(cycle_add_month(date('Y-m-d')))) . '.'));
+
+        } elseif ($barAction === 'tokens' && $owner) {
+            $delta = (int)post('delta');
+            if ($delta !== 0) {
+                token_adjust((int)$owner['id'], $delta,
+                    'Adjusted by ' . $u['name'] . (post('note') !== '' ? ': ' . mb_substr(post('note'), 0, 200) : ''));
+                flash_set('success', ($delta > 0 ? '+' : '') . $delta . ' tokens for ' . $owner['email'] . '.');
+            }
+        }
+        if ($biz['city_id']) refresh_city_count((int)$biz['city_id']);
+        redirect('/superadmin/listings/edit?id=' . (int)$biz['id'] . '&back=' . urlencode($back));
+    }
+
     if ($aiRun) {
         csrf_check();
         // The button is only drawn on a paid listing, but the request is worth
@@ -197,9 +252,10 @@ if ($sub === 'dashboard') {
     $usStates  = regions_of('US');
     $cats      = categories_all();
     $cityRow   = $biz['city_id'] ? city_full((int)$biz['city_id']) : null;
-    $owner     = $biz['owner_id'] ? row('SELECT email FROM users WHERE id = ?', [$biz['owner_id']]) : null;
+    $owner     = $biz['owner_id'] ? row('SELECT * FROM users WHERE id = ?', [$biz['owner_id']]) : null;
+    $ownerPlan = $owner ? plan_for($owner) : null;
     $meta      = ['title' => 'Edit listing — ' . $site, 'robots' => 'noindex'];
-    view_raw('admin/listing-edit', compact('meta', 'u', 'biz', 'errors', 'aiNotice', 'countries', 'usStates', 'cats', 'gallery', 'cityRow', 'owner', 'back'));
+    view_raw('admin/listing-edit', compact('meta', 'u', 'biz', 'errors', 'aiNotice', 'countries', 'usStates', 'cats', 'gallery', 'cityRow', 'owner', 'ownerPlan', 'back'));
 
 } elseif ($sub === 'listings') {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {

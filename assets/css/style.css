@@ -1264,3 +1264,43 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 }
 /* a type a subcategory did not set itself, borrowed from its category */
 .ct-inherit{background:transparent;border:1px dashed var(--border);color:var(--mute)}
+
+/* ---------------------------------------------------------------------------
+   The bar at the top of a listing's edit page. Light blue, so it reads as a
+   different kind of thing from the white cards below it: those are fields you
+   fill in and then save, these are decisions that take effect on one press.
+   --------------------------------------------------------------------------- */
+.lbar{background:var(--accent-soft);border:1px solid var(--accent);border-radius:14px;
+  padding:14px 16px;margin-bottom:18px}
+.lbar-top{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;justify-content:space-between}
+.lbar-id{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:1.02rem;min-width:0}
+.lbar-id strong{font-size:1.1rem}
+.lbar-acts{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.lbar-acts form{margin:0}
+.lbar-acts .btn{background:#fff}
+.lbar-acts .intake-approve,.lbar-acts .btn-danger,.lbar-acts .btn-primary{background:''}
+.lbar-off{opacity:.5;cursor:not-allowed}
+
+/* owner strip: the token counter, then who they are and the two controls */
+.lbar-owner{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start;
+  margin-top:12px;padding-top:12px;border-top:1px solid var(--accent)}
+.lbar-tok{flex:none;background:#fff;border:1px solid var(--accent);border-radius:12px;
+  padding:8px 16px;text-align:center;min-width:96px}
+.lbar-tok-n{font-size:1.9rem;font-weight:800;line-height:1.1;color:var(--accent)}
+.lbar-tok-l{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--mute)}
+.lbar-owner-body{flex:1 1 320px;min-width:0}
+.lbar-owner-who{margin-bottom:8px;font-size:.9rem}
+.lbar-owner-who a{color:var(--accent);font-weight:700}
+.lbar-owner-rows{display:flex;flex-direction:column;gap:8px}
+.lbar-plan,.lbar-tokform{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0}
+.lbar-lab{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--mute);min-width:54px}
+.lbar-plan .btn-ghost,.lbar-tokform .btn-ghost{background:#fff}
+.lbar-tokform input[type=number]{width:88px;margin:0}
+.lbar-tokform input[type=text]{flex:1 1 160px;min-width:0;margin:0}
+.lbar-none{margin:12px 0 0;padding-top:12px;border-top:1px solid var(--accent);
+  font-size:.88rem;color:var(--mute)}
+@media(max-width:700px){
+  .lbar-top{flex-direction:column;align-items:stretch}
+  .lbar-tok{width:100%}
+}

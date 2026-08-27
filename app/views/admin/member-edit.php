@@ -4,8 +4,12 @@
   <a class="btn btn-ghost" href="/superadmin/members">← All members</a>
 </div>
 
+<?php // What this page is for now: who the account is, what they have listed,
+      // and getting rid of it. Plan and tokens moved to the listing editor —
+      // they are decisions taken while looking at the listing they affect, and
+      // they were two clicks away from anything that showed you why. ?>
 <div class="card card-pad ed-card">
-  <h3>Account</h3>
+  <h3>Login</h3>
   <div class="info-row"><span class="mute">Email</span><span><?= e($m['email']) ?></span></div>
   <?php if (!empty($m['website'])): ?>
     <div class="info-row"><span class="mute">Domain at sign-up</span><span><?= e((string)$m['website']) ?></span></div>
@@ -19,40 +23,14 @@
 </div>
 
 <div class="card card-pad ed-card">
-  <h3>Plan</h3>
-  <p class="mute ed-note">Setting a plan here marks it comped: it renews itself monthly and Stripe
-    cannot take it away, which is what makes it safe for test and gifted accounts. Pro and Premium
-    carry as many listings as the member likes; Free carries one.</p>
-
-  <div class="info-row"><span class="mute">Now on</span>
-    <span>
-      <strong><?= e(plan_public_label((string)$m['plan'])) ?></strong>
-      <?php if (!empty($m['plan_comped'])): ?><span class="badge badge-pro">Comped</span><?php endif; ?>
-    </span></div>
-  <div class="info-row"><span class="mute">Listings allowed</span><span><?= e(plan_listings_label($mPlan)) ?></span></div>
-  <?php if (!empty($m['plan_renews_on'])): ?>
-    <div class="info-row"><span class="mute">Renews</span><span><?= e(date('j M Y', strtotime((string)$m['plan_renews_on']))) ?></span></div>
-  <?php endif; ?>
-
-  <form method="post" action="/superadmin/members" style="margin-top:12px"><?= csrf_field() ?>
-    <input type="hidden" name="id" value="<?= (int)$m['id'] ?>">
-    <input type="hidden" name="action" value="setplan">
-    <input type="hidden" name="back_to" value="1">
-    <div class="me-plan">
-      <?php foreach (['free' => 'Free', 'pro' => 'Pro', 'featured' => 'Premium'] as $k => $label): ?>
-        <button class="btn btn-sm <?= $m['plan'] === $k ? 'btn-primary' : 'btn-ghost' ?>"
-                name="plan" value="<?= e($k) ?>"
-                <?= $m['plan'] === $k ? 'disabled' : '' ?>
-                data-confirm="Move <?= e($m['email']) ?> to <?= e($label) ?>?"><?= e($label) ?></button>
-      <?php endforeach; ?>
-    </div>
-  </form>
-</div>
-
-<div class="card card-pad ed-card">
   <h3>Listings <span class="mute" style="font-weight:400">(<?= count($listings) ?>)</span></h3>
+  <p class="mute ed-note">Plan and tokens are set on a listing's own page — open one below.
+    They belong to the account rather than the listing, so changing them there changes them
+    for all of these.</p>
   <?php if (!$listings): ?>
-    <p class="mute" style="margin:0">This member has no listings yet.</p>
+    <p class="mute" style="margin:0">This member has no listings yet.
+      Plan and tokens are set from a listing's page, so there is nowhere to set them until
+      they have one.</p>
   <?php else: ?>
     <div class="table-wrap table-narrow">
       <table class="table">
@@ -70,7 +48,7 @@
               <?php if ($l['status'] === 'live' && $l['city_id']): ?>
                 <a class="btn btn-sm btn-ghost" href="<?= e(business_path($l)) ?>">View</a>
               <?php endif; ?>
-              <a class="btn btn-sm btn-ghost" href="/superadmin/listings/edit?id=<?= (int)$l['id'] ?>&back=all">Edit</a>
+              <a class="btn btn-sm btn-primary" href="/superadmin/listings/edit?id=<?= (int)$l['id'] ?>&back=all">Edit</a>
             </td>
           </tr>
         <?php endforeach; ?>
@@ -78,22 +56,6 @@
     </div>
   <?php endif; ?>
 </div>
-
-<?php if (tokens_ready()): ?>
-  <div class="card card-pad ed-card">
-    <h3>Adjust tokens</h3>
-    <form method="post" action="/superadmin/members"><?= csrf_field() ?>
-      <input type="hidden" name="id" value="<?= (int)$m['id'] ?>">
-      <input type="hidden" name="action" value="tokens">
-      <input type="hidden" name="back_to" value="1">
-      <div class="form-grid">
-        <div><label>Amount (negative to take away)</label><input type="number" name="delta" value="0"></div>
-        <div><label>Note</label><input type="text" name="note" maxlength="200" placeholder="Why"></div>
-      </div>
-      <button class="btn btn-sm btn-primary">Apply</button>
-    </form>
-  </div>
-<?php endif; ?>
 
 <?php if ($history): ?>
   <div class="card card-pad ed-card">
