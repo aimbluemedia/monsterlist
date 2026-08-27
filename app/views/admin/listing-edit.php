@@ -37,7 +37,6 @@ $listUrl    = e(listings_url($back, $_GET['q'] ?? ''));
     <div class="lbar-id">
       <strong class="lbar-name" title="<?= e($biz['name']) ?>"><?= e($barTitle) ?></strong>
       <span class="badge badge-<?= e($biz['status']) ?>"><?= e($biz['status']) ?></span>
-      <?php if ($biz['verified']): ?><span class="badge badge-verified">✓ verified</span><?php endif; ?>
       <span class="badge badge-<?= $biz['tier'] === 'free' ? 'pending' : ($biz['tier'] === 'pro' ? 'pro' : 'featured') ?>"><?= e(ucfirst($biz['tier'])) ?></span>
     </div>
     <div class="lbar-acts">
@@ -50,14 +49,14 @@ $listUrl    = e(listings_url($back, $_GET['q'] ?? ''));
         <form method="post"><?= csrf_field() ?><input type="hidden" name="bar" value="approve">
           <button class="btn btn-sm intake-approve" data-confirm="Put &quot;<?= e($biz['name']) ?>&quot; live?">Approve</button></form>
       <?php endif; ?>
-      <?php if ($biz['status'] !== 'rejected'): ?>
-        <form method="post"><?= csrf_field() ?><input type="hidden" name="bar" value="reject">
-          <button class="btn btn-sm btn-ghost" data-confirm="Reject &quot;<?= e($biz['name']) ?>&quot;? This also blocks the owner's email and domain.">Reject</button></form>
-      <?php endif; ?>
+      <?php // A toggle that shows the state rather than the action: green and
+            // ticked when the badge is on, grey and "UnVerified" when it is
+            // off. You read it to find out, and click it to change it. ?>
       <form method="post"><?= csrf_field() ?><input type="hidden" name="bar" value="verify">
-        <button class="btn btn-sm btn-ghost"><?= $biz['verified'] ? 'Un-verify' : '✓ Verify' ?></button></form>
-      <form method="post"><?= csrf_field() ?><input type="hidden" name="bar" value="delete">
-        <button class="btn btn-sm btn-danger" data-confirm="Delete &quot;<?= e($biz['name']) ?>&quot; permanently? This cannot be undone.">Delete</button></form>
+        <button class="btn btn-sm <?= $biz['verified'] ? 'lbar-ver-on' : 'lbar-ver-off' ?>"
+                title="<?= $biz['verified'] ? 'Verified — click to remove the badge' : 'Not verified — click to add the badge' ?>">
+          <?= $biz['verified'] ? '✓ Verified' : 'UnVerified' ?>
+        </button></form>
     </div>
   </div>
 
@@ -368,4 +367,38 @@ $listUrl    = e(listings_url($back, $_GET['q'] ?? ''));
     <a class="btn btn-ghost" href="<?= $listUrl ?>">Cancel</a>
   </div>
 </form>
+
+<?php // The two that are hard to walk back, at the bottom and on their own.
+      // Rejecting blocks the owner and the domain; deleting cannot be undone
+      // at all. Neither belongs a mouse-slip away from Approve. Outside the
+      // form above, like the rest of the bar actions. ?>
+<div class="card card-pad ed-card dz">
+  <h3 class="dz-h">Danger Zone</h3>
+  <div class="dz-rows">
+    <?php if ($biz['status'] !== 'rejected'): ?>
+      <div class="dz-row">
+        <div class="dz-what">
+          <strong>Reject this listing</strong>
+          <span class="mute">Takes it off the site and blocks the owner's email and its domain from
+            being submitted again. Approving later lifts those blocks.</span>
+        </div>
+        <form method="post"><?= csrf_field() ?><input type="hidden" name="bar" value="reject">
+          <button class="btn btn-sm btn-danger"
+                  data-confirm="Reject &quot;<?= e($biz['name']) ?>&quot;? This also blocks the owner's email and domain.">Reject</button>
+        </form>
+      </div>
+    <?php endif; ?>
+    <div class="dz-row">
+      <div class="dz-what">
+        <strong>Delete this listing</strong>
+        <span class="mute">Removes it and everything attached to it — services, products, photos,
+          reviews. There is no undo and no copy kept.</span>
+      </div>
+      <form method="post"><?= csrf_field() ?><input type="hidden" name="bar" value="delete">
+        <button class="btn btn-sm btn-danger"
+                data-confirm="Delete &quot;<?= e($biz['name']) ?>&quot; permanently? This cannot be undone.">Delete</button>
+      </form>
+    </div>
+  </div>
+</div>
 <?php require __DIR__ . '/_bottom.php'; ?>

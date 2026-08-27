@@ -1320,3 +1320,23 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
   .lbar-owner-who{text-align:left}
   .lbar-tokform input[type=text]{flex:1 1 120px;width:auto;min-width:0}
 }
+
+/* The verified toggle reads as a state, not an instruction: light green with a
+   tick when the badge is on, grey when it is off. Both keep enough contrast to
+   be read — the green-on-green pairing is the one that goes wrong quietly. */
+.lbar-ver-on{background:var(--green-soft);border-color:var(--green);color:#075e4a;font-weight:700}
+.lbar-ver-on:hover{background:#d5f0e6;border-color:var(--green);color:#064c3c}
+.lbar-ver-off{background:#eef1f5;border-color:#c8cfd9;color:#4a5568;font-weight:600}
+.lbar-ver-off:hover{background:#e3e8ee;border-color:#aeb7c4;color:#2d3748}
+
+/* Danger Zone: the two that are hard to walk back, each with the consequence
+   spelled out next to it rather than hidden in a confirm dialog nobody reads. */
+.dz{border-color:var(--red)}
+.dz-h{color:var(--red)}
+.dz-rows{display:flex;flex-direction:column;gap:12px}
+.dz-row{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;
+  padding:12px 14px;background:var(--red-soft);border-radius:10px}
+.dz-row form{margin:0;flex:none}
+.dz-what{display:flex;flex-direction:column;gap:2px;flex:1 1 320px;min-width:0}
+.dz-what strong{font-size:.94rem}
+.dz-what .mute{font-size:.83rem;line-height:1.5}
