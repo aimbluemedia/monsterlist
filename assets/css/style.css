@@ -1286,26 +1286,37 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 .lbar-acts .btn-ghost{background:#fff}
 .lbar-off{opacity:.5;cursor:not-allowed}
 
-/* owner strip: the token counter, then who they are and the two controls */
-.lbar-owner{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start;
+/* Owner strip, two groups at opposite ends. Tokens together on the left — the
+   count and the field that changes it are one subject, and reading a balance
+   an inch from the box that moves it is the point of putting them side by
+   side. Who the member is and which plan they are on goes right. */
+.lbar-owner{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;
+  justify-content:space-between;
   margin-top:12px;padding-top:12px;border-top:1px solid var(--accent)}
+.lbar-tokgroup{display:flex;flex-wrap:wrap;gap:10px;align-items:center;min-width:0}
 .lbar-tok{flex:none;background:#fff;border:1px solid var(--accent);border-radius:12px;
   padding:8px 16px;text-align:center;min-width:96px}
 .lbar-tok-n{font-size:1.9rem;font-weight:800;line-height:1.1;color:var(--accent)}
 .lbar-tok-l{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--mute)}
-.lbar-owner-body{flex:1 1 320px;min-width:0}
-.lbar-owner-who{margin-bottom:8px;font-size:.9rem}
+/* right-hand group: email above, plan buttons under it, both right-aligned */
+.lbar-ownergroup{display:flex;flex-direction:column;align-items:flex-end;gap:8px;min-width:0}
+.lbar-owner-who{font-size:.9rem;text-align:right}
 .lbar-owner-who a{color:var(--accent);font-weight:700}
-.lbar-owner-rows{display:flex;flex-direction:column;gap:8px}
 .lbar-plan,.lbar-tokform{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0}
 .lbar-lab{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
-  color:var(--mute);min-width:54px}
+  color:var(--mute)}
 .lbar-plan .btn-ghost,.lbar-tokform .btn-ghost{background:#fff}
-.lbar-tokform input[type=number]{width:88px;margin:0}
-.lbar-tokform input[type=text]{flex:1 1 160px;min-width:0;margin:0}
+.lbar-tokform input[type=number]{width:76px;margin:0}
+/* "Why" is a note, not a paragraph — it stopped being a field and started
+   being a gap between the number and the button when it stretched. */
+.lbar-tokform input[type=text]{width:130px;flex:none;margin:0}
 .lbar-none{margin:12px 0 0;padding-top:12px;border-top:1px solid var(--accent);
   font-size:.88rem;color:var(--mute)}
-@media(max-width:700px){
+@media(max-width:820px){
   .lbar-top{flex-direction:column;align-items:stretch}
-  .lbar-tok{width:100%}
+  /* stacked, both groups read left to right like everything else */
+  .lbar-owner{flex-direction:column;align-items:stretch}
+  .lbar-ownergroup{align-items:flex-start}
+  .lbar-owner-who{text-align:left}
+  .lbar-tokform input[type=text]{flex:1 1 120px;width:auto;min-width:0}
 }

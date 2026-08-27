@@ -254,8 +254,11 @@ if ($sub === 'dashboard') {
     $cityRow   = $biz['city_id'] ? city_full((int)$biz['city_id']) : null;
     $owner     = $biz['owner_id'] ? row('SELECT * FROM users WHERE id = ?', [$biz['owner_id']]) : null;
     $ownerPlan = $owner ? plan_for($owner) : null;
+    // How many listings they actually hold, which is the useful number next to
+    // their email — the plan's allowance is already implied by the plan buttons.
+    $ownerCount = $owner ? (int)scalar('SELECT COUNT(*) FROM businesses WHERE owner_id = ?', [(int)$owner['id']]) : 0;
     $meta      = ['title' => 'Edit listing — ' . $site, 'robots' => 'noindex'];
-    view_raw('admin/listing-edit', compact('meta', 'u', 'biz', 'errors', 'aiNotice', 'countries', 'usStates', 'cats', 'gallery', 'cityRow', 'owner', 'ownerPlan', 'back'));
+    view_raw('admin/listing-edit', compact('meta', 'u', 'biz', 'errors', 'aiNotice', 'countries', 'usStates', 'cats', 'gallery', 'cityRow', 'owner', 'ownerPlan', 'ownerCount', 'back'));
 
 } elseif ($sub === 'listings') {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {

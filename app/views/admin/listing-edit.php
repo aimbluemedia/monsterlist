@@ -57,48 +57,48 @@ $listUrl    = e(listings_url($back, $_GET['q'] ?? ''));
   </div>
 
   <?php if ($owner): ?>
+    <?php // Two groups, one at each end. The tokens sit together — the count
+          // and the box that changes it are the same subject, and reading a
+          // balance three inches from the field that moves it was the awkward
+          // part. Who the member is, and which plan they are on, is the other
+          // subject, and it goes right. ?>
     <div class="lbar-owner">
       <?php if ($ownerTokens !== null): ?>
-        <?php // The counter, big, because it is the number staff come here to
-              // read. It belongs to the owner rather than this listing — a
-              // member with three listings has one balance, not three. ?>
-        <div class="lbar-tok">
-          <div class="lbar-tok-n"><?= number_format($ownerTokens) ?></div>
-          <div class="lbar-tok-l">tokens</div>
+        <div class="lbar-tokgroup">
+          <?php // Big, because it is the number staff come here to read. It
+                // belongs to the owner rather than this listing — a member with
+                // three listings has one balance, not three. ?>
+          <div class="lbar-tok">
+            <div class="lbar-tok-n"><?= number_format($ownerTokens) ?></div>
+            <div class="lbar-tok-l">tokens</div>
+          </div>
+          <form method="post" class="lbar-tokform"><?= csrf_field() ?>
+            <input type="hidden" name="bar" value="tokens">
+            <input type="number" name="delta" value="0" step="1" aria-label="Tokens to add or take away">
+            <input type="text" name="note" maxlength="200" placeholder="Why" aria-label="Why">
+            <button class="btn btn-sm btn-ghost">Apply</button>
+          </form>
         </div>
       <?php endif; ?>
 
-      <div class="lbar-owner-body">
+      <div class="lbar-ownergroup">
         <div class="lbar-owner-who">
           <a href="/superadmin/members/edit?id=<?= (int)$owner['id'] ?>"><?= e($owner['email']) ?></a>
-          <span class="mute">· <?= e(plan_listings_label($ownerPlan)) ?></span>
+          <span class="mute">· <?= (int)$ownerCount ?> listing<?= $ownerCount === 1 ? '' : 's' ?></span>
           <?php if (!empty($owner['plan_comped'])): ?><span class="badge badge-pro">Comped</span><?php endif; ?>
           <?php if (!empty($owner['plan_renews_on'])): ?>
             <span class="mute">· renews <?= e(date('j M Y', strtotime((string)$owner['plan_renews_on']))) ?></span>
           <?php endif; ?>
         </div>
-
-        <div class="lbar-owner-rows">
-          <form method="post" class="lbar-plan"><?= csrf_field() ?>
-            <input type="hidden" name="bar" value="plan">
-            <span class="lbar-lab">Plan</span>
-            <?php foreach (['free' => 'Free', 'pro' => 'Pro', 'featured' => 'Premium'] as $k => $lbl): ?>
-              <button class="btn btn-sm <?= $owner['plan'] === $k ? 'btn-primary' : 'btn-ghost' ?>"
-                      name="plan" value="<?= e($k) ?>" <?= $owner['plan'] === $k ? 'disabled' : '' ?>
-                      data-confirm="Move <?= e($owner['email']) ?> to <?= e($lbl) ?>? This comps the plan — Stripe cannot take it away."><?= e($lbl) ?></button>
-            <?php endforeach; ?>
-          </form>
-
-          <?php if ($ownerTokens !== null): ?>
-            <form method="post" class="lbar-tokform"><?= csrf_field() ?>
-              <input type="hidden" name="bar" value="tokens">
-              <span class="lbar-lab">Tokens</span>
-              <input type="number" name="delta" value="0" step="1" aria-label="Tokens to add or take away">
-              <input type="text" name="note" maxlength="200" placeholder="Why (optional)">
-              <button class="btn btn-sm btn-ghost">Apply</button>
-            </form>
-          <?php endif; ?>
-        </div>
+        <form method="post" class="lbar-plan"><?= csrf_field() ?>
+          <input type="hidden" name="bar" value="plan">
+          <span class="lbar-lab">Plan</span>
+          <?php foreach (['free' => 'Free', 'pro' => 'Pro', 'featured' => 'Premium'] as $k => $lbl): ?>
+            <button class="btn btn-sm <?= $owner['plan'] === $k ? 'btn-primary' : 'btn-ghost' ?>"
+                    name="plan" value="<?= e($k) ?>" <?= $owner['plan'] === $k ? 'disabled' : '' ?>
+                    data-confirm="Move <?= e($owner['email']) ?> to <?= e($lbl) ?>? This comps the plan — Stripe cannot take it away."><?= e($lbl) ?></button>
+          <?php endforeach; ?>
+        </form>
       </div>
     </div>
   <?php else: ?>
