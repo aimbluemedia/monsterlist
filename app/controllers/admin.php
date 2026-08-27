@@ -832,8 +832,17 @@ if ($sub === 'dashboard') {
             } elseif ($label === '') {
                 flash_set('error', 'A category needs a label.');
             } else {
-                q('UPDATE categories SET label = ?, icon = ? WHERE id = ?',
-                  [$label, mb_substr(post('icon'), 0, 16), $cat['id']]);
+                // The type is checked against the catalogue rather than trusted:
+                // it reaches @type on every listing under this category.
+                $catType = (string)post('cat_schema_type');
+                if ($catType !== '' && !schema_type_valid($catType)) $catType = (string)$cat['schema_type'];
+                if (category_schema_ready()) {
+                    q('UPDATE categories SET label = ?, icon = ?, schema_type = ? WHERE id = ?',
+                      [$label, mb_substr(post('icon'), 0, 16), $catType, $cat['id']]);
+                } else {
+                    q('UPDATE categories SET label = ?, icon = ? WHERE id = ?',
+                      [$label, mb_substr(post('icon'), 0, 16), $cat['id']]);
+                }
                 flash_set('success', 'Saved "' . $label . '".');
             }
         } elseif ($action === 'delete') {
@@ -879,6 +888,9 @@ if ($sub === 'dashboard') {
     // in the SQL keeps one copy of those hundred and eight rows, in PHP, where
     // it is also the fallback for a site that has not upgraded yet.
     if (category_types_ready() && !(int)scalar('SELECT COUNT(*) FROM category_types')) category_types_seed();
+    // Categories that have never been given a type get the sensible one for
+    // their shelf. Only fills blanks, so a "None" chosen here stays chosen.
+    if (category_schema_ready()) category_schema_seed();
 
     $list = rows('SELECT c.*, (SELECT COUNT(*) FROM businesses WHERE category_id = c.id) AS in_use FROM categories c ORDER BY c.label');
     $subs = category_types_grouped();

@@ -1262,3 +1262,5 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
   .cat-edit,.ct-grid{grid-template-columns:minmax(0,1fr)}
   .cat-acts{flex-wrap:wrap}
 }
+/* a type a subcategory did not set itself, borrowed from its category */
+.ct-inherit{background:transparent;border:1px dashed var(--border);color:var(--mute)}

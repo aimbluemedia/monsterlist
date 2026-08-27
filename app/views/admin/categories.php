@@ -68,8 +68,34 @@
                        title="Fixed: listings and every category URL are built from it"></div>
                   <div class="cat-edit-go"><button class="btn btn-sm btn-primary">Save category</button></div>
                 </form>
+                <?php if (category_schema_ready()): ?>
+                  <?php // What listings on this shelf publish when they have no
+                        // subcategory of their own — and what a subcategory with
+                        // no type of its own inherits. ?>
+                  <form method="post" class="cat-edit" style="margin-top:10px"><?= csrf_field() ?>
+                    <input type="hidden" name="action" value="edit">
+                    <input type="hidden" name="id" value="<?= e($c['id']) ?>">
+                    <input type="hidden" name="open" value="<?= e($c['id']) ?>">
+                    <input type="hidden" name="label" value="<?= e($c['label']) ?>">
+                    <input type="hidden" name="icon" value="<?= e($c['icon']) ?>">
+                    <div style="grid-column:span 3">
+                      <label>Schema.org type for this category</label>
+                      <select name="cat_schema_type">
+                        <option value="">None — listings here are a plain LocalBusiness</option>
+                        <?php foreach (schema_type_catalog() as $type => $lbl): ?>
+                          <option value="<?= e($type) ?>" <?= (string)$c['schema_type'] === $type ? 'selected' : '' ?>>
+                            <?= e($lbl) ?> — <?= e($type) ?>
+                          </option>
+                        <?php endforeach; ?>
+                      </select>
+                    </div>
+                    <div class="cat-edit-go"><button class="btn btn-sm btn-primary">Save type</button></div>
+                  </form>
+                <?php endif; ?>
                 <p class="form-note" style="margin:2px 0 16px">The ID cannot change — listings store it and
-                  every category address is built from it. The label and icon are what people see.</p>
+                  every category address is built from it. The label and icon are what people see.
+                  <?php if (category_schema_ready()): ?>The type is what a listing here publishes when it has
+                  no subcategory, and what a subcategory with no type of its own inherits.<?php endif; ?></p>
 
                 <?php if (category_types_ready()): ?>
                   <h4>Subcategories <span class="mute" style="font-weight:400">(<?= count($mine) ?>)</span></h4>
@@ -84,10 +110,19 @@
                           <tr>
                             <td><strong><?= e($t['label']) ?></strong></td>
                             <td>
-                              <?php if ($t['schema_type'] !== ''): ?>
-                                <code class="ct-type"><?= e($t['schema_type']) ?></code>
+                              <?php // A blank type is not "nothing" any more — it
+                                    // falls through to the category's. Show what
+                                    // the listing actually publishes, and where
+                                    // that came from. ?>
+                              <?php [$effType, $effSrc] = subcategory_effective_type($t); ?>
+                              <?php if ($effSrc === 'own'): ?>
+                                <code class="ct-type"><?= e($effType) ?></code>
+                              <?php elseif ($effSrc === 'category'): ?>
+                                <code class="ct-type ct-inherit"><?= e($effType) ?></code>
+                                <br><small class="mute">inherited from <?= e($c['label']) ?></small>
                               <?php else: ?>
-                                <span class="mute">none — plain LocalBusiness</span>
+                                <span class="mute">LocalBusiness</span>
+                                <br><small class="mute">nothing set here or on the category</small>
                               <?php endif; ?>
                             </td>
                             <td class="mute"><?= (int)$t['sort'] ?></td>

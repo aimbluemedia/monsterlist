@@ -379,6 +379,22 @@ CREATE TABLE IF NOT EXISTS category_types (
 -- Spelled out to match `categories`.`id`, which this is compared against.
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- A category carries a type of its own, for the listings under it that have no
+-- subcategory. Without it those publish a plain LocalBusiness, which is true
+-- but says nothing — a listing filed under Real Estate is a RealEstateAgent
+-- whether or not anybody picked a trade for it.
+--
+-- Empty is still allowed, and still means LocalBusiness. Some of our sixteen
+-- have no honest general type: "Education & Tutoring" covers a nursery and a
+-- maths tutor, and Schema.org has no word that means both without saying
+-- something false about one of them.
+SET @ddl = IF((SELECT COUNT(*) FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'categories'
+                  AND COLUMN_NAME = 'schema_type') > 0,
+  'DO 0',
+  'ALTER TABLE categories ADD COLUMN schema_type VARCHAR(60) NOT NULL DEFAULT ''''');
+PREPARE s FROM @ddl; EXECUTE s; DEALLOCATE PREPARE s;
+
 -- The 108 that were in the code are seeded by PHP rather than listed here:
 -- app/lib/seo.php holds them as schema_types_builtin(), and the Categories page
 -- plants them the first time it finds this table empty. One copy of the list,
@@ -493,6 +509,7 @@ UNION ALL SELECT 'businesses.business_type',IF(COUNT(*) > 0, 'OK', 'MISSING') FR
 UNION ALL SELECT 'businesses.postcode',     IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'postcode'
 UNION ALL SELECT 'intake_domains table',    IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'intake_domains'
 UNION ALL SELECT 'category_types table',    IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'category_types'
+UNION ALL SELECT 'categories.schema_type',   IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'categories' AND COLUMN_NAME = 'schema_type'
 UNION ALL SELECT 'member_tasks table',      IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'member_tasks'
 UNION ALL SELECT 'users.plan_renews_on',    IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'      AND COLUMN_NAME = 'plan_renews_on'
 UNION ALL SELECT 'users.plan_comped',       IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'      AND COLUMN_NAME = 'plan_comped';

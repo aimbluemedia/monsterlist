@@ -411,16 +411,112 @@ function schema_type_label(?string $type): string
     return schema_type_labels()[$type] ?? (schema_type_catalog()[$type] ?? '');
 }
 
+/** Is the category-level type column there? */
+function category_schema_ready(): bool
+{
+    static $ok = null;
+    if ($ok === null) $ok = column_exists('categories', 'schema_type');
+    return $ok;
+}
+
 /**
- * The @type for one listing.
+ * What a category says its listings are, when nothing more specific is known.
  *
- * LocalBusiness is the honest answer when nobody has said what the business is:
- * it is true of every listing here, where a guess made from the category would
- * be true of some of them.
+ * The general types — AutomotiveBusiness, FoodEstablishment, Store — exist for
+ * exactly this. They are not as good as Plumber, but they are a great deal
+ * better than LocalBusiness, and they are true of everything on the shelf.
+ */
+function category_schema_type(?string $categoryId): string
+{
+    if ($categoryId === null || $categoryId === '' || !category_schema_ready()) return '';
+    static $map = null;
+    if ($map === null) {
+        $map = [];
+        foreach (rows('SELECT id, schema_type FROM categories') as $c) $map[$c['id']] = (string)$c['schema_type'];
+    }
+    $t = $map[$categoryId] ?? '';
+    return schema_type_valid($t) ? $t : '';
+}
+
+/**
+ * Sensible starting types for the sixteen categories we ship.
+ *
+ * Two are deliberately blank. "Education & Tutoring" covers a nursery and a
+ * maths tutor; "Pets & Animals" covers a vet, a groomer and a pet shop. There
+ * is no Schema.org word that means all of those, and picking one would say
+ * something false about the rest — which is worse than saying only that they
+ * are local businesses, because a wrong type is a wrong claim.
+ */
+function category_schema_defaults(): array
+{
+    return [
+        'auto'         => 'AutomotiveBusiness',
+        'beauty'       => 'HealthAndBeautyBusiness',
+        'creative'     => 'ProfessionalService',
+        'education'    => '',
+        'events'       => 'EntertainmentBusiness',
+        'food'         => 'FoodEstablishment',
+        'home'         => 'HomeAndConstructionBusiness',
+        'legal'        => 'LegalService',
+        'marketing'    => 'ProfessionalService',
+        'pets'         => '',
+        'professional' => 'ProfessionalService',
+        'realestate'   => 'RealEstateAgent',
+        'retail'       => 'Store',
+        'tech'         => 'ProfessionalService',
+        'trades'       => 'HomeAndConstructionBusiness',
+        'wellness'     => 'MedicalBusiness',
+    ];
+}
+
+/**
+ * Fill in category types that have never been set. Returns how many it set.
+ *
+ * Only ever writes over an empty value, so a choice made on the Categories page
+ * — including a deliberate "None" — is never undone by this running again.
+ */
+function category_schema_seed(): int
+{
+    if (!category_schema_ready()) return 0;
+    $n = 0;
+    foreach (category_schema_defaults() as $id => $type) {
+        if ($type === '') continue;
+        $n += q('UPDATE categories SET schema_type = ? WHERE id = ? AND schema_type = ""', [$type, $id])->rowCount();
+    }
+    return $n;
+}
+
+/**
+ * The @type for one listing, most specific thing known about it.
+ *
+ * Three steps down: the subcategory the listing chose, then the type its
+ * category carries, then LocalBusiness. The middle step is the point — a
+ * listing filed under Real Estate is a RealEstateAgent whether or not anybody
+ * ever picked a trade for it, and publishing LocalBusiness instead threw that
+ * away for no reason.
+ *
+ * Every step is checked against the catalogue before it is used, so no route
+ * through here can put a name into @type that Schema.org does not define.
  */
 function business_schema_type(array $b): string
 {
-    return schema_type_valid($b['business_type'] ?? null) ? (string)$b['business_type'] : 'LocalBusiness';
+    if (schema_type_valid($b['business_type'] ?? null)) return (string)$b['business_type'];
+    $fromCategory = category_schema_type($b['category_id'] ?? null);
+    return $fromCategory !== '' ? $fromCategory : 'LocalBusiness';
+}
+
+/**
+ * The type a subcategory publishes, and where it came from.
+ *
+ * Returns [type, source] where source is 'own', 'category' or ''. The admin
+ * page shows this so a blank type reads as "inherits RealEstateAgent" rather
+ * than "none", which was the thing that looked broken.
+ */
+function subcategory_effective_type(array $t): array
+{
+    if (schema_type_valid($t['schema_type'] ?? null)) return [(string)$t['schema_type'], 'own'];
+    $inherited = category_schema_type($t['category_id'] ?? null);
+    return $inherited !== '' ? [$inherited, 'category'] : ['', ''];
 }
 
 function jsonld_website(): array
