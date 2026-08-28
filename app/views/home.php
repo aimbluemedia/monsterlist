@@ -37,6 +37,58 @@
   </div>
 </section>
 
+<?php // The directory itself, directly under the hero. Somebody arriving at a
+      // business directory is usually looking for a business, and everything
+      // that used to sit here — the mockup, the benefit tiles, the promotion
+      // pitch — is aimed at the other visitor, the one thinking of joining.
+      // They still get all of it, just after the proof that the thing works. ?>
+<?php if ($featured): ?>
+<section class="sky">
+  <div class="wrap">
+    <div class="sky-head">
+      <h2>Featured members</h2>
+      <span>Top of the results in their city and category</span>
+    </div>
+    <div class="mc-grid">
+      <?php foreach ($featured as $b): ?>
+        <?php $mcBadge = 'Featured'; require __DIR__ . '/_member-card.php'; ?>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+<?php endif; ?>
+
+<?php if ($newest): ?>
+<section class="sky sky-alt">
+  <div class="wrap">
+    <div class="sky-head">
+      <h2>Just joined</h2>
+      <span>Welcome our newest members</span>
+    </div>
+    <div class="mc-grid">
+      <?php foreach ($newest as $b): ?>
+        <?php $mcBadge = 'New'; require __DIR__ . '/_member-card.php'; ?>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+<?php endif; ?>
+
+<section class="section wrap">
+  <div class="section-head"><h2>Top locations</h2><a class="mute" href="/browse">All locations →</a></div>
+  <div>
+    <?php foreach ($popCities as $ci): ?>
+      <a class="chip" href="<?= e(city_path($ci)) ?>"><?= e($ci['name']) ?></a>
+    <?php endforeach; ?>
+    <?php foreach ($popStates as $s): ?>
+      <a class="chip" href="/us/<?= e($s['slug']) ?>"><?= e($s['name']) ?></a>
+    <?php endforeach; ?>
+    <?php foreach ($popCtries as $co): ?>
+      <a class="chip" href="/<?= e(strtolower($co['code'])) ?>"><?= e($co['name']) ?></a>
+    <?php endforeach; ?>
+  </div>
+</section>
+
 <!-- icon strip -->
 <div class="lp-strip">
   <div class="lp-strip-track">
@@ -190,53 +242,6 @@
       <a class="card cat-card" href="/category/<?= e($c['id']) ?>">
         <strong><?= e($c['label']) ?></strong>
       </a>
-    <?php endforeach; ?>
-  </div>
-</section>
-
-<?php if ($featured): ?>
-<section class="sky">
-  <div class="wrap">
-    <div class="sky-head">
-      <h2>Featured members</h2>
-      <span>Top of the results in their city and category</span>
-    </div>
-    <div class="mc-grid">
-      <?php foreach ($featured as $b): ?>
-        <?php $mcBadge = 'Featured'; require __DIR__ . '/_member-card.php'; ?>
-      <?php endforeach; ?>
-    </div>
-  </div>
-</section>
-<?php endif; ?>
-
-<?php if ($newest): ?>
-<section class="sky sky-alt">
-  <div class="wrap">
-    <div class="sky-head">
-      <h2>Just joined</h2>
-      <span>Welcome our newest members</span>
-    </div>
-    <div class="mc-grid">
-      <?php foreach ($newest as $b): ?>
-        <?php $mcBadge = 'New'; require __DIR__ . '/_member-card.php'; ?>
-      <?php endforeach; ?>
-    </div>
-  </div>
-</section>
-<?php endif; ?>
-
-<section class="section wrap">
-  <div class="section-head"><h2>Top locations</h2><a class="mute" href="/browse">All locations →</a></div>
-  <div>
-    <?php foreach ($popCities as $ci): ?>
-      <a class="chip" href="<?= e(city_path($ci)) ?>"><?= e($ci['name']) ?></a>
-    <?php endforeach; ?>
-    <?php foreach ($popStates as $s): ?>
-      <a class="chip" href="/us/<?= e($s['slug']) ?>"><?= e($s['name']) ?></a>
-    <?php endforeach; ?>
-    <?php foreach ($popCtries as $co): ?>
-      <a class="chip" href="/<?= e(strtolower($co['code'])) ?>"><?= e($co['name']) ?></a>
     <?php endforeach; ?>
   </div>
 </section>
