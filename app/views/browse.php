@@ -2,14 +2,28 @@
   <nav class="crumbs"><a href="/">Home</a><span>›</span>Browse</nav>
   <section class="section">
     <h1>Browse the directory</h1>
-    <p class="mute">Pick a category, or drill down by location: country → state → city.</p>
+    <p class="mute">Pick a category or a trade, or drill down by location: country → state → city.</p>
 
-    <h2 style="margin-top:26px">Categories</h2>
-    <div class="grid grid-4">
+    <?php // Both levels. The category is the heading and a link of its own; the
+          // trades under it are what somebody is actually looking for — "I need
+          // a plumber", not "I need home & repair" — and each is a real page. ?>
+    <h2 style="margin-top:26px">Categories &amp; trades</h2>
+    <div class="bcat-grid">
       <?php foreach ($cats as $c): ?>
-        <a class="card cat-card" href="/category/<?= e($c['id']) ?>">
-          <strong><?= e($c['label']) ?></strong>
-        </a>
+        <?php $mine = $subs[$c['id']] ?? []; ?>
+        <div class="bcat">
+          <a class="bcat-head" href="/category/<?= e($c['id']) ?>">
+            <?php if (!empty($c['icon'])): ?><span class="bcat-icon"><?= e($c['icon']) ?></span><?php endif; ?>
+            <strong><?= e($c['label']) ?></strong>
+          </a>
+          <?php if ($mine): ?>
+            <div class="bcat-subs">
+              <?php foreach ($mine as $key => $label): ?>
+                <a href="/category/<?= e($c['id']) ?>?type=<?= e(rawurlencode((string)$key)) ?>"><?= e($label) ?></a>
+              <?php endforeach; ?>
+            </div>
+          <?php endif; ?>
+        </div>
       <?php endforeach; ?>
     </div>
 

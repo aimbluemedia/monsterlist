@@ -89,6 +89,17 @@
   </div>
 </section>
 
+<section class="section wrap">
+  <div class="section-head"><h2>Browse by category</h2><a class="mute" href="/browse">Browse all →</a></div>
+  <div class="grid grid-4">
+    <?php foreach (array_slice($cats, 0, 8) as $c): ?>
+      <a class="card cat-card" href="/category/<?= e($c['id']) ?>">
+        <strong><?= e($c['label']) ?></strong>
+      </a>
+    <?php endforeach; ?>
+  </div>
+</section>
+
 <!-- icon strip -->
 <div class="lp-strip">
   <div class="lp-strip-track">
@@ -235,16 +246,6 @@
   </div>
 </section>
 
-<section class="section wrap">
-  <div class="section-head"><h2>Browse by category</h2><a class="mute" href="/browse">Browse all →</a></div>
-  <div class="grid grid-4">
-    <?php foreach (array_slice($cats, 0, 8) as $c): ?>
-      <a class="card cat-card" href="/category/<?= e($c['id']) ?>">
-        <strong><?= e($c['label']) ?></strong>
-      </a>
-    <?php endforeach; ?>
-  </div>
-</section>
 
 <!-- search for visitors -->
 <section class="section wrap" style="max-width:760px">

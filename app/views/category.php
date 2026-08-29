@@ -7,8 +7,23 @@
     <?php endforeach; ?>
   </nav>
   <section class="section">
-    <h1><?= e($cat['label']) ?><?= $place ? ' in ' . e($place) : '' ?></h1>
+    <h1><?= e($typeLabel !== '' ? $typeLabel : $cat['label']) ?><?= $place ? ' in ' . e($place) : '' ?></h1>
+    <?php if ($typeLabel !== ''): ?>
+      <p class="mute" style="margin-top:-6px">in <a href="<?= e($locPath) ?>"><?= e($cat['label']) ?></a></p>
+    <?php endif; ?>
     <p class="mute" style="max-width:760px"><?= e($intro) ?></p>
+
+    <?php // The trades on this shelf. On an unfiltered page this is the way in;
+          // on a filtered one it is how you get to a sibling or back out. ?>
+    <?php if (!empty($subcats)): ?>
+      <div class="cat-subs">
+        <a class="chip<?= $typeKey === '' ? ' chip-on' : '' ?>" href="<?= e($locPath) ?>">All <?= e($cat['label']) ?></a>
+        <?php foreach ($subcats as $key => $label): ?>
+          <a class="chip<?= $typeKey === (string)$key ? ' chip-on' : '' ?>"
+             href="<?= e($locPath) ?>?type=<?= e(rawurlencode((string)$key)) ?>"><?= e($label) ?></a>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
 
     <?php if (!$list): ?>
       <div class="card card-pad" style="margin-top:16px">

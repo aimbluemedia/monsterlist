@@ -399,7 +399,10 @@ function listing_form_data(array $user, array $plan, int $exceptId = 0, bool $en
     $data = [
         'name'          => $name,
         'category_id'   => $catId,
-        'business_type' => schema_type_valid($bizType) ? $bizType : null,
+        // Checked against what the dropdown offered, not against Schema.org:
+        // a subcategory with no Schema.org type is a real choice on this form,
+        // and schema_type_valid() was quietly discarding it.
+        'business_type' => listing_type_selectable($bizType) ? $bizType : null,
         'city_id'       => $cityId,
         'tagline'     => mb_substr(post('tagline'), 0, 255),
         'description' => sentence_cap(post('description'), $maxDesc),

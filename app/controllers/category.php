@@ -42,9 +42,20 @@ if ($country) {
     if ($city)    { $locPath .= '/' . $city['slug'];   $place = $city['name'] . ($region ? ', ' . $region['code'] : ', ' . $country['name']); }
 }
 
+// ---- optional subcategory filter ----
+// A query parameter rather than a path segment: the segments after the
+// category are already spoken for by country, state and city, so
+// /category/home/plumber would be indistinguishable from a country code.
+// Checked against the live list, so an invented ?type= is ignored rather
+// than quietly returning nothing.
+$typeKey   = trim((string)($_GET['type'] ?? ''));
+$typeLabel = $typeKey !== '' ? listing_type_label($typeKey) : '';
+if ($typeKey !== '' && $typeLabel === '') { $typeKey = ''; }
+
 // ---- listings query, scoped ----
 $where  = ['b.category_id = ?', 'b.status = "live"'];
 $params = [$cat['id']];
+if ($typeKey !== '') { $where[] = 'b.business_type = ?'; $params[] = $typeKey; }
 if ($city)        { $where[] = 'b.city_id = ?';        $params[] = $city['id']; }
 elseif ($region)  { $where[] = 'ci.region_id = ?';     $params[] = $region['id']; }
 elseif ($country) { $where[] = 'ci.country_code = ?';  $params[] = $country['code']; }
@@ -125,6 +136,12 @@ if ($total > 0) {
               "There " . ($total === 1 ? "is currently 1 $catLower provider" : "are currently $total $catLower providers") . " listed in $placeOr on $site, and new businesses are added after moderation every week."];
 }
 
+// The other trades on this shelf, so a filtered page offers the siblings and
+// an unfiltered one offers the way in. Empty when subcategories are not
+// installed, which is what keeps this working before the upgrade SQL is run.
+$subcats = [];
+foreach ((schema_types()[$cat['id']] ?? []) as $k => $label) $subcats[$k] = $label;
+
 // ---- breadcrumbs + meta ----
 $crumbs = [['name' => 'Home', 'path' => '/'], ['name' => $cat['label'], 'path' => $catBase]];
 if ($country) $crumbs[] = ['name' => $country['name'], 'path' => "$catBase/" . strtolower($country['code'])];
@@ -132,10 +149,15 @@ if ($region)  $crumbs[] = ['name' => $region['name'], 'path' => "$catBase/us/{$r
 if ($city)    $crumbs[] = ['name' => $city['name'], 'path' => $locPath];
 
 $titlePlace = $place ? " in $place" : '';
+// A subcategory page is its own page: the heading, the title and the canonical
+// all name it, so it does not read as a duplicate of the category above it.
+$titleWhat  = $typeLabel !== '' ? $typeLabel : $cat['label'];
+$typeQs     = $typeKey !== '' ? 'type=' . rawurlencode($typeKey) : '';
 $meta = [
-    'title'       => $cat['label'] . $titlePlace . " — " . ($total > 0 ? "$total trusted listing" . ($total === 1 ? '' : 's') : 'find local businesses') . " | $site" . ($page > 1 ? " (page $page)" : ''),
-    'description' => "Find trusted " . $catLower . " businesses$titlePlace. " . ($total > 0 ? "$total verified listing" . ($total === 1 ? '' : 's') . " with reviews, ratings and direct contact details" : "Human-moderated local listings with reviews and direct contact details") . " on $site.",
-    'canonical'   => site_url($locPath . ($page > 1 ? "?page=$page" : '')),
+    'title'       => $titleWhat . $titlePlace . " — " . ($total > 0 ? "$total trusted listing" . ($total === 1 ? '' : 's') : 'find local businesses') . " | $site" . ($page > 1 ? " (page $page)" : ''),
+    'description' => "Find trusted " . mb_strtolower($titleWhat) . " businesses$titlePlace. " . ($total > 0 ? "$total verified listing" . ($total === 1 ? '' : 's') . " with reviews, ratings and direct contact details" : "Human-moderated local listings with reviews and direct contact details") . " on $site.",
+    'canonical'   => site_url($locPath . (($typeQs || $page > 1)
+                        ? '?' . implode('&', array_filter([$typeQs, $page > 1 ? "page=$page" : ''])) : '')),
     'robots'      => $total === 0 ? 'noindex, follow' : null,
     'jsonld'      => [
         jsonld_breadcrumbs($crumbs),
@@ -146,4 +168,5 @@ $meta = [
 $meta = array_filter($meta, fn($x) => $x !== null);
 
 view('category', compact('meta', 'cat', 'list', 'total', 'page', 'pages',
-    'country', 'region', 'city', 'place', 'locPath', 'crumbs', 'intro', 'faq', 'nearby', 'otherCats'));
+    'country', 'region', 'city', 'place', 'locPath', 'crumbs', 'intro', 'faq', 'nearby', 'otherCats',
+    'typeKey', 'typeLabel', 'subcats'));

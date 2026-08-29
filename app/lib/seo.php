@@ -506,6 +506,46 @@ function business_schema_type(array $b): string
 }
 
 /**
+ * May a listing store this key?
+ *
+ * Wider than schema_type_valid(), and it has to be. That one asks "is this a
+ * real Schema.org type", which is the right question for the markup and the
+ * wrong one for the form: a subcategory with no Schema.org type is offered in
+ * the dropdown under an x- key, and validating the save against the catalogue
+ * threw it away silently. The listing kept no subcategory at all and nothing
+ * said so.
+ *
+ * So the form validates against what the form offered — the live list — and
+ * business_schema_type() still decides separately what may be published, which
+ * is where an x- key turns into the category's type or LocalBusiness.
+ */
+function listing_type_selectable(?string $key): bool
+{
+    if ($key === null || $key === '') return false;
+    if (schema_type_valid($key)) return true;
+    foreach (schema_types() as $group) {
+        if (isset($group[$key])) return true;
+    }
+    return false;
+}
+
+/**
+ * The label for whatever a listing stored, live list first.
+ *
+ * Covers the x- keys too, which schema_type_label() cannot: those are not in
+ * the catalogue, so it would return '' and a page would show a listing with a
+ * subcategory as having none.
+ */
+function listing_type_label(?string $key): string
+{
+    if ($key === null || $key === '') return '';
+    foreach (schema_types() as $group) {
+        if (isset($group[$key])) return $group[$key];
+    }
+    return schema_type_label($key);
+}
+
+/**
  * The type a subcategory publishes, and where it came from.
  *
  * Returns [type, source] where source is 'own', 'category' or ''. The admin
