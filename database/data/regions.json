@@ -1,0 +1,100 @@
+{
+  "_note": [
+    "States, provinces and regions outside the US, and the starter cities that sit under them.",
+    "US states live in geo.json — they are complete, so every US city has one.",
+    "This file is deliberately not complete. A region is listed only when a city in",
+    "cities.json belongs to it, so every region page has something on it. Adding a",
+    "region here with no city under it would ship an empty page, which is worse for",
+    "search than no page at all.",
+    "",
+    "A region is also left out when it would carry the same slug as the only city in it.",
+    "Berlin, Tokyo, Dubai and Madrid gain nothing from /de/berlin/berlin, so those cities",
+    "keep the short path and no region row is created. Routing handles both shapes in the",
+    "same country — see app/lib/geo.php.",
+    "",
+    "code is what gets printed after a city name (\"Toronto, ON\"). Left null where the",
+    "country has no short form people would recognise; the full name is used instead.",
+    "City names must match cities.json exactly."
+  ],
+  "CA": [
+    { "code": "ON", "name": "Ontario",           "cities": ["Toronto", "Ottawa"] },
+    { "code": "QC", "name": "Quebec",            "cities": ["Montreal"] },
+    { "code": "BC", "name": "British Columbia",  "cities": ["Vancouver"] },
+    { "code": "AB", "name": "Alberta",           "cities": ["Calgary"] }
+  ],
+  "GB": [
+    { "code": null, "name": "England",  "cities": ["London", "Manchester", "Birmingham"] },
+    { "code": null, "name": "Scotland", "cities": ["Edinburgh", "Glasgow"] }
+  ],
+  "AU": [
+    { "code": "NSW", "name": "New South Wales",   "cities": ["Sydney"] },
+    { "code": "VIC", "name": "Victoria",          "cities": ["Melbourne"] },
+    { "code": "QLD", "name": "Queensland",        "cities": ["Brisbane"] },
+    { "code": "WA",  "name": "Western Australia", "cities": ["Perth"] },
+    { "code": "SA",  "name": "South Australia",   "cities": ["Adelaide"] }
+  ],
+  "DE": [
+    { "code": null, "name": "Bavaria",                 "cities": ["Munich"] },
+    { "code": null, "name": "Hesse",                   "cities": ["Frankfurt"] },
+    { "code": null, "name": "North Rhine-Westphalia",  "cities": ["Cologne"] }
+  ],
+  "FR": [
+    { "code": null, "name": "Île-de-France",              "cities": ["Paris"] },
+    { "code": null, "name": "Provence-Alpes-Côte d'Azur", "cities": ["Marseille", "Nice"] },
+    { "code": null, "name": "Auvergne-Rhône-Alpes",       "cities": ["Lyon"] },
+    { "code": null, "name": "Occitanie",                  "cities": ["Toulouse"] }
+  ],
+  "IN": [
+    { "code": "MH", "name": "Maharashtra", "cities": ["Mumbai"] },
+    { "code": "KA", "name": "Karnataka",   "cities": ["Bangalore"] },
+    { "code": "TS", "name": "Telangana",   "cities": ["Hyderabad"] },
+    { "code": "TN", "name": "Tamil Nadu",  "cities": ["Chennai"] }
+  ],
+  "JP": [
+    { "code": null, "name": "Kanagawa", "cities": ["Yokohama"] },
+    { "code": null, "name": "Aichi",    "cities": ["Nagoya"] }
+  ],
+  "BR": [
+    { "code": "DF", "name": "Federal District", "cities": ["Brasília"] },
+    { "code": "BA", "name": "Bahia",            "cities": ["Salvador"] }
+  ],
+  "MX": [
+    { "code": null, "name": "Jalisco",      "cities": ["Guadalajara"] },
+    { "code": null, "name": "Nuevo León",   "cities": ["Monterrey"] },
+    { "code": null, "name": "Quintana Roo", "cities": ["Cancún"] }
+  ],
+  "IT": [
+    { "code": null, "name": "Lazio",    "cities": ["Rome"] },
+    { "code": null, "name": "Lombardy", "cities": ["Milan"] },
+    { "code": null, "name": "Campania", "cities": ["Naples"] },
+    { "code": null, "name": "Piedmont", "cities": ["Turin"] },
+    { "code": null, "name": "Tuscany",  "cities": ["Florence"] }
+  ],
+  "ES": [
+    { "code": null, "name": "Catalonia",           "cities": ["Barcelona"] },
+    { "code": null, "name": "Valencian Community", "cities": ["Valencia"] },
+    { "code": null, "name": "Andalusia",           "cities": ["Seville"] }
+  ],
+  "NL": [
+    { "code": null, "name": "North Holland", "cities": ["Amsterdam"] },
+    { "code": null, "name": "South Holland", "cities": ["Rotterdam", "The Hague"] }
+  ],
+  "CN": [
+    { "code": null, "name": "Guangdong", "cities": ["Guangzhou", "Shenzhen"] }
+  ],
+  "ZA": [
+    { "code": "GP",  "name": "Gauteng",       "cities": ["Johannesburg", "Pretoria"] },
+    { "code": "WC",  "name": "Western Cape",  "cities": ["Cape Town"] },
+    { "code": "KZN", "name": "KwaZulu-Natal", "cities": ["Durban"] }
+  ],
+  "NZ": [
+    { "code": null, "name": "Canterbury", "cities": ["Christchurch"] }
+  ],
+  "SE": [
+    { "code": null, "name": "Västra Götaland", "cities": ["Gothenburg"] },
+    { "code": null, "name": "Skåne",           "cities": ["Malmö"] }
+  ],
+  "NG": [
+    { "code": null, "name": "Federal Capital Territory", "cities": ["Abuja"] }
+  ]
+}

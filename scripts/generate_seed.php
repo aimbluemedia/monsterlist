@@ -8,13 +8,17 @@ $geo     = json_decode(file_get_contents("$dataDir/geo.json"), true);
 $cities  = json_decode(file_get_contents("$dataDir/cities.json"), true);
 $popular = json_decode(file_get_contents("$dataDir/popular.json"), true);
 $popEng  = json_decode(file_get_contents("$dataDir/popular_english.json"), true);
+$intlReg = json_decode(file_get_contents("$dataDir/regions.json"), true);
+unset($intlReg['_note']);
 
 function slugify(string $s): string
 {
-    $s = strtolower(trim($s));
+    // Must match slugify() in app/lib/helpers.php exactly, or a city the seed
+    // creates and the same city typed into the listing form become two rows.
+    $s = mb_strtolower(trim($s), 'UTF-8');
     $t = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $s);
     if ($t !== false) $s = $t;
-    $s = preg_replace('/[^a-z0-9]+/', '-', $s);
+    $s = preg_replace('/[^a-z0-9]+/', '-', strtolower($s));
     return trim($s, '-');
 }
 
@@ -58,11 +62,46 @@ foreach ($cities['usCities'] as $stateCode => $cityList) {
     }
 }
 
-// ---- International cities (2-tier) ----
+// ---- States, provinces and regions outside the US ----
+// Only the ones a starter city actually sits in — see the note in regions.json.
+$vals = [];
+foreach ($intlReg as $cc => $regionList) {
+    foreach ($regionList as $r) {
+        $vals[] = sprintf('(%s,%s,%s,%s,0)', sq($cc),
+            $r['code'] === null ? 'NULL' : sq($r['code']), sq($r['name']), sq(slugify($r['name'])));
+    }
+}
+if ($vals) {
+    $out[] = 'INSERT INTO regions (country_code,code,name,slug,is_popular) VALUES ' . implode(',', $vals)
+           . ' ON DUPLICATE KEY UPDATE name=VALUES(name), code=VALUES(code);';
+}
+
+// Which region each international city belongs to, if any.
+$cityRegion = [];
+foreach ($intlReg as $cc => $regionList) {
+    foreach ($regionList as $r) {
+        foreach ($r['cities'] as $city) $cityRegion[$cc][slugify($city)] = slugify($r['name']);
+    }
+}
+
+// ---- International cities ----
+// A city under a region is inserted through a SELECT so it picks up that
+// region's id; the rest go in flat, exactly as before.
 $vals = [];
 foreach ($cities['countryCities'] as $cc => $cityList) {
     foreach ($cityList as $i => $city) {
-        $vals[] = sprintf('(%s,NULL,%s,%s,%d)', sq($cc), sq($city), sq(slugify($city)), $i < 2 ? 1 : 0);
+        $isPop = $i < 2 ? 1 : 0;
+        $rSlug = $cityRegion[$cc][slugify($city)] ?? null;
+        if ($rSlug === null) {
+            $vals[] = sprintf('(%s,NULL,%s,%s,%d)', sq($cc), sq($city), sq(slugify($city)), $isPop);
+            continue;
+        }
+        $out[] = sprintf(
+            "INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT %s, r.id, %s, %s, %d FROM regions r WHERE r.country_code=%s AND r.slug=%s
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);",
+            sq($cc), sq($city), sq(slugify($city)), $isPop, sq($cc), sq($rSlug)
+        );
     }
 }
 $out[] = 'INSERT INTO cities (country_code,region_id,name,slug,is_popular) VALUES ' . implode(',', $vals)

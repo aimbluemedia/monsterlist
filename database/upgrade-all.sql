@@ -450,6 +450,152 @@ UPDATE settings SET value = '150' WHERE name = 'tokens_grant_pro'  AND value = '
 
 
 -- ===========================================================================
+-- States, provinces and regions outside the US.
+--
+-- Until now the only rows in `regions` were the 51 US states, so every non-US
+-- city had region_id NULL and sat directly under its country: /ca/toronto
+-- rather than /ca/ontario/toronto. Two things came of that.
+--
+-- The first is a real bug. uq_city is (country_code, region_id, slug), and
+-- MySQL does not treat NULLs as equal to each other in a unique key — so for
+-- every country outside the US that key enforced nothing at all. Two different
+-- cities sharing a slug in one country could both be inserted, after which
+-- /ca/{slug} resolved to whichever one the query happened to return first.
+-- Fixed below with a region_key column that carries 0 where region_id is NULL,
+-- and a unique key over that instead.
+--
+-- The second is the missing level itself, added here for the places a starter
+-- city sits in. Deliberately not every region of every country: a region page
+-- with no cities on it is a thin page, and thin pages at scale are a liability
+-- rather than an asset. Also skipped where the region would carry the same
+-- slug as its only city — Berlin, Tokyo, Dubai and Madrid keep the short path,
+-- because /de/berlin/berlin says nothing /de/berlin did not.
+--
+-- Cities that gain a region change URL. Nothing 404s: the old path is
+-- recognised and 301s to the new one (app/controllers/geo.php). Cities this
+-- does not name — anything created from a real listing — keep region_id NULL
+-- and their current URL, which is why the redirect set stays small.
+-- ===========================================================================
+
+-- Loaded through a temporary table and joined to `countries`, rather than
+-- inserted straight in. On a fresh install this file runs before seed.sql, so
+-- `countries` is still empty and a direct insert fails the foreign key — which
+-- would abort the import here and leave everything below unapplied. Joining
+-- means "nothing to do yet", and seed.sql creates these rows itself.
+CREATE TEMPORARY TABLE ml_region_seed (
+  cc   CHAR(2),
+  code VARCHAR(10),
+  name VARCHAR(120),
+  slug VARCHAR(140)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO ml_region_seed (cc, code, name, slug) VALUES
+  ('CA','ON','Ontario','ontario'),('CA','QC','Quebec','quebec'),
+  ('CA','BC','British Columbia','british-columbia'),('CA','AB','Alberta','alberta'),
+  ('GB',NULL,'England','england'),('GB',NULL,'Scotland','scotland'),
+  ('AU','NSW','New South Wales','new-south-wales'),('AU','VIC','Victoria','victoria'),
+  ('AU','QLD','Queensland','queensland'),('AU','WA','Western Australia','western-australia'),
+  ('AU','SA','South Australia','south-australia'),('DE',NULL,'Bavaria','bavaria'),
+  ('DE',NULL,'Hesse','hesse'),('DE',NULL,'North Rhine-Westphalia','north-rhine-westphalia'),
+  ('FR',NULL,'Île-de-France','ile-de-france'),
+  ('FR',NULL,'Provence-Alpes-Côte d\'Azur','provence-alpes-cote-d-azur'),
+  ('FR',NULL,'Auvergne-Rhône-Alpes','auvergne-rhone-alpes'),('FR',NULL,'Occitanie','occitanie'),
+  ('IN','MH','Maharashtra','maharashtra'),('IN','KA','Karnataka','karnataka'),
+  ('IN','TS','Telangana','telangana'),('IN','TN','Tamil Nadu','tamil-nadu'),
+  ('JP',NULL,'Kanagawa','kanagawa'),('JP',NULL,'Aichi','aichi'),
+  ('BR','DF','Federal District','federal-district'),('BR','BA','Bahia','bahia'),
+  ('MX',NULL,'Jalisco','jalisco'),('MX',NULL,'Nuevo León','nuevo-leon'),
+  ('MX',NULL,'Quintana Roo','quintana-roo'),('IT',NULL,'Lazio','lazio'),
+  ('IT',NULL,'Lombardy','lombardy'),('IT',NULL,'Campania','campania'),
+  ('IT',NULL,'Piedmont','piedmont'),('IT',NULL,'Tuscany','tuscany'),
+  ('ES',NULL,'Catalonia','catalonia'),('ES',NULL,'Valencian Community','valencian-community'),
+  ('ES',NULL,'Andalusia','andalusia'),('NL',NULL,'North Holland','north-holland'),
+  ('NL',NULL,'South Holland','south-holland'),('CN',NULL,'Guangdong','guangdong'),
+  ('ZA','GP','Gauteng','gauteng'),('ZA','WC','Western Cape','western-cape'),
+  ('ZA','KZN','KwaZulu-Natal','kwazulu-natal'),('NZ',NULL,'Canterbury','canterbury'),
+  ('SE',NULL,'Västra Götaland','vastra-gotaland'),('SE',NULL,'Skåne','skane'),
+  ('NG',NULL,'Federal Capital Territory','federal-capital-territory');
+
+INSERT INTO regions (country_code, code, name, slug)
+SELECT s.cc, s.code, s.name, s.slug
+  FROM ml_region_seed s JOIN countries c ON c.code = s.cc
+ON DUPLICATE KEY UPDATE name = VALUES(name), code = VALUES(code);
+
+DROP TEMPORARY TABLE ml_region_seed;
+
+-- The charset and collation are spelled out to match `cities` and `regions` as
+-- schema.sql declares them. A temporary table otherwise takes the server's
+-- default, and on a server whose default is utf8mb4_general_ci the join below
+-- fails outright with "Illegal mix of collations" rather than matching nothing.
+CREATE TEMPORARY TABLE ml_city_region (
+  cc          CHAR(2),
+  city_slug   VARCHAR(160),
+  region_slug VARCHAR(140)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+INSERT INTO ml_city_region (cc, city_slug, region_slug) VALUES
+  ('CA','toronto','ontario'),('CA','ottawa','ontario'),('CA','montreal','quebec'),
+  ('CA','vancouver','british-columbia'),('CA','calgary','alberta'),('GB','london','england'),
+  ('GB','manchester','england'),('GB','birmingham','england'),('GB','edinburgh','scotland'),
+  ('GB','glasgow','scotland'),('AU','sydney','new-south-wales'),('AU','melbourne','victoria'),
+  ('AU','brisbane','queensland'),('AU','perth','western-australia'),
+  ('AU','adelaide','south-australia'),('DE','munich','bavaria'),('DE','frankfurt','hesse'),
+  ('DE','cologne','north-rhine-westphalia'),('FR','paris','ile-de-france'),
+  ('FR','marseille','provence-alpes-cote-d-azur'),('FR','nice','provence-alpes-cote-d-azur'),
+  ('FR','lyon','auvergne-rhone-alpes'),('FR','toulouse','occitanie'),('IN','mumbai','maharashtra'),
+  ('IN','bangalore','karnataka'),('IN','hyderabad','telangana'),('IN','chennai','tamil-nadu'),
+  ('JP','yokohama','kanagawa'),('JP','nagoya','aichi'),('BR','brasilia','federal-district'),
+  ('BR','salvador','bahia'),('MX','guadalajara','jalisco'),('MX','monterrey','nuevo-leon'),
+  ('MX','cancun','quintana-roo'),('IT','rome','lazio'),('IT','milan','lombardy'),
+  ('IT','naples','campania'),('IT','turin','piedmont'),('IT','florence','tuscany'),
+  ('ES','barcelona','catalonia'),('ES','valencia','valencian-community'),
+  ('ES','seville','andalusia'),('NL','amsterdam','north-holland'),
+  ('NL','rotterdam','south-holland'),('NL','the-hague','south-holland'),
+  ('CN','guangzhou','guangdong'),('CN','shenzhen','guangdong'),('ZA','johannesburg','gauteng'),
+  ('ZA','pretoria','gauteng'),('ZA','cape-town','western-cape'),('ZA','durban','kwazulu-natal'),
+  ('NZ','christchurch','canterbury'),('SE','gothenburg','vastra-gotaland'),('SE','malmo','skane'),
+  ('NG','abuja','federal-capital-territory');
+
+-- Put each starter city under its region. Only where it has none: a region
+-- already chosen, by hand or on a listing form, is the better answer and is
+-- left alone.
+--
+-- UPDATE IGNORE, not UPDATE, for the bug above: if a country already holds two
+-- cities with the same slug, moving both under one region collides on uq_city
+-- and would abort the whole import. Skipping the second is the right outcome —
+-- the report at the bottom names any it found so they can be merged by hand.
+UPDATE IGNORE cities ci
+  JOIN ml_city_region m ON m.cc = ci.country_code AND m.city_slug = ci.slug
+  JOIN regions r        ON r.country_code = m.cc  AND r.slug = m.region_slug
+   SET ci.region_id = r.id
+ WHERE ci.region_id IS NULL;
+
+DROP TEMPORARY TABLE ml_city_region;
+
+-- region_id with its NULLs flattened to 0, so a unique key over it actually
+-- holds for the region-less rows. Generated and stored: it cannot drift out of
+-- step with region_id the way a column the application maintains could.
+SET @ddl = IF((SELECT COUNT(*) FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'cities'
+                  AND COLUMN_NAME = 'region_key') > 0,
+  'DO 0',
+  'ALTER TABLE cities ADD COLUMN region_key INT UNSIGNED AS (IFNULL(region_id, 0)) STORED');
+PREPARE s FROM @ddl; EXECUTE s; DEALLOCATE PREPARE s;
+
+-- The key itself. Held back if the table already contains the duplicates it
+-- would reject, because failing here would abort the import and leave the rest
+-- of this file unapplied. The report at the bottom says which state you are in.
+SET @dupes = (SELECT COUNT(*) FROM (SELECT 1 FROM cities
+               GROUP BY country_code, IFNULL(region_id, 0), slug HAVING COUNT(*) > 1) d);
+SET @ddl = IF(@dupes > 0
+              OR (SELECT COUNT(*) FROM information_schema.STATISTICS
+                   WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'cities'
+                     AND INDEX_NAME = 'uq_city_place') > 0,
+  'DO 0',
+  'ALTER TABLE cities ADD UNIQUE KEY uq_city_place (country_code, region_key, slug)');
+PREPARE s FROM @ddl; EXECUTE s; DEALLOCATE PREPARE s;
+
+
+-- ===========================================================================
 -- Report. Every line should read OK. Anything else is worth telling me about.
 --
 -- ORDER MATTERS HERE, for a reason that is nothing to do with SQL.
@@ -493,6 +639,22 @@ SELECT d.domain                                             AS shared_domain,
  WHERE EXISTS (SELECT 1 FROM users u2 WHERE u2.website = d.domain AND u2.id <> d.user_id)
  ORDER BY d.domain;
 
+-- Cities sharing a slug inside one country — what the old unique key let
+-- through. Each pair is one place addressable at one URL that resolves to
+-- whichever row comes back first. An empty result is the good answer, and
+-- means uq_city_place was added above. If rows appear here, merge them (point
+-- the listings at one city id, delete the other) and run this file again to
+-- pick up the key.
+SELECT ci.country_code,
+       ci.slug,
+       COUNT(*)                                            AS rows_found,
+       GROUP_CONCAT(ci.id ORDER BY ci.id SEPARATOR ', ')   AS city_ids,
+       GROUP_CONCAT(ci.name ORDER BY ci.id SEPARATOR ' | ') AS names
+  FROM cities ci
+ GROUP BY ci.country_code, IFNULL(ci.region_id, 0), ci.slug
+HAVING COUNT(*) > 1
+ ORDER BY ci.country_code, ci.slug;
+
 SELECT 'blocklist table'          AS piece, IF(COUNT(*) > 0, 'OK', 'MISSING') AS state FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'blocklist'
 UNION ALL SELECT 'token_events table',      IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'token_events'
 UNION ALL SELECT 'promotion_views table',   IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'promotion_views'
@@ -512,6 +674,8 @@ UNION ALL SELECT 'category_types table',    IF(COUNT(*) > 0, 'OK', 'MISSING') FR
 UNION ALL SELECT 'categories.schema_type',   IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'categories' AND COLUMN_NAME = 'schema_type'
 UNION ALL SELECT 'member_tasks table',      IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'member_tasks'
 UNION ALL SELECT 'users.plan_renews_on',    IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'      AND COLUMN_NAME = 'plan_renews_on'
-UNION ALL SELECT 'users.plan_comped',       IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'      AND COLUMN_NAME = 'plan_comped';
+UNION ALL SELECT 'users.plan_comped',       IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'      AND COLUMN_NAME = 'plan_comped'
+UNION ALL SELECT 'cities.region_key',        IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'cities'     AND COLUMN_NAME = 'region_key'
+UNION ALL SELECT 'cities uq_city_place key', IF(COUNT(*) > 0, 'OK', 'MISSING — see the duplicate-city list above') FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'cities' AND INDEX_NAME = 'uq_city_place';
 
 -- Nothing goes below this line. See the note above the report.

@@ -1,10 +1,12 @@
 <?php
 // Category pages — the programmatic-SEO backbone:
-//   /category/{cat}                       global
-//   /category/{cat}/{cc}                  country level
-//   /category/{cat}/us/{state}            US state level
-//   /category/{cat}/{cc}/{city}           intl city level
-//   /category/{cat}/us/{state}/{city}     US city level
+//   /category/{cat}                        global
+//   /category/{cat}/{cc}                   country level
+//   /category/{cat}/{cc}/{region}          region level
+//   /category/{cat}/{cc}/{city}            city level — city with no region
+//   /category/{cat}/{cc}/{region}/{city}   city level
+// The fourth segment is a region or a city depending on which one exists, the
+// same way the geo routes resolve it; see app/controllers/geo.php.
 // Pages with zero listings render but are noindexed (no thin-page penalty).
 
 $cat = category_by_id($catSlug);
@@ -18,13 +20,20 @@ $country = null; $region = null; $city = null;
 if ($n >= 3) {
     $country = country_by_slug($segments[2]);
     if (!$country) not_found();
-    $isUS = $country['code'] === 'US';
     if ($n === 4) {
-        if ($isUS) { $region = region_by_slug('US', $segments[3]); if (!$region) not_found(); }
-        else       { $city = city_in_country($country['code'], $segments[3]); if (!$city) not_found(); }
+        $region = region_by_slug($country['code'], $segments[3]);
+        if (!$region) {
+            $city = city_in_country($country['code'], $segments[3]);
+            // A city that has gained a region since this URL was indexed.
+            if (!$city) {
+                $moved = city_by_slug_any($country['code'], $segments[3]);
+                if (!$moved || empty($moved['region_id'])) not_found();
+                redirect('/category/' . $cat['id'] . '/' . strtolower($country['code'])
+                       . '/' . $moved['region_slug'] . '/' . $moved['slug'], 301);
+            }
+        }
     } elseif ($n === 5) {
-        if (!$isUS) not_found();
-        $region = region_by_slug('US', $segments[3]);
+        $region = region_by_slug($country['code'], $segments[3]);
         if (!$region) not_found();
         $city = city_in_region((int)$region['id'], $segments[4]);
         if (!$city) not_found();
@@ -39,7 +48,11 @@ if ($country) {
     $locPath .= '/' . strtolower($country['code']);
     $place = $country['name'];
     if ($region)  { $locPath .= '/' . $region['slug']; $place = $region['name']; }
-    if ($city)    { $locPath .= '/' . $city['slug'];   $place = $city['name'] . ($region ? ', ' . $region['code'] : ', ' . $country['name']); }
+    // "Phoenix, AZ" where the region has a short code people recognise, and the
+    // region's full name where it does not — not every country abbreviates its
+    // provinces, and an empty code left "Toronto, " hanging.
+    if ($city)    { $locPath .= '/' . $city['slug'];
+                    $place = $city['name'] . ', ' . ($region ? ($region['code'] ?: $region['name']) : $country['name']); }
 }
 
 // ---- optional subcategory filter ----
@@ -145,7 +158,7 @@ foreach ((schema_types()[$cat['id']] ?? []) as $k => $label) $subcats[$k] = $lab
 // ---- breadcrumbs + meta ----
 $crumbs = [['name' => 'Home', 'path' => '/'], ['name' => $cat['label'], 'path' => $catBase]];
 if ($country) $crumbs[] = ['name' => $country['name'], 'path' => "$catBase/" . strtolower($country['code'])];
-if ($region)  $crumbs[] = ['name' => $region['name'], 'path' => "$catBase/us/{$region['slug']}"];
+if ($region)  $crumbs[] = ['name' => $region['name'], 'path' => "$catBase/" . strtolower($country['code']) . "/{$region['slug']}"];
 if ($city)    $crumbs[] = ['name' => $city['name'], 'path' => $locPath];
 
 $titlePlace = $place ? " in $place" : '';

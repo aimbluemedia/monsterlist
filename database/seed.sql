@@ -581,5 +581,171 @@ INSERT INTO cities (country_code,region_id,name,slug,is_popular)
 INSERT INTO cities (country_code,region_id,name,slug,is_popular)
              SELECT 'US', r.id, 'Washington', 'washington', 0 FROM regions r WHERE r.country_code='US' AND r.code='DC'
              ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
-INSERT INTO cities (country_code,region_id,name,slug,is_popular) VALUES ('CA',NULL,'Toronto','toronto',1),('CA',NULL,'Montreal','montreal',1),('CA',NULL,'Vancouver','vancouver',0),('CA',NULL,'Calgary','calgary',0),('CA',NULL,'Ottawa','ottawa',0),('GB',NULL,'London','london',1),('GB',NULL,'Manchester','manchester',1),('GB',NULL,'Birmingham','birmingham',0),('GB',NULL,'Edinburgh','edinburgh',0),('GB',NULL,'Glasgow','glasgow',0),('AU',NULL,'Sydney','sydney',1),('AU',NULL,'Melbourne','melbourne',1),('AU',NULL,'Brisbane','brisbane',0),('AU',NULL,'Perth','perth',0),('AU',NULL,'Adelaide','adelaide',0),('DE',NULL,'Berlin','berlin',1),('DE',NULL,'Munich','munich',1),('DE',NULL,'Hamburg','hamburg',0),('DE',NULL,'Frankfurt','frankfurt',0),('DE',NULL,'Cologne','cologne',0),('FR',NULL,'Paris','paris',1),('FR',NULL,'Marseille','marseille',1),('FR',NULL,'Lyon','lyon',0),('FR',NULL,'Toulouse','toulouse',0),('FR',NULL,'Nice','nice',0),('IN',NULL,'Mumbai','mumbai',1),('IN',NULL,'Delhi','delhi',1),('IN',NULL,'Bangalore','bangalore',0),('IN',NULL,'Hyderabad','hyderabad',0),('IN',NULL,'Chennai','chennai',0),('JP',NULL,'Tokyo','tokyo',1),('JP',NULL,'Osaka','osaka',1),('JP',NULL,'Kyoto','kyoto',0),('JP',NULL,'Yokohama','yokohama',0),('JP',NULL,'Nagoya','nagoya',0),('BR',NULL,'São Paulo','sao-paulo',1),('BR',NULL,'Rio de Janeiro','rio-de-janeiro',1),('BR',NULL,'Brasília','brasilia',0),('BR',NULL,'Salvador','salvador',0),('MX',NULL,'Mexico City','mexico-city',1),('MX',NULL,'Guadalajara','guadalajara',1),('MX',NULL,'Monterrey','monterrey',0),('MX',NULL,'Cancún','cancun',0),('IT',NULL,'Rome','rome',1),('IT',NULL,'Milan','milan',1),('IT',NULL,'Naples','naples',0),('IT',NULL,'Turin','turin',0),('IT',NULL,'Florence','florence',0),('ES',NULL,'Madrid','madrid',1),('ES',NULL,'Barcelona','barcelona',1),('ES',NULL,'Valencia','valencia',0),('ES',NULL,'Seville','seville',0),('NL',NULL,'Amsterdam','amsterdam',1),('NL',NULL,'Rotterdam','rotterdam',1),('NL',NULL,'The Hague','the-hague',0),('NL',NULL,'Utrecht','utrecht',0),('CN',NULL,'Beijing','beijing',1),('CN',NULL,'Shanghai','shanghai',1),('CN',NULL,'Guangzhou','guangzhou',0),('CN',NULL,'Shenzhen','shenzhen',0),('ZA',NULL,'Johannesburg','johannesburg',1),('ZA',NULL,'Cape Town','cape-town',1),('ZA',NULL,'Durban','durban',0),('ZA',NULL,'Pretoria','pretoria',0),('AE',NULL,'Dubai','dubai',1),('AE',NULL,'Abu Dhabi','abu-dhabi',1),('AE',NULL,'Sharjah','sharjah',0),('SG',NULL,'Singapore','singapore',1),('IE',NULL,'Dublin','dublin',1),('IE',NULL,'Cork','cork',1),('IE',NULL,'Galway','galway',0),('NZ',NULL,'Auckland','auckland',1),('NZ',NULL,'Wellington','wellington',1),('NZ',NULL,'Christchurch','christchurch',0),('SE',NULL,'Stockholm','stockholm',1),('SE',NULL,'Gothenburg','gothenburg',1),('SE',NULL,'Malmö','malmo',0),('NG',NULL,'Lagos','lagos',1),('NG',NULL,'Abuja','abuja',1),('NG',NULL,'Kano','kano',0) ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO regions (country_code,code,name,slug,is_popular) VALUES ('CA','ON','Ontario','ontario',0),('CA','QC','Quebec','quebec',0),('CA','BC','British Columbia','british-columbia',0),('CA','AB','Alberta','alberta',0),('GB',NULL,'England','england',0),('GB',NULL,'Scotland','scotland',0),('AU','NSW','New South Wales','new-south-wales',0),('AU','VIC','Victoria','victoria',0),('AU','QLD','Queensland','queensland',0),('AU','WA','Western Australia','western-australia',0),('AU','SA','South Australia','south-australia',0),('DE',NULL,'Bavaria','bavaria',0),('DE',NULL,'Hesse','hesse',0),('DE',NULL,'North Rhine-Westphalia','north-rhine-westphalia',0),('FR',NULL,'Île-de-France','ile-de-france',0),('FR',NULL,'Provence-Alpes-Côte d\'Azur','provence-alpes-cote-d-azur',0),('FR',NULL,'Auvergne-Rhône-Alpes','auvergne-rhone-alpes',0),('FR',NULL,'Occitanie','occitanie',0),('IN','MH','Maharashtra','maharashtra',0),('IN','KA','Karnataka','karnataka',0),('IN','TS','Telangana','telangana',0),('IN','TN','Tamil Nadu','tamil-nadu',0),('JP',NULL,'Kanagawa','kanagawa',0),('JP',NULL,'Aichi','aichi',0),('BR','DF','Federal District','federal-district',0),('BR','BA','Bahia','bahia',0),('MX',NULL,'Jalisco','jalisco',0),('MX',NULL,'Nuevo León','nuevo-leon',0),('MX',NULL,'Quintana Roo','quintana-roo',0),('IT',NULL,'Lazio','lazio',0),('IT',NULL,'Lombardy','lombardy',0),('IT',NULL,'Campania','campania',0),('IT',NULL,'Piedmont','piedmont',0),('IT',NULL,'Tuscany','tuscany',0),('ES',NULL,'Catalonia','catalonia',0),('ES',NULL,'Valencian Community','valencian-community',0),('ES',NULL,'Andalusia','andalusia',0),('NL',NULL,'North Holland','north-holland',0),('NL',NULL,'South Holland','south-holland',0),('CN',NULL,'Guangdong','guangdong',0),('ZA','GP','Gauteng','gauteng',0),('ZA','WC','Western Cape','western-cape',0),('ZA','KZN','KwaZulu-Natal','kwazulu-natal',0),('NZ',NULL,'Canterbury','canterbury',0),('SE',NULL,'Västra Götaland','vastra-gotaland',0),('SE',NULL,'Skåne','skane',0),('NG',NULL,'Federal Capital Territory','federal-capital-territory',0) ON DUPLICATE KEY UPDATE name=VALUES(name), code=VALUES(code);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'CA', r.id, 'Toronto', 'toronto', 1 FROM regions r WHERE r.country_code='CA' AND r.slug='ontario'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'CA', r.id, 'Montreal', 'montreal', 1 FROM regions r WHERE r.country_code='CA' AND r.slug='quebec'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'CA', r.id, 'Vancouver', 'vancouver', 0 FROM regions r WHERE r.country_code='CA' AND r.slug='british-columbia'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'CA', r.id, 'Calgary', 'calgary', 0 FROM regions r WHERE r.country_code='CA' AND r.slug='alberta'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'CA', r.id, 'Ottawa', 'ottawa', 0 FROM regions r WHERE r.country_code='CA' AND r.slug='ontario'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'GB', r.id, 'London', 'london', 1 FROM regions r WHERE r.country_code='GB' AND r.slug='england'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'GB', r.id, 'Manchester', 'manchester', 1 FROM regions r WHERE r.country_code='GB' AND r.slug='england'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'GB', r.id, 'Birmingham', 'birmingham', 0 FROM regions r WHERE r.country_code='GB' AND r.slug='england'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'GB', r.id, 'Edinburgh', 'edinburgh', 0 FROM regions r WHERE r.country_code='GB' AND r.slug='scotland'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'GB', r.id, 'Glasgow', 'glasgow', 0 FROM regions r WHERE r.country_code='GB' AND r.slug='scotland'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'AU', r.id, 'Sydney', 'sydney', 1 FROM regions r WHERE r.country_code='AU' AND r.slug='new-south-wales'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'AU', r.id, 'Melbourne', 'melbourne', 1 FROM regions r WHERE r.country_code='AU' AND r.slug='victoria'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'AU', r.id, 'Brisbane', 'brisbane', 0 FROM regions r WHERE r.country_code='AU' AND r.slug='queensland'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'AU', r.id, 'Perth', 'perth', 0 FROM regions r WHERE r.country_code='AU' AND r.slug='western-australia'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'AU', r.id, 'Adelaide', 'adelaide', 0 FROM regions r WHERE r.country_code='AU' AND r.slug='south-australia'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'DE', r.id, 'Munich', 'munich', 1 FROM regions r WHERE r.country_code='DE' AND r.slug='bavaria'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'DE', r.id, 'Frankfurt', 'frankfurt', 0 FROM regions r WHERE r.country_code='DE' AND r.slug='hesse'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'DE', r.id, 'Cologne', 'cologne', 0 FROM regions r WHERE r.country_code='DE' AND r.slug='north-rhine-westphalia'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'FR', r.id, 'Paris', 'paris', 1 FROM regions r WHERE r.country_code='FR' AND r.slug='ile-de-france'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'FR', r.id, 'Marseille', 'marseille', 1 FROM regions r WHERE r.country_code='FR' AND r.slug='provence-alpes-cote-d-azur'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'FR', r.id, 'Lyon', 'lyon', 0 FROM regions r WHERE r.country_code='FR' AND r.slug='auvergne-rhone-alpes'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'FR', r.id, 'Toulouse', 'toulouse', 0 FROM regions r WHERE r.country_code='FR' AND r.slug='occitanie'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'FR', r.id, 'Nice', 'nice', 0 FROM regions r WHERE r.country_code='FR' AND r.slug='provence-alpes-cote-d-azur'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'IN', r.id, 'Mumbai', 'mumbai', 1 FROM regions r WHERE r.country_code='IN' AND r.slug='maharashtra'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'IN', r.id, 'Bangalore', 'bangalore', 0 FROM regions r WHERE r.country_code='IN' AND r.slug='karnataka'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'IN', r.id, 'Hyderabad', 'hyderabad', 0 FROM regions r WHERE r.country_code='IN' AND r.slug='telangana'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'IN', r.id, 'Chennai', 'chennai', 0 FROM regions r WHERE r.country_code='IN' AND r.slug='tamil-nadu'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'JP', r.id, 'Yokohama', 'yokohama', 0 FROM regions r WHERE r.country_code='JP' AND r.slug='kanagawa'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'JP', r.id, 'Nagoya', 'nagoya', 0 FROM regions r WHERE r.country_code='JP' AND r.slug='aichi'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'BR', r.id, 'Brasília', 'brasilia', 0 FROM regions r WHERE r.country_code='BR' AND r.slug='federal-district'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'BR', r.id, 'Salvador', 'salvador', 0 FROM regions r WHERE r.country_code='BR' AND r.slug='bahia'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'MX', r.id, 'Guadalajara', 'guadalajara', 1 FROM regions r WHERE r.country_code='MX' AND r.slug='jalisco'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'MX', r.id, 'Monterrey', 'monterrey', 0 FROM regions r WHERE r.country_code='MX' AND r.slug='nuevo-leon'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'MX', r.id, 'Cancún', 'cancun', 0 FROM regions r WHERE r.country_code='MX' AND r.slug='quintana-roo'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'IT', r.id, 'Rome', 'rome', 1 FROM regions r WHERE r.country_code='IT' AND r.slug='lazio'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'IT', r.id, 'Milan', 'milan', 1 FROM regions r WHERE r.country_code='IT' AND r.slug='lombardy'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'IT', r.id, 'Naples', 'naples', 0 FROM regions r WHERE r.country_code='IT' AND r.slug='campania'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'IT', r.id, 'Turin', 'turin', 0 FROM regions r WHERE r.country_code='IT' AND r.slug='piedmont'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'IT', r.id, 'Florence', 'florence', 0 FROM regions r WHERE r.country_code='IT' AND r.slug='tuscany'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'ES', r.id, 'Barcelona', 'barcelona', 1 FROM regions r WHERE r.country_code='ES' AND r.slug='catalonia'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'ES', r.id, 'Valencia', 'valencia', 0 FROM regions r WHERE r.country_code='ES' AND r.slug='valencian-community'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'ES', r.id, 'Seville', 'seville', 0 FROM regions r WHERE r.country_code='ES' AND r.slug='andalusia'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'NL', r.id, 'Amsterdam', 'amsterdam', 1 FROM regions r WHERE r.country_code='NL' AND r.slug='north-holland'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'NL', r.id, 'Rotterdam', 'rotterdam', 1 FROM regions r WHERE r.country_code='NL' AND r.slug='south-holland'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'NL', r.id, 'The Hague', 'the-hague', 0 FROM regions r WHERE r.country_code='NL' AND r.slug='south-holland'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'CN', r.id, 'Guangzhou', 'guangzhou', 0 FROM regions r WHERE r.country_code='CN' AND r.slug='guangdong'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'CN', r.id, 'Shenzhen', 'shenzhen', 0 FROM regions r WHERE r.country_code='CN' AND r.slug='guangdong'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'ZA', r.id, 'Johannesburg', 'johannesburg', 1 FROM regions r WHERE r.country_code='ZA' AND r.slug='gauteng'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'ZA', r.id, 'Cape Town', 'cape-town', 1 FROM regions r WHERE r.country_code='ZA' AND r.slug='western-cape'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'ZA', r.id, 'Durban', 'durban', 0 FROM regions r WHERE r.country_code='ZA' AND r.slug='kwazulu-natal'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'ZA', r.id, 'Pretoria', 'pretoria', 0 FROM regions r WHERE r.country_code='ZA' AND r.slug='gauteng'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'NZ', r.id, 'Christchurch', 'christchurch', 0 FROM regions r WHERE r.country_code='NZ' AND r.slug='canterbury'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'SE', r.id, 'Gothenburg', 'gothenburg', 1 FROM regions r WHERE r.country_code='SE' AND r.slug='vastra-gotaland'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'SE', r.id, 'Malmö', 'malmo', 0 FROM regions r WHERE r.country_code='SE' AND r.slug='skane'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular)
+             SELECT 'NG', r.id, 'Abuja', 'abuja', 1 FROM regions r WHERE r.country_code='NG' AND r.slug='federal-capital-territory'
+             ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
+INSERT INTO cities (country_code,region_id,name,slug,is_popular) VALUES ('DE',NULL,'Berlin','berlin',1),('DE',NULL,'Hamburg','hamburg',0),('IN',NULL,'Delhi','delhi',1),('JP',NULL,'Tokyo','tokyo',1),('JP',NULL,'Osaka','osaka',1),('JP',NULL,'Kyoto','kyoto',0),('BR',NULL,'São Paulo','sao-paulo',1),('BR',NULL,'Rio de Janeiro','rio-de-janeiro',1),('MX',NULL,'Mexico City','mexico-city',1),('ES',NULL,'Madrid','madrid',1),('NL',NULL,'Utrecht','utrecht',0),('CN',NULL,'Beijing','beijing',1),('CN',NULL,'Shanghai','shanghai',1),('AE',NULL,'Dubai','dubai',1),('AE',NULL,'Abu Dhabi','abu-dhabi',1),('AE',NULL,'Sharjah','sharjah',0),('SG',NULL,'Singapore','singapore',1),('IE',NULL,'Dublin','dublin',1),('IE',NULL,'Cork','cork',1),('IE',NULL,'Galway','galway',0),('NZ',NULL,'Auckland','auckland',1),('NZ',NULL,'Wellington','wellington',1),('SE',NULL,'Stockholm','stockholm',1),('NG',NULL,'Lagos','lagos',1),('NG',NULL,'Kano','kano',0) ON DUPLICATE KEY UPDATE is_popular=VALUES(is_popular);
 INSERT INTO categories (id,label,icon,popularity) VALUES ('home','Home & Repair','🏠',16),('auto','Automotive','🚗',15),('professional','Professional Services','💼',14),('legal','Legal & Financial','⚖️',13),('creative','Creative & Design','🎨',12),('tech','Tech & AI','🤖',11),('marketing','Marketing & Media','📣',10),('wellness','Health & Wellness','🩺',9),('beauty','Beauty & Personal Care','💇',8),('food','Food & Catering','🍽️',7),('events','Events & Entertainment','🎉',6),('education','Education & Tutoring','📚',5),('realestate','Real Estate','🔑',4),('retail','Retail & Shopping','🛍️',3),('pets','Pets & Animals','🐾',2),('trades','Skilled Trades','🔧',1) ON DUPLICATE KEY UPDATE label=VALUES(label);

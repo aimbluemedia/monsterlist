@@ -249,7 +249,7 @@ if ($sub === 'dashboard') {
 
     $gallery   = rows('SELECT id, url FROM gallery WHERE business_id = ? ORDER BY sort', [$biz['id']]);
     $countries = all_countries();
-    $usStates  = regions_of('US');
+    $regionGroups = regions_by_country();
     $cats      = categories_all();
     $cityRow   = $biz['city_id'] ? city_full((int)$biz['city_id']) : null;
     $owner     = $biz['owner_id'] ? row('SELECT * FROM users WHERE id = ?', [$biz['owner_id']]) : null;
@@ -258,7 +258,7 @@ if ($sub === 'dashboard') {
     // their email — the plan's allowance is already implied by the plan buttons.
     $ownerCount = $owner ? (int)scalar('SELECT COUNT(*) FROM businesses WHERE owner_id = ?', [(int)$owner['id']]) : 0;
     $meta      = ['title' => 'Edit listing — ' . $site, 'robots' => 'noindex'];
-    view_raw('admin/listing-edit', compact('meta', 'u', 'biz', 'errors', 'aiNotice', 'countries', 'usStates', 'cats', 'gallery', 'cityRow', 'owner', 'ownerPlan', 'ownerCount', 'back'));
+    view_raw('admin/listing-edit', compact('meta', 'u', 'biz', 'errors', 'aiNotice', 'countries', 'regionGroups', 'cats', 'gallery', 'cityRow', 'owner', 'ownerPlan', 'ownerCount', 'back'));
 
 } elseif ($sub === 'listings') {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -567,6 +567,26 @@ if ($sub === 'dashboard') {
         'ok'     => intake_ready(),
         'fix'    => 'Import database/upgrade-all.sql',
         'detail' => 'Member intake — accounts and domains added by staff or through the API, and the queue their listings are built from.',
+    ];
+
+    // The region tier, and the unique key that makes a city URL mean one place.
+    // The key is held back by the upgrade if the table already holds duplicates,
+    // so a failure here has to say which ones — "import the SQL again" is not
+    // the fix when running it again would change nothing.
+    $cityDupes = (int)scalar(
+        'SELECT COUNT(*) FROM (SELECT 1 FROM cities GROUP BY country_code, IFNULL(region_id, 0), slug HAVING COUNT(*) > 1) d');
+    $cityKey = (int)scalar(
+        'SELECT COUNT(*) FROM information_schema.STATISTICS
+          WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND INDEX_NAME = ?', ['cities', 'uq_city_place']) > 0;
+    $checks[] = [
+        'label'  => 'cities.region_key + uq_city_place',
+        'ok'     => $cityKey && $cityDupes === 0,
+        'fix'    => $cityDupes > 0
+            ? 'Merge the duplicate cities first — running database/upgrade-all.sql lists them — then import it again.'
+            : 'Import database/upgrade-all.sql',
+        'detail' => $cityDupes > 0
+            ? "$cityDupes city slug" . ($cityDupes === 1 ? ' is' : 's are') . ' used twice inside one country, so those URLs resolve to whichever row comes back first.'
+            : 'States, provinces and regions outside the US, and the key that stops two cities sharing one URL.',
     ];
 
     $schemaOk = true;

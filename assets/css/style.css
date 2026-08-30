@@ -379,6 +379,9 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
 @media(max-width:900px){.browse-list{grid-template-columns:repeat(2,1fr)}}
 .browse-list a{padding:10px 12px;background:var(--card);border:1px solid var(--border);border-radius:9px;font-weight:600;font-size:.9rem}
 .browse-list a:hover{border-color:var(--accent);color:var(--accent)}
+/* Country pages that list regions and cities separately — see views/country.php */
+.geo-group{font-size:.78rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.browse-list + .geo-group{margin-top:22px}
 
 /* superadmin panel — left sidebar layout */
 .sa-body{background:var(--bg)}

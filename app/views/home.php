@@ -81,7 +81,7 @@
       <a class="chip" href="<?= e(city_path($ci)) ?>"><?= e($ci['name']) ?></a>
     <?php endforeach; ?>
     <?php foreach ($popStates as $s): ?>
-      <a class="chip" href="/us/<?= e($s['slug']) ?>"><?= e($s['name']) ?></a>
+      <a class="chip" href="<?= e(region_path($s)) ?>"><?= e($s['name']) ?></a>
     <?php endforeach; ?>
     <?php foreach ($popCtries as $co): ?>
       <a class="chip" href="/<?= e(strtolower($co['code'])) ?>"><?= e($co['name']) ?></a>

@@ -142,11 +142,20 @@ $revLinks = $editing ? wizard_links($biz['review_links'] ?? null) : [];
             </select>
           </div>
           <div>
-            <label>State (US only)</label>
+            <label>State / province / region<?= $selCountry === 'US' ? ' *' : '' ?></label>
+            <?php // Grouped by country and offered for every country that has
+                  // one, not just the US. Required in the US, where every city
+                  // belongs to a state; optional elsewhere, where plenty of
+                  // cities sit directly under the country. Only a region in the
+                  // country picked above is accepted on save. ?>
             <select name="region">
-              <option value="">—</option>
-              <?php foreach ($usStates as $s): ?>
-                <option value="<?= e($s['slug']) ?>" <?= $selRegion === $s['slug'] ? 'selected' : '' ?>><?= e($s['name']) ?></option>
+              <option value="">— none —</option>
+              <?php foreach ($countries as $co): if (empty($regionGroups[$co['code']])) continue; ?>
+                <optgroup label="<?= e($co['name']) ?>">
+                  <?php foreach ($regionGroups[$co['code']] as $s): ?>
+                    <option value="<?= e($s['slug']) ?>" <?= ($selCountry === $co['code'] && $selRegion === $s['slug']) ? 'selected' : '' ?>><?= e($s['name']) ?></option>
+                  <?php endforeach; ?>
+                </optgroup>
               <?php endforeach; ?>
             </select>
           </div>

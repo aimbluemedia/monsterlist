@@ -15,10 +15,10 @@ echo "services, photos and opening hours — all marked up with schema.org JSON-
 echo "(LocalBusiness, BreadcrumbList, ItemList, FAQPage).\n\n";
 
 echo "## URL structure\n\n";
-echo "- Cities (US): " . site_url('/us/{state}/{city}') . "\n";
-echo "- Cities (elsewhere): " . site_url('/{country-code}/{city}') . "\n";
+echo "- Cities under a state, province or region: " . site_url('/{country-code}/{region}/{city}') . "\n";
+echo "- Cities with no region above them: " . site_url('/{country-code}/{city}') . "\n";
 echo "- Business storefronts: append /{business-slug} to a city URL\n";
-echo "- Category in a city: " . site_url('/category/{category}/{country}/{state?}/{city}') . "\n\n";
+echo "- Category in a city: " . site_url('/category/{category}/{country-code}/{region?}/{city}') . "\n\n";
 
 echo "## Key pages\n\n";
 echo "- [Browse the directory](" . site_url('/browse') . "): all countries and categories\n";

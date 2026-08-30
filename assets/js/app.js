@@ -284,6 +284,15 @@ document.addEventListener('DOMContentLoaded', function () {
       target.querySelectorAll('a').forEach(function (a) {
         a.style.display = a.textContent.toLowerCase().indexOf(q) !== -1 ? '' : 'none';
       });
+      // A country page can list regions and cities under separate headings.
+      // Hide a heading once its own list has nothing left in it, or filtering
+      // leaves "By city" standing over empty space.
+      target.querySelectorAll('.geo-group').forEach(function (h) {
+        var list = h.nextElementSibling, any = false;
+        if (list) list.querySelectorAll('a').forEach(function (a) { if (a.style.display !== 'none') any = true; });
+        h.style.display = any ? '' : 'none';
+        if (list) list.style.display = any ? '' : 'none';
+      });
     });
   });
 });

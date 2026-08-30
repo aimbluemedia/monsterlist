@@ -50,9 +50,9 @@ if ($path === '/sitemap-static.xml') {
 
 } elseif (preg_match('#^/sitemap-geo-(\d+)\.xml$#', $path, $m)) {
     $offset = ((int)$m[1] - 1) * SM_CHUNK;
-    // states first, then cities — stable order for stable pagination
+    // regions first, then cities — stable order for stable pagination
     $items = rows(
-        "(SELECT CONCAT('/us/', slug) AS p, 1 AS ord, id FROM regions WHERE country_code = 'US')
+        "(SELECT CONCAT('/', LOWER(country_code), '/', slug) AS p, 1 AS ord, id FROM regions)
          UNION ALL
          (SELECT CONCAT('/', LOWER(ci.country_code), IF(ci.region_id IS NULL, '', CONCAT('/', r.slug)), '/', ci.slug) AS p, 2 AS ord, ci.id
           FROM cities ci LEFT JOIN regions r ON r.id = ci.region_id)

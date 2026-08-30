@@ -1,18 +1,39 @@
 <?php
 // Geo catch-all:
-//   /{country}                          country page
-//   /us/{state}   |  /{cc}/{city}       state page | city listings
-//   /us/{state}/{city} | /{cc}/{city}/{biz}   city listings | storefront
-//   /us/{state}/{city}/{biz}            storefront
+//   /{cc}                          country page
+//   /{cc}/{region}                 region page   — cities in it
+//   /{cc}/{city}                   city listings — a city with no region
+//   /{cc}/{region}/{city}          city listings
+//   /{cc}/{city}/{biz}             storefront
+//   /{cc}/{region}/{city}/{biz}    storefront
+//
+// The same segment count means different things depending on what the second
+// segment turns out to be, so each shape is resolved by lookup rather than by
+// assuming the country is two- or three-tier. Regions are tried first: a
+// country only has one because some city sits under it, and a region slug that
+// also names a region-less city in the same country cannot happen, because such
+// a region is never created (see app/lib/geo.php).
+//
 // $segments provided by index.php.
 
 $country = country_by_slug($segments[0]);
 if (!$country) not_found();
 
 $cc     = strtolower($country['code']);
-$isUS   = $country['code'] === 'US';
 $site   = setting('site_name');
 $n      = count($segments);
+
+/**
+ * The old, region-less path for a city that has since gained a region.
+ * Sends the visitor — and the crawler holding the indexed URL — to where the
+ * page now lives, permanently, rather than to a 404.
+ */
+function moved_city(array $country, string $slug, string $tail = ''): void
+{
+    $city = city_by_slug_any($country['code'], $slug);
+    if (!$city || empty($city['region_id'])) not_found();
+    redirect(city_path($city + ['country_code' => $country['code']]) . $tail, 301);
+}
 
 // ---------- helpers to render the three page types ----------
 
@@ -27,7 +48,7 @@ function render_city_page(array $country, ?array $region, array $city): void
     $path  = city_path($city + ['country_code' => $country['code'], 'region_slug' => $region['slug'] ?? null]);
 
     $crumbs = [['name' => 'Home', 'path' => '/'], ['name' => $country['name'], 'path' => '/' . strtolower($country['code'])]];
-    if ($region) $crumbs[] = ['name' => $region['name'], 'path' => '/us/' . $region['slug']];
+    if ($region) $crumbs[] = ['name' => $region['name'], 'path' => region_path($region + ['country_code' => $country['code']])];
     $crumbs[] = ['name' => $city['name'], 'path' => $path];
 
     $items = array_map(fn($b) => ['name' => $b['name'], 'path' => $path . '/' . $b['slug']], $list);
@@ -88,7 +109,7 @@ function render_storefront(array $country, ?array $region, array $city, string $
     $reviews  = rows('SELECT * FROM reviews  WHERE business_id = ? AND status = "live" ORDER BY created_at DESC LIMIT 30', [$b['id']]);
 
     $crumbs = [['name' => 'Home', 'path' => '/'], ['name' => $country['name'], 'path' => '/' . strtolower($country['code'])]];
-    if ($region) $crumbs[] = ['name' => $region['name'], 'path' => '/us/' . $region['slug']];
+    if ($region) $crumbs[] = ['name' => $region['name'], 'path' => region_path($region + ['country_code' => $country['code']])];
     $crumbs[] = ['name' => $city['name'], 'path' => $cityPath];
     $crumbs[] = ['name' => $b['name'], 'path' => $path];
 
@@ -113,57 +134,59 @@ function render_storefront(array $country, ?array $region, array $city, string $
 // ---------- route by segment count ----------
 
 if ($n === 1) {
-    // Country page
-    $regions = $isUS ? regions_of('US') : [];
-    $cities  = $isUS ? [] : cities_of_country($country['code']);
+    // Country page: the regions, and any cities that sit directly under the
+    // country. Most countries show one or the other; a few show both.
+    $regions = regions_of($country['code']);
+    $cities  = cities_of_country($country['code']);
+    $how = $regions ? (($country['code'] === 'US' ? 'state' : 'region') . ' and city') : 'city';
     $meta = [
         'title'       => "Small businesses in {$country['name']} — $site",
-        'description' => "Browse local small businesses across {$country['name']} by " . ($isUS ? 'state and city' : 'city') . " on $site.",
+        'description' => "Browse local small businesses across {$country['name']} by $how on $site.",
         'canonical'   => site_url("/$cc"),
         'jsonld'      => [jsonld_breadcrumbs([
             ['name' => 'Home', 'path' => '/'],
             ['name' => $country['name'], 'path' => "/$cc"],
         ])],
     ];
-    view('country', compact('meta', 'country', 'regions', 'cities', 'isUS'));
+    view('country', compact('meta', 'country', 'regions', 'cities'));
 
 } elseif ($n === 2) {
-    if ($isUS) {
-        $region = region_by_slug('US', $segments[1]);
-        if (!$region) not_found();
+    // /{cc}/{region} or /{cc}/{city}
+    if ($region = region_by_slug($country['code'], $segments[1])) {
         $cities = cities_of_region((int)$region['id']);
+        $path   = region_path($region);
         $meta = [
             'title'       => "Local businesses in {$region['name']} — $site",
             'description' => "Find small businesses across {$region['name']}: pick a city to see trusted local listings on $site.",
-            'canonical'   => site_url("/us/{$region['slug']}"),
+            'canonical'   => site_url($path),
             'jsonld'      => [jsonld_breadcrumbs([
                 ['name' => 'Home', 'path' => '/'],
-                ['name' => 'United States', 'path' => '/us'],
-                ['name' => $region['name'], 'path' => "/us/{$region['slug']}"],
+                ['name' => $country['name'], 'path' => "/$cc"],
+                ['name' => $region['name'], 'path' => $path],
             ])],
         ];
-        view('state', compact('meta', 'country', 'region', 'cities'));
-    } else {
-        $city = city_in_country($country['code'], $segments[1]);
-        if (!$city) not_found();
+        view('state', compact('meta', 'country', 'region', 'cities', 'path'));
+    } elseif ($city = city_in_country($country['code'], $segments[1])) {
         render_city_page($country, null, $city);
+    } else {
+        moved_city($country, $segments[1]);
     }
 
 } elseif ($n === 3) {
-    if ($isUS) {
-        $region = region_by_slug('US', $segments[1]);
-        if (!$region) not_found();
+    // /{cc}/{region}/{city} or /{cc}/{city}/{biz}
+    if ($region = region_by_slug($country['code'], $segments[1])) {
         $city = city_in_region((int)$region['id'], $segments[2]);
         if (!$city) not_found();
         render_city_page($country, $region, $city);
-    } else {
-        $city = city_in_country($country['code'], $segments[1]);
-        if (!$city) not_found();
+    } elseif ($city = city_in_country($country['code'], $segments[1])) {
         render_storefront($country, null, $city, $segments[2]);
+    } else {
+        moved_city($country, $segments[1], '/' . $segments[2]);
     }
 
-} elseif ($n === 4 && $isUS) {
-    $region = region_by_slug('US', $segments[1]);
+} elseif ($n === 4) {
+    // /{cc}/{region}/{city}/{biz}
+    $region = region_by_slug($country['code'], $segments[1]);
     if (!$region) not_found();
     $city = city_in_region((int)$region['id'], $segments[2]);
     if (!$city) not_found();

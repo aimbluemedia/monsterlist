@@ -11,7 +11,10 @@ no build step.
 - Homepage: hero search, top categories, featured members, new members, top locations
 - Geo drill-down with the SEO URL backbone:
   `/us` → `/us/arizona` → `/us/arizona/phoenix` → `/us/arizona/phoenix/sunrise-bakery`
-  (non-US countries are 2-tier: `/gb/london/business-name`)
+  and the same shape outside the US: `/ca/ontario/toronto/business-name`.
+  The region level is per-city, not per-country — a city with nothing worth putting
+  above it sits directly under the country (`/de/berlin/business-name`), and a city
+  that gains a region 301s from its old path. See `app/lib/geo.php`.
 - Category landing pages (`/category/food`), full-text search, business storefronts
 - **Category × location SEO pages** (`/category/food/us/arizona/phoenix`) with unique
   intro copy, rendered FAQs + `FAQPage` JSON-LD, and internal links (nearby cities,

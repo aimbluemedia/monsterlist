@@ -347,19 +347,30 @@ function resolve_city(string $countryCode, string $regionSlug, string $cityName)
     $country = row('SELECT * FROM countries WHERE code = ?', [$countryCode]);
     if (!$country || $cityName === '') return null;
 
+    // The state is required in the US and optional everywhere else. That is a
+    // fact about the data, not about the URL shape: every US city we hold sits
+    // under one of the 51 seeded states, so a listing with no state is an
+    // incomplete address rather than a legitimately region-less one. Elsewhere
+    // the region tier exists only where it earns its place, so blank is valid.
     $regionId = null;
-    if ($country['code'] === 'US') {
-        if ($regionSlug === '') return null;
-        $region = region_by_slug('US', $regionSlug);
+    if ($regionSlug !== '') {
+        $region = region_by_slug($country['code'], $regionSlug);
+        // A region belonging to some other country is a mismatched form, not a
+        // reason to file the city under the wrong place.
         if (!$region) return null;
         $regionId = (int)$region['id'];
+    } elseif ($country['code'] === 'US') {
+        return null;
     }
     $slug = slugify($cityName);
     if ($slug === '') return null;
 
     $existing = $regionId
         ? city_in_region($regionId, $slug)
-        : city_in_country($country['code'], $slug);
+        // No region given: an existing city of that name in this country is the
+        // one meant, wherever it sits. Creating a region-less twin of a city
+        // that already has a region would split one place across two URLs.
+        : city_by_slug_any($country['code'], $slug);
     if ($existing) return (int)$existing['id'];
 
     q('INSERT INTO cities (country_code, region_id, name, slug) VALUES (?,?,?,?)',
@@ -384,7 +395,9 @@ function listing_form_data(array $user, array $plan, int $exceptId = 0, bool $en
     if ($catId === '' || !category_by_id($catId)) $errors[] = 'Please choose a category.';
 
     $cityId = resolve_city(strtoupper(post('country')), post('region'), post('city'));
-    if (!$cityId) $errors[] = 'Please choose a valid country' . (strtoupper(post('country')) === 'US' ? ', state' : '') . ' and city.';
+    if (!$cityId) $errors[] = strtoupper(post('country')) === 'US'
+        ? 'Please choose a valid country, state and city.'
+        : 'Please choose a valid country and city, and make sure any state or province you picked belongs to that country.';
 
     // A length guide, not a guillotine: the description is cut at the end of the
     // sentence that crosses the limit, so what is stored always reads as

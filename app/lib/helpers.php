@@ -30,13 +30,18 @@ function e(?string $s): string
 /** "New York City" -> "new-york-city" (matches the JS slugger the URLs were seeded with). */
 function slugify(string $s): string
 {
-    $s = strtolower(trim($s));
+    // mb_strtolower, not strtolower: the byte-based one leaves an accented
+    // capital alone, and //IGNORE then drops the character it could not
+    // transliterate rather than folding it. "Île-de-France" came out as
+    // "le-de-france" — a letter short, from the front of the name.
+    $s = function_exists('mb_strtolower') ? mb_strtolower(trim($s), 'UTF-8') : strtolower(trim($s));
     // transliterate accents when intl/iconv is available
     if (function_exists('iconv')) {
         $t = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $s);
         if ($t !== false) $s = $t;
     }
-    $s = preg_replace('/[^a-z0-9]+/', '-', $s);
+    // TRANSLIT can hand back capitals of its own ("Æ" becomes "AE").
+    $s = preg_replace('/[^a-z0-9]+/', '-', strtolower($s));
     return trim($s, '-');
 }
 
@@ -45,9 +50,12 @@ function site_url(string $path = ''): string
     return rtrim($GLOBALS['config']['site_url'], '/') . $path;
 }
 
-function redirect(string $path): void
+function redirect(string $path, int $status = 302): void
 {
-    header('Location: ' . $path);
+    // 301 for a page that has genuinely moved, so search engines transfer what
+    // the old URL had earned instead of holding both. Everything else stays on
+    // the default 302, which browsers and crawlers are free to forget.
+    header('Location: ' . $path, true, $status);
     exit;
 }
 

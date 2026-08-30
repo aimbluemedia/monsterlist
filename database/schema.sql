@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS countries (
   popularity  INT NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS regions (                  -- US states (US is 3-tier)
+CREATE TABLE IF NOT EXISTS regions (                  -- states, provinces, regions
   id           INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   country_code CHAR(2) NOT NULL,
   code         VARCHAR(10) DEFAULT NULL,              -- e.g. AZ
@@ -28,12 +28,16 @@ CREATE TABLE IF NOT EXISTS regions (                  -- US states (US is 3-tier
 CREATE TABLE IF NOT EXISTS cities (
   id            INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   country_code  CHAR(2) NOT NULL,
-  region_id     INT UNSIGNED DEFAULT NULL,            -- NULL for 2-tier countries
+  region_id     INT UNSIGNED DEFAULT NULL,            -- NULL where the city sits straight under the country
   name          VARCHAR(140) NOT NULL,
   slug          VARCHAR(160) NOT NULL,
   is_popular    TINYINT(1) NOT NULL DEFAULT 0,
   listing_count INT NOT NULL DEFAULT 0,
-  UNIQUE KEY uq_city (country_code, region_id, slug),
+  -- region_id with NULL flattened to 0. A unique key over region_id itself
+  -- enforces nothing on the region-less rows, because MySQL never treats two
+  -- NULLs as equal — so two cities with one slug in one country both got in.
+  region_key    INT UNSIGNED AS (IFNULL(region_id, 0)) STORED,
+  UNIQUE KEY uq_city_place (country_code, region_key, slug),
   KEY idx_city_slug (country_code, slug),
   CONSTRAINT fk_city_country FOREIGN KEY (country_code) REFERENCES countries(code),
   CONSTRAINT fk_city_region  FOREIGN KEY (region_id) REFERENCES regions(id)

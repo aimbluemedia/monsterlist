@@ -114,9 +114,9 @@ if ($sub === 'dashboard') {
     $biz     = null;
     $prefill = !empty($u['website']) ? ['website' => $u['website']] : [];
     $countries = all_countries();
-    $usStates  = regions_of('US');
+    $regionGroups = regions_by_country();
     $cats      = categories_all();
-    view('account/listing-form', compact('meta', 'u', 'plan', 'errors', 'biz', 'prefill', 'countries', 'usStates', 'cats'));
+    view('account/listing-form', compact('meta', 'u', 'plan', 'errors', 'biz', 'prefill', 'countries', 'regionGroups', 'cats'));
 
 } elseif ($sub === 'listings' && $act === 'upgrade') {
     // Upgrading is sold per listing, not per account: this is the listing the
@@ -192,10 +192,10 @@ if ($sub === 'dashboard') {
     }
     $gallery   = rows('SELECT id, url FROM gallery WHERE business_id = ? ORDER BY sort', [$biz['id']]);
     $countries = all_countries();
-    $usStates  = regions_of('US');
+    $regionGroups = regions_by_country();
     $cats      = categories_all();
     $cityRow   = $biz['city_id'] ? city_full((int)$biz['city_id']) : null;
-    view('account/listing-form', compact('meta', 'u', 'plan', 'errors', 'biz', 'countries', 'usStates', 'cats', 'gallery', 'cityRow'));
+    view('account/listing-form', compact('meta', 'u', 'plan', 'errors', 'biz', 'countries', 'regionGroups', 'cats', 'gallery', 'cityRow'));
 
 } elseif ($sub === 'listings' && in_array($act, ['services', 'social', 'reviews'], true)) {
     // Setup wizard, run once after a listing is created and reachable again
