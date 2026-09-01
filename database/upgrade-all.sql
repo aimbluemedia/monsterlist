@@ -34,8 +34,14 @@
 --   v8  per-plan token economics
 --   plus the two Stripe pieces, for installs old enough to predate them.
 --
--- It only ever adds. Nothing here drops a table, drops a column, or deletes a
--- row, so it cannot cost you data.
+-- It never drops a table and never drops a column.
+--
+-- It deletes rows in exactly one place, added in v125: duplicate city rows left
+-- behind by re-importing seed.sql. Those copies are identical — same country,
+-- same region, same name, same slug — and a copy is deleted only after its
+-- listings have been moved onto the survivor and nothing points at it any more.
+-- Where the copies are NOT identical, or a listing cannot be moved, nothing is
+-- deleted and the report at the bottom says what is left and why.
 -- ---------------------------------------------------------------------------
 
 
@@ -477,6 +483,81 @@ UPDATE settings SET value = '150' WHERE name = 'tokens_grant_pro'  AND value = '
 -- and their current URL, which is why the redirect set stays small.
 -- ===========================================================================
 
+-- ---------------------------------------------------------------------------
+-- First, repair what the missing key already let through.
+--
+-- seed.sql ends its international cities with ON DUPLICATE KEY UPDATE, which
+-- was meant to make re-importing it harmless. Against uq_city it never fired:
+-- those rows carry region_id NULL, the key could not match them, and so every
+-- re-import of seed.sql inserted another copy of all 80 non-US cities. US
+-- cities were never affected — theirs have a real region_id, so the key worked.
+--
+-- Rows in the same group are the same place — same country, same region, same
+-- slug — so they are merged: listings move onto the lowest id, the popular flag
+-- is carried over, and the empty copies are deleted.
+--
+-- Merged ONLY where every row in the group has the same name. A group whose
+-- names differ may be two genuinely different places that happen to slugify
+-- alike (Springfield, Ontario and Springfield, New Brunswick), and folding
+-- those together would silently move listings to the wrong town. Those are left
+-- alone and listed in the report at the bottom for a person to decide on.
+-- ---------------------------------------------------------------------------
+
+CREATE TEMPORARY TABLE ml_city_merge (
+  keep_id INT UNSIGNED NOT NULL,
+  drop_id INT UNSIGNED NOT NULL,
+  PRIMARY KEY (drop_id),
+  KEY k_keep (keep_id)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO ml_city_merge (keep_id, drop_id)
+SELECT g.keep_id, ci.id
+  FROM cities ci
+  JOIN (SELECT country_code, IFNULL(region_id, 0) AS rk, slug, MIN(id) AS keep_id
+          FROM cities
+         GROUP BY country_code, IFNULL(region_id, 0), slug
+        HAVING COUNT(*) > 1 AND COUNT(DISTINCT name) = 1) g
+    ON g.country_code = ci.country_code
+   AND g.rk          = IFNULL(ci.region_id, 0)
+   AND g.slug        = ci.slug
+ WHERE ci.id <> g.keep_id;
+
+-- Carry a popular flag from any copy onto the survivor, so merging cannot
+-- quietly demote a city off the homepage.
+UPDATE cities k
+  JOIN ml_city_merge m ON m.keep_id = k.id
+  JOIN cities d       ON d.id = m.drop_id AND d.is_popular = 1
+   SET k.is_popular = 1;
+
+-- Move the listings across. IGNORE because businesses are unique on
+-- (city_id, slug): if the same slug exists under two copies of one city, one of
+-- them cannot move, and skipping it leaves that listing working exactly where
+-- it is rather than failing the whole import.
+UPDATE IGNORE businesses b
+  JOIN ml_city_merge m ON m.drop_id = b.city_id
+   SET b.city_id = m.keep_id;
+
+-- Delete only the copies nothing points at any more. A copy that still holds a
+-- listing stays, which is why this cannot orphan or lose anything.
+DELETE ci FROM cities ci
+  JOIN ml_city_merge m ON m.drop_id = ci.id
+ WHERE NOT EXISTS (SELECT 1 FROM businesses b WHERE b.city_id = ci.id);
+
+-- Counters, recomputed rather than added up. Two statements rather than one
+-- OR: MySQL refuses to read the same temporary table twice in a single query
+-- ("Can't reopen table"). The second covers a copy that could not be emptied
+-- and so was not deleted — it still holds listings, and its count has to say so.
+UPDATE cities ci
+   SET ci.listing_count = (SELECT COUNT(*) FROM businesses b WHERE b.city_id = ci.id AND b.status = 'live')
+ WHERE ci.id IN (SELECT keep_id FROM ml_city_merge);
+
+UPDATE cities ci
+   SET ci.listing_count = (SELECT COUNT(*) FROM businesses b WHERE b.city_id = ci.id AND b.status = 'live')
+ WHERE ci.id IN (SELECT drop_id FROM ml_city_merge);
+
+DROP TEMPORARY TABLE ml_city_merge;
+
+
 -- Loaded through a temporary table and joined to `countries`, rather than
 -- inserted straight in. On a fresh install this file runs before seed.sql, so
 -- `countries` is still empty and a direct insert fails the foreign key — which
@@ -559,15 +640,40 @@ INSERT INTO ml_city_region (cc, city_slug, region_slug) VALUES
 -- already chosen, by hand or on a listing form, is the better answer and is
 -- left alone.
 --
--- UPDATE IGNORE, not UPDATE, for the bug above: if a country already holds two
--- cities with the same slug, moving both under one region collides on uq_city
--- and would abort the whole import. Skipping the second is the right outcome —
--- the report at the bottom names any it found so they can be merged by hand.
+-- A city that still has an unmerged twin is left where it is, both of them at
+-- region_id NULL. Moving only one of a pair would be worse than doing nothing:
+-- the two would end up at different region levels, so the duplicate report —
+-- which groups the way the unique key does — would stop seeing them as a pair
+-- and go quiet, while /{cc}/{slug} redirected to the survivor and sent anyone
+-- holding the twin's URL to a different company's page. Leaving both untouched
+-- keeps them visible in the report until a person resolves them.
+--
+-- UPDATE IGNORE as well, as a second line of defence: a collision here would
+-- otherwise abort the whole import rather than skip one row.
+-- The slugs that still have more than one region-less row, worked out before
+-- the update rather than inside it — MySQL will not let a single UPDATE read
+-- the table it is writing to.
+CREATE TEMPORARY TABLE ml_city_ambig (
+  cc   CHAR(2),
+  slug VARCHAR(160),
+  PRIMARY KEY (cc, slug)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO ml_city_ambig (cc, slug)
+SELECT country_code, slug FROM cities
+ WHERE region_id IS NULL
+ GROUP BY country_code, slug
+HAVING COUNT(*) > 1;
+
 UPDATE IGNORE cities ci
-  JOIN ml_city_region m ON m.cc = ci.country_code AND m.city_slug = ci.slug
-  JOIN regions r        ON r.country_code = m.cc  AND r.slug = m.region_slug
+  JOIN ml_city_region m      ON m.cc = ci.country_code AND m.city_slug = ci.slug
+  JOIN regions r             ON r.country_code = m.cc  AND r.slug = m.region_slug
+  LEFT JOIN ml_city_ambig a  ON a.cc = ci.country_code AND a.slug = ci.slug
    SET ci.region_id = r.id
- WHERE ci.region_id IS NULL;
+ WHERE ci.region_id IS NULL
+   AND a.cc IS NULL;
+
+DROP TEMPORARY TABLE ml_city_ambig;
 
 DROP TEMPORARY TABLE ml_city_region;
 
@@ -639,17 +745,21 @@ SELECT d.domain                                             AS shared_domain,
  WHERE EXISTS (SELECT 1 FROM users u2 WHERE u2.website = d.domain AND u2.id <> d.user_id)
  ORDER BY d.domain;
 
--- Cities sharing a slug inside one country — what the old unique key let
--- through. Each pair is one place addressable at one URL that resolves to
--- whichever row comes back first. An empty result is the good answer, and
--- means uq_city_place was added above. If rows appear here, merge them (point
--- the listings at one city id, delete the other) and run this file again to
--- pick up the key.
+-- Cities sharing a slug inside one country that could NOT be merged
+-- automatically. The identical copies left by re-importing seed.sql are merged
+-- further up without asking; what reaches here needs a decision, and the last
+-- column says which one. An empty result is the good answer and means
+-- uq_city_place was added. Anything listed keeps the key off, so deal with it
+-- and run this file again.
 SELECT ci.country_code,
        ci.slug,
-       COUNT(*)                                            AS rows_found,
-       GROUP_CONCAT(ci.id ORDER BY ci.id SEPARATOR ', ')   AS city_ids,
-       GROUP_CONCAT(ci.name ORDER BY ci.id SEPARATOR ' | ') AS names
+       COUNT(*)                                             AS rows_found,
+       GROUP_CONCAT(ci.id ORDER BY ci.id SEPARATOR ', ')     AS city_ids,
+       GROUP_CONCAT(ci.name ORDER BY ci.id SEPARATOR ' | ')  AS names,
+       IF(COUNT(DISTINCT ci.name) > 1,
+          'different names — may be two real places; point the listings at the right one, then delete the other',
+          'same name, but a listing slug clashes across the copies — rename one listing, then run this file again')
+                                                            AS why_not_merged
   FROM cities ci
  GROUP BY ci.country_code, IFNULL(ci.region_id, 0), ci.slug
 HAVING COUNT(*) > 1

@@ -582,10 +582,10 @@ if ($sub === 'dashboard') {
         'label'  => 'cities.region_key + uq_city_place',
         'ok'     => $cityKey && $cityDupes === 0,
         'fix'    => $cityDupes > 0
-            ? 'Merge the duplicate cities first — running database/upgrade-all.sql lists them — then import it again.'
+            ? 'Import database/upgrade-all.sql — it merges the identical copies itself, and lists anything left that needs a decision.'
             : 'Import database/upgrade-all.sql',
         'detail' => $cityDupes > 0
-            ? "$cityDupes city slug" . ($cityDupes === 1 ? ' is' : 's are') . ' used twice inside one country, so those URLs resolve to whichever row comes back first.'
+            ? "$cityDupes city slug" . ($cityDupes === 1 ? ' is' : 's are') . ' used more than once inside one country, so those URLs resolve to whichever row comes back first. Re-importing seed.sql created these: its "do nothing if it already exists" clause could never match a city with no region, so each import added another copy.'
             : 'States, provinces and regions outside the US, and the key that stops two cities sharing one URL.',
     ];
 
