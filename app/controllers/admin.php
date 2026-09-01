@@ -6,12 +6,20 @@ $sub  = $segments[1] ?? 'dashboard';
 $meta = ['title' => "Admin — $site", 'robots' => 'noindex'];
 
 /** Listings URL that keeps the active tab, search term and page together. */
-function listings_url(string $status, ?string $term = '', int $page = 1): string
+function listings_url(string $status, ?string $term = '', int $page = 1, string $tier = 'all'): string
 {
     $qs = ['status' => $status];
     if (($term = trim((string)$term)) !== '') $qs['q'] = $term;
+    if ($tier !== '' && $tier !== 'all') $qs['tier'] = $tier;
     if ($page > 1) $qs['page'] = $page;
     return '/superadmin/listings?' . http_build_query($qs);
+}
+
+/** The tier asked for in the query string, or 'all'. Anything else is ignored. */
+function listings_tier_param(?string $raw): string
+{
+    $tier = (string)($raw ?? 'all');
+    return in_array($tier, array_merge(['all'], plan_ladder()), true) ? $tier : 'all';
 }
 
 // Dedicated staff entrance — the only /superadmin route that doesn't require auth.
@@ -78,6 +86,11 @@ if ($sub === 'dashboard') {
     // opening this page without &back= threw a TypeError in listings_url().
     $back = (string)($_GET['back'] ?? 'pending');
     if (!in_array($back, ['pending', 'live', 'rejected', 'all'], true)) $back = 'pending';
+    // The tier bubble the listing was reached from, carried the same way as the
+    // status tab and the search term so that going back returns to the view
+    // that was on screen rather than to an unfiltered one.
+    $backTier = listings_tier_param($_GET['tier'] ?? null);
+    $listQ    = trim((string)($_GET['q'] ?? ''));
     $errors = [];
 
     // Staff get the full field set regardless of what the owner is paying for.
@@ -126,7 +139,7 @@ if ($sub === 'dashboard') {
             q('DELETE FROM businesses WHERE id = ?', [$biz['id']]);
             if ($biz['city_id']) refresh_city_count((int)$biz['city_id']);
             flash_set('success', '"' . $biz['name'] . '" deleted.');
-            redirect(listings_url($back, $_GET['q'] ?? ''));   // its page is gone
+            redirect(listings_url($back, $listQ, 1, $backTier));   // its page is gone
 
         } elseif ($barAction === 'plan' && $owner && in_array(post('plan'), ['free','pro','featured'], true)) {
             // Comped, exactly as it was on the member page: a renewal date a
@@ -145,7 +158,9 @@ if ($sub === 'dashboard') {
             }
         }
         if ($biz['city_id']) refresh_city_count((int)$biz['city_id']);
-        redirect('/superadmin/listings/edit?id=' . (int)$biz['id'] . '&back=' . urlencode($back));
+        redirect('/superadmin/listings/edit?id=' . (int)$biz['id']
+               . '&back=' . urlencode($back) . '&tier=' . urlencode($backTier)
+               . ($listQ !== '' ? '&q=' . urlencode($listQ) : ''));
     }
 
     if ($aiRun) {
@@ -243,7 +258,7 @@ if ($sub === 'dashboard') {
                 if ($url) indexnow_ping([$url]);
             }
             flash_set('success', '"' . $data['name'] . '" updated.');
-            redirect(listings_url($back, $_GET['q'] ?? ''));
+            redirect(listings_url($back, $listQ, 1, $backTier));
         }
     }
 
@@ -258,7 +273,7 @@ if ($sub === 'dashboard') {
     // their email — the plan's allowance is already implied by the plan buttons.
     $ownerCount = $owner ? (int)scalar('SELECT COUNT(*) FROM businesses WHERE owner_id = ?', [(int)$owner['id']]) : 0;
     $meta      = ['title' => 'Edit listing — ' . $site, 'robots' => 'noindex'];
-    view_raw('admin/listing-edit', compact('meta', 'u', 'biz', 'errors', 'aiNotice', 'countries', 'regionGroups', 'cats', 'gallery', 'cityRow', 'owner', 'ownerPlan', 'ownerCount', 'back'));
+    view_raw('admin/listing-edit', compact('meta', 'u', 'biz', 'errors', 'aiNotice', 'countries', 'regionGroups', 'cats', 'gallery', 'cityRow', 'owner', 'ownerPlan', 'ownerCount', 'back', 'backTier', 'listQ'));
 
 } elseif ($sub === 'listings') {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -294,10 +309,11 @@ if ($sub === 'dashboard') {
             }
             if ($biz['city_id']) refresh_city_count((int)$biz['city_id']);
         }
-        redirect(listings_url(post('back') ?: 'pending', post('q')));
+        redirect(listings_url(post('back') ?: 'pending', post('q'), 1, listings_tier_param(post('tier'))));
     }
     $status = in_array($_GET['status'] ?? 'pending', ['pending','live','rejected','all'], true) ? ($_GET['status'] ?? 'pending') : 'pending';
     $term   = trim((string)($_GET['q'] ?? ''));
+    $tier   = listings_tier_param($_GET['tier'] ?? null);
 
     $where  = [];
     $params = [];
@@ -321,7 +337,21 @@ if ($sub === 'dashboard') {
                LEFT JOIN users u ON u.id = b.owner_id
                LEFT JOIN cities ci ON ci.id = b.city_id
                LEFT JOIN categories c ON c.id = b.category_id';
-    $total = (int)scalar("SELECT COUNT(*) $joins WHERE $sqlWhere", $params);
+    // One grouped count rather than a COUNT per bubble, and deliberately taken
+    // BEFORE the tier filter is applied: the numbers describe the view the tabs
+    // and the search have already narrowed to, so each bubble says exactly how
+    // many rows pressing it will show. A tier with nothing in it still gets a
+    // bubble — "Premium 0" is information, and a bubble that vanishes when you
+    // filter to it leaves no way back.
+    $tierCounts = array_fill_keys(plan_ladder(), 0);
+    foreach (rows("SELECT b.tier, COUNT(*) AS n $joins WHERE $sqlWhere GROUP BY b.tier", $params) as $tc) {
+        $tierCounts[$tc['tier']] = (int)$tc['n'];
+    }
+    $tierAll = array_sum($tierCounts);
+
+    if ($tier !== 'all') { $sqlWhere .= ' AND b.tier = ?'; $params[] = $tier; }
+    $total = $tier === 'all' ? $tierAll : ($tierCounts[$tier] ?? 0);
+
     // A page number past the end shows an empty table and no way to tell why.
     // Land on the last page that has something on it instead.
     $page   = min($page, max(1, (int)ceil($total / 30)));
@@ -329,7 +359,8 @@ if ($sub === 'dashboard') {
     $list  = rows(
         "SELECT b.*, u.email AS owner_email, ci.name AS city_name, c.label AS category_label
          $joins WHERE $sqlWhere ORDER BY b.created_at DESC LIMIT 30 OFFSET $offset", $params);
-    view_raw('admin/listings', compact('meta', 'u', 'list', 'status', 'page', 'term', 'total'));
+    view_raw('admin/listings', compact('meta', 'u', 'list', 'status', 'page', 'term', 'total',
+        'tier', 'tierCounts', 'tierAll'));
 
 } elseif ($sub === 'intake') {
     // Accounts created by us rather than by somebody filling in the sign-up

@@ -12,7 +12,7 @@ $selOwner   = $posted ? post('owner_email') : (string)($owner['email'] ?? '');
 // chosen rather than the one on file. Paid-tier fields key off this.
 $vTier      = $posted ? (string)post('tier') : (string)$biz['tier'];
 // Carry the search term back so "Back to listings" returns to the filtered view.
-$listUrl    = e(listings_url($back, $_GET['q'] ?? ''));
+$listUrl    = e(listings_url($back, $listQ, 1, $backTier));
 ?>
 <div class="section-head">
   <h1>Edit listing</h1>
