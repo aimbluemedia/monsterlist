@@ -208,3 +208,22 @@ function sync_business_tiers(int $userId, string $plan): void
 {
     q('UPDATE businesses SET tier = ? WHERE owner_id = ?', [$plan, $userId]);
 }
+
+/**
+ * The tier a listing should be carrying: its owner's plan, or free when it has
+ * no owner.
+ *
+ * businesses.tier is a copy of users.plan, not a setting of its own. The plan
+ * sits on the account and covers every listing it owns, and three separate
+ * paths already push it down here — a Stripe payment, a cancellation, and a
+ * staff plan change all call sync_business_tiers(). Anything that sets a tier
+ * without going through the plan is writing a value the next of those will
+ * overwrite, while the listing wears a paid badge and takes paid placement in
+ * the meantime. So the tier is derived rather than typed.
+ */
+function tier_for_owner(?int $ownerId): string
+{
+    if (!$ownerId) return 'free';
+    $plan = (string)scalar('SELECT plan FROM users WHERE id = ?', [(int)$ownerId]);
+    return in_array($plan, plan_ladder(), true) ? $plan : 'free';
+}

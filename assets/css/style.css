@@ -1273,6 +1273,10 @@ label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 6px}
    different kind of thing from the white cards below it: those are fields you
    fill in and then save, these are decisions that take effect on one press.
    --------------------------------------------------------------------------- */
+/* A value the form shows but does not let you type — sized to sit level with
+   the <select> beside it rather than riding up against its label. */
+.ed-derived{display:flex;align-items:center;gap:10px;margin:0;min-height:42px}
+
 /* Tier bubbles above the listings table. Same light-blue band as the bar at the
    top of the edit page, so the two read as the same kind of thing. */
 .tierbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;

@@ -167,13 +167,13 @@ if ($sub === 'dashboard') {
         csrf_check();
         // The button is only drawn on a paid listing, but the request is worth
         // checking rather than trusting: this one costs money to serve.
-        $aiTier = in_array(post('tier'), ['free','pro','featured'], true) ? post('tier') : $biz['tier'];
+        $aiTier = tier_for_owner($biz['owner_id'] ? (int)$biz['owner_id'] : null);
     }
 
     // Nothing researched and nothing charged for. Falling into the save branch
     // would be wrong too — Save changes is not the button that was pressed.
     if ($aiRun && !tier_enhanced($aiTier)) {
-        $errors[] = 'Profile is a Pro and Premium section. Set the tier above and save before writing one.';
+        $errors[] = 'Profile is a Pro and Premium section. Move the owner to Pro or Premium with the Plan buttons above, then write one.';
 
     } elseif ($aiRun) {
         $research = array_merge($biz, [
@@ -214,7 +214,6 @@ if ($sub === 'dashboard') {
         [$data, $errors] = listing_form_data($u, $staffPlan, (int)$biz['id'], false);
 
         $newStatus = in_array(post('status'), ['pending','live','rejected'], true) ? post('status') : $biz['status'];
-        $newTier   = in_array(post('tier'), ['free','pro','featured'], true) ? post('tier') : $biz['tier'];
         $verified  = !empty($_POST['verified']) ? 1 : 0;
 
         // Reassign owner by email, or clear it to make the listing claimable.
@@ -227,6 +226,10 @@ if ($sub === 'dashboard') {
             if ($owner) $ownerId = (int)$owner['id'];
             else $errors[] = 'No account found for "' . $ownerEmail . '". Leave the field empty to make the listing unclaimed.';
         }
+
+        // After the owner, not before it: handing a listing to a Pro member is
+        // what makes it a Pro listing, and taking its owner away makes it free.
+        $newTier = tier_for_owner($ownerId ? (int)$ownerId : null);
 
         if (!$errors) {
             $slug = unique_business_slug($data['name'], (int)$data['city_id'], (int)$biz['id']);
@@ -618,6 +621,22 @@ if ($sub === 'dashboard') {
         'detail' => $cityDupes > 0
             ? "$cityDupes city slug" . ($cityDupes === 1 ? ' is' : 's are') . ' used more than once inside one country, so those URLs resolve to whichever row comes back first. Re-importing seed.sql created these: its "do nothing if it already exists" clause could never match a city with no region, so each import added another copy.'
             : 'States, provinces and regions outside the US, and the key that stops two cities sharing one URL.',
+    ];
+
+    // A listing's tier is a copy of its owner's plan. Nothing in the code writes
+    // one without the other any more, but a database that predates that could
+    // still be carrying rows set by the old Tier dropdown — and a listing on an
+    // unpaid Pro wears a paid badge and takes paid placement.
+    $tierDrift = (int)scalar(
+        "SELECT COUNT(*) FROM businesses b LEFT JOIN users o ON o.id = b.owner_id
+          WHERE b.tier <> IF(o.id IS NULL OR o.plan NOT IN ('free','pro','featured'), 'free', o.plan)");
+    $checks[] = [
+        'label'  => 'listing tiers match owner plans',
+        'ok'     => $tierDrift === 0,
+        'fix'    => 'Import database/upgrade-all.sql — it puts them back in step.',
+        'detail' => $tierDrift > 0
+            ? "$tierDrift listing" . ($tierDrift === 1 ? ' is' : 's are') . ' on a tier its owner is not paying for, so it carries a paid badge and paid placement it has not been sold.'
+            : 'Every listing is on the tier its owner\'s plan gives it.',
     ];
 
     $schemaOk = true;

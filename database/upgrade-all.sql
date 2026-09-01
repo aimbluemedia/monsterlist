@@ -702,6 +702,29 @@ PREPARE s FROM @ddl; EXECUTE s; DEALLOCATE PREPARE s;
 
 
 -- ===========================================================================
+-- businesses.tier back in step with users.plan.
+--
+-- The tier on a listing is a copy of its owner's plan, not a setting of its
+-- own: the plan sits on the account and covers every listing it owns, and a
+-- Stripe payment, a cancellation and a staff plan change all push it down here.
+--
+-- The staff edit form used to carry a Tier dropdown that wrote this column
+-- directly, without touching the plan. A listing set that way sat on Pro while
+-- its owner was on Free — wearing a paid badge on the public site and taking
+-- paid placement in every ordered list — until the next of those three events
+-- silently overwrote it. The dropdown is gone as of v128; this puts the rows it
+-- left behind back where they belong.
+--
+-- Unclaimed listings have no owner and therefore no plan, so they go to free.
+-- ===========================================================================
+
+UPDATE businesses b
+  LEFT JOIN users o ON o.id = b.owner_id
+   SET b.tier = IF(o.id IS NULL OR o.plan NOT IN ('free','pro','featured'), 'free', o.plan)
+ WHERE b.tier <> IF(o.id IS NULL OR o.plan NOT IN ('free','pro','featured'), 'free', o.plan);
+
+
+-- ===========================================================================
 -- Report. Every line should read OK. Anything else is worth telling me about.
 --
 -- ORDER MATTERS HERE, for a reason that is nothing to do with SQL.
@@ -764,6 +787,19 @@ SELECT ci.country_code,
  GROUP BY ci.country_code, IFNULL(ci.region_id, 0), ci.slug
 HAVING COUNT(*) > 1
  ORDER BY ci.country_code, ci.slug;
+
+-- What the listings are actually on now, and what their owners are paying for.
+-- The two columns should be identical. They are read from the two tables
+-- separately on purpose: if they ever disagree again, this is where it shows.
+SELECT t.tier                                                    AS tier,
+       COUNT(*)                                                  AS listings,
+       SUM(t.owner_plan = t.tier)                                AS matching_owner_plan,
+       SUM(t.owner_plan <> t.tier)                               AS still_mismatched
+  FROM (SELECT b.tier,
+               IF(o.id IS NULL OR o.plan NOT IN ('free','pro','featured'), 'free', o.plan) AS owner_plan
+          FROM businesses b LEFT JOIN users o ON o.id = b.owner_id) t
+ GROUP BY t.tier
+ ORDER BY FIELD(t.tier, 'free', 'pro', 'featured');
 
 SELECT 'blocklist table'          AS piece, IF(COUNT(*) > 0, 'OK', 'MISSING') AS state FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'blocklist'
 UNION ALL SELECT 'token_events table',      IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'token_events'

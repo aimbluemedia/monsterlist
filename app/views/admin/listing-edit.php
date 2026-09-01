@@ -8,9 +8,13 @@ $selCountry = $posted ? strtoupper(post('country')) : (!empty($cityRow) ? $cityR
 $selRegion  = $posted ? post('region') : (!empty($cityRow['region_slug']) ? $cityRow['region_slug'] : '');
 $selCity    = $posted ? post('city') : (!empty($cityRow) ? $cityRow['name'] : '');
 $selOwner   = $posted ? post('owner_email') : (string)($owner['email'] ?? '');
-// The tier this form is currently showing, which on a post is the one just
-// chosen rather than the one on file. Paid-tier fields key off this.
-$vTier      = $posted ? (string)post('tier') : (string)$biz['tier'];
+// The tier this listing should be on: its owner's plan, or free when it has no
+// owner. Not a field on the form — see tier_for_owner() in app/lib/plans.php.
+// Read live rather than from $biz so that pressing a Plan button and landing
+// back here shows the new tier immediately, and so that a listing whose stored
+// tier has drifted from its owner's plan shows the truth rather than the drift.
+$vTier      = tier_for_owner($biz['owner_id'] ? (int)$biz['owner_id'] : null);
+$tierDrift  = $vTier !== (string)$biz['tier'];
 // Carry the search term back so "Back to listings" returns to the filtered view.
 $listUrl    = e(listings_url($back, $listQ, 1, $backTier));
 ?>
@@ -37,7 +41,10 @@ $listUrl    = e(listings_url($back, $listQ, 1, $backTier));
     <div class="lbar-id">
       <strong class="lbar-name" title="<?= e($biz['name']) ?>"><?= e($barTitle) ?></strong>
       <span class="badge badge-<?= e($biz['status']) ?>"><?= e($biz['status']) ?></span>
-      <span class="badge badge-<?= $biz['tier'] === 'free' ? 'pending' : ($biz['tier'] === 'pro' ? 'pro' : 'featured') ?>"><?= e(ucfirst($biz['tier'])) ?></span>
+      <span class="badge badge-<?= $vTier === 'free' ? 'pending' : ($vTier === 'pro' ? 'pro' : 'featured') ?>"><?= e(plan_public_label($vTier)) ?></span>
+      <?php if ($tierDrift): ?>
+        <span class="badge badge-rejected" title="Stored as &quot;<?= e($biz['tier']) ?>&quot; but the owner is on <?= e(plan_public_label($vTier)) ?>. Saving this listing corrects it.">stored: <?= e($biz['tier']) ?></span>
+      <?php endif; ?>
     </div>
     <div class="lbar-acts">
       <?php if ($storefront): ?>
@@ -125,12 +132,22 @@ $listUrl    = e(listings_url($back, $listQ, 1, $backTier));
         </select>
       </div>
       <div>
+        <?php // Was a dropdown. It set businesses.tier on its own, which is a
+              // copy of the owner's plan — so a listing could sit on Pro while
+              // its owner was on Free, wearing a paid badge and taking paid
+              // placement, until the next payment, cancellation or plan change
+              // silently overwrote it. The tier is shown here and changed with
+              // the Plan buttons in the bar above, which move the account and
+              // every listing on it together. ?>
         <label>Tier</label>
-        <select name="tier">
-          <?php foreach (['free' => 'Free', 'pro' => 'Pro', 'featured' => 'Featured'] as $k => $lbl): ?>
-            <option value="<?= $k ?>" <?= ($posted ? post('tier') : $biz['tier']) === $k ? 'selected' : '' ?>><?= $lbl ?></option>
-          <?php endforeach; ?>
-        </select>
+        <p class="ed-derived">
+          <span class="badge badge-<?= $vTier === 'free' ? 'pending' : ($vTier === 'pro' ? 'pro' : 'featured') ?>"><?= e(plan_public_label($vTier)) ?></span>
+          <span class="mute"><?= $owner ? 'from the owner’s plan' : 'unclaimed, so free' ?></span>
+        </p>
+        <p class="form-note">
+          <?php if ($owner): ?>Set by the <strong>Plan</strong> buttons at the top of this page, which move the account and every listing on it together.
+          <?php else: ?>A listing with no owner has no plan. Set an owner email below to give it one.<?php endif; ?>
+        </p>
       </div>
     </div>
     <label>Owner email</label>
