@@ -446,7 +446,12 @@ INSERT INTO settings (name, value) VALUES
   -- The two Stripe price IDs. Left empty on purpose — paste yours into
   -- Superadmin -> Settings, or here. They start "price_", not "prod_".
   ('stripe_price_pro',       ''),
-  ('stripe_price_featured',  '')
+  ('stripe_price_featured',  ''),
+  -- Google Analytics. Empty means the public pages load nothing from Google at
+  -- all, which is the right default: a site that has not asked for tracking
+  -- should not be making requests to a third party on every page view.
+  ('google_analytics_id',         ''),
+  ('google_analytics_skip_staff', '1')
 ON DUPLICATE KEY UPDATE value = value;
 
 -- v8 rebalanced two of the v7 grants. Only touches them if they are still

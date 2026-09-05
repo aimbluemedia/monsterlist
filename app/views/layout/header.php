@@ -28,6 +28,19 @@ $me            = current_user();
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="<?= e(asset('/assets/css/style.css')) ?>">
 <?php render_jsonld($meta['jsonld'] ?? []); ?>
+<?php // Google Analytics. This is the public layout only — the control panel
+      // has its own <head> in app/views/admin/_top.php and is never counted.
+      // Nothing is written when no Measurement ID is set, so a site that has
+      // not configured it makes no request to Google at all. ?>
+<?php if ($gaId = ga_tag_id()): ?>
+<script async src="https://www.googletagmanager.com/gtag/js?id=<?= e(rawurlencode($gaId)) ?>"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', <?= json_encode($gaId, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>);
+</script>
+<?php endif; ?>
 </head>
 <body>
 <header class="site-header">

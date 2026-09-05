@@ -72,6 +72,36 @@
     changing it here is the thing to try. Currently sending:
     <br><code style="font-size:.78rem;word-break:break-all"><?= e(fetch_user_agent()) ?></code></p>
 
+  <?php $gaSet = ga_measurement_id(); ?>
+  <h3 style="margin-top:24px">Google Analytics</h3>
+  <p class="mute" style="font-size:.85rem">Counts visits to the public site. In
+    <a href="https://analytics.google.com" target="_blank" rel="noopener" style="color:var(--accent)">Google Analytics</a>
+    open <strong>Admin → Data streams</strong>, pick your web stream, and copy the
+    <strong>Measurement ID</strong> shown at the top right.</p>
+
+  <label>Measurement ID
+    <?= $gaSet !== ''
+        ? '<span class="badge badge-live">tracking</span>'
+        : '<span class="badge badge-pending">not set</span>' ?></label>
+  <input type="text" name="google_analytics_id" value="<?= e(setting('google_analytics_id')) ?>"
+         placeholder="G-ABCD123456" autocomplete="off" spellcheck="false">
+  <p class="form-note">Leave empty to switch it off. While it is empty the page loads nothing from
+    Google at all — no script, no cookie, no request.</p>
+
+  <?php // Default on. Staff open far more listing pages than any visitor does,
+        // and counting them turns every per-page figure into a mixture of
+        // interest and housekeeping. ?>
+  <label style="font-weight:500;margin-top:12px">
+    <input type="checkbox" name="google_analytics_skip_staff" value="1" style="width:auto"
+           <?= setting('google_analytics_skip_staff', '1') === '1' ? 'checked' : '' ?>>
+    Don’t count visits from logged-in staff
+  </label>
+  <p class="form-note">Recommended. Your own moderation traffic would otherwise show up as interest in
+    the listings you were checking. Members are still counted — they are real visitors.</p>
+  <p class="form-note">Analytics sets cookies in the visitor's browser. If you take visitors from the EU
+    or the UK, that needs consent before it loads, which this does not ask for — worth a word with
+    whoever handles your privacy policy.</p>
+
   <h3 style="margin-top:24px">Stripe price IDs</h3>
   <p class="mute" style="font-size:.85rem">Create two recurring monthly Prices in your Stripe dashboard and paste their IDs (price_…). API keys live in <code>app/config.php</code>.</p>
   <div class="form-grid">

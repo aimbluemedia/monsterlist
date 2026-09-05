@@ -848,3 +848,69 @@ function category_type_delete(int $id): array
     q('DELETE FROM category_types WHERE id = ?', [$id]);
     return [true, ''];
 }
+
+// ---------------------------------------------------------------------------
+// Google Analytics
+//
+// One setting, google_analytics_id, holding a GA4 Measurement ID. Empty means
+// the tag is not written at all: no script tag, no request to Google, nothing
+// for a visitor to be asked to consent to.
+// ---------------------------------------------------------------------------
+
+/** A pasted Measurement ID, tidied up, or '' if it is not one. */
+function ga_normalise_id(string $raw): string
+{
+    // Case and stray whitespace are what people actually paste wrong; the rest
+    // is either a different Google product or a typo, and ga_id_problem() says
+    // which. Google has never published a length, so this accepts a range
+    // rather than pinning today's ten characters.
+    $id = strtoupper(trim($raw));
+    return preg_match('/^G-[A-Z0-9]{4,20}$/', $id) === 1 ? $id : '';
+}
+
+/**
+ * Why a pasted id was not accepted, in words worth showing.
+ *
+ * The two near-misses are worth naming rather than lumping in with "invalid":
+ * both are real Google ids that a person can reasonably believe is the one
+ * being asked for, and neither works in the tag written below.
+ */
+function ga_id_problem(string $raw): string
+{
+    $id = strtoupper(trim($raw));
+    if ($id === '' || ga_normalise_id($id) !== '') return '';
+    if (preg_match('/^UA-/', $id)) {
+        return 'That is a Universal Analytics ID. Google switched Universal Analytics off in 2023 and it no longer'
+             . ' collects anything. In Google Analytics open Admin → Data streams, pick your web stream, and copy'
+             . ' the Measurement ID at the top right — it starts with G-.';
+    }
+    if (preg_match('/^GTM-/', $id)) {
+        return 'That is a Google Tag Manager container ID, which needs a different snippet from the one this'
+             . ' setting writes. Paste the Measurement ID from Google Analytics instead (Admin → Data streams →'
+             . ' your web stream), which starts with G-. Say the word if you would rather load Tag Manager here.';
+    }
+    return 'A Measurement ID looks like G-ABCD123456. Find it in Google Analytics under'
+         . ' Admin → Data streams → your web stream, at the top right.';
+}
+
+/** The configured Measurement ID, or '' when none is set or it is unusable. */
+function ga_measurement_id(): string
+{
+    return ga_normalise_id(setting('google_analytics_id'));
+}
+
+/**
+ * The id to write into the page being rendered, or '' to write nothing.
+ *
+ * Staff are skipped by default. A directory's own moderators open far more
+ * listing pages than any visitor does, and counting them makes every per-page
+ * number a mixture of interest and housekeeping — which is worse than useless,
+ * because it looks like data.
+ */
+function ga_tag_id(): string
+{
+    $id = ga_measurement_id();
+    if ($id === '') return '';
+    if (setting('google_analytics_skip_staff', '1') === '1' && is_admin()) return '';
+    return $id;
+}

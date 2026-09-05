@@ -42,6 +42,31 @@
 </div>
 
 <div class="card card-pad ed-card">
+  <h3>Google Analytics</h3>
+  <?php $gaId = ga_measurement_id(); $gaSkip = setting('google_analytics_skip_staff', '1') === '1'; ?>
+  <?php if ($gaId === ''): ?>
+    <p class="mute ed-note">Not set up. The public pages load nothing from Google — no script, no cookie,
+      no request. Add a Measurement ID in <a href="/superadmin/settings" style="color:var(--accent)">Settings</a>
+      to start counting visits.</p>
+  <?php else: ?>
+    <p class="flash flash-success" style="margin:0 0 12px">Tracking as <code><?= e($gaId) ?></code> on the public site.</p>
+    <?php // The question this exists to answer. Somebody sets analytics up,
+          // clicks round their own site to check, sees nothing in Realtime, and
+          // concludes it is broken — when it is doing exactly what they asked. ?>
+    <?php if ($gaSkip): ?>
+      <p class="mute ed-note"><strong>Your own visits are not being counted.</strong> Staff are excluded, which is
+        the recommended setting — so checking Google's Realtime report while logged in here shows nothing.
+        Open the site in a private window, or while logged out, to see yourself arrive.</p>
+    <?php else: ?>
+      <p class="mute ed-note">Staff visits <strong>are</strong> being counted. Your own moderation traffic is mixed
+        into the figures for every listing you open; you can turn that off in
+        <a href="/superadmin/settings" style="color:var(--accent)">Settings</a>.</p>
+    <?php endif; ?>
+    <p class="mute ed-note">The control panel is never counted — it has its own page head and no tag on it.</p>
+  <?php endif; ?>
+</div>
+
+<div class="card card-pad ed-card">
   <h3>Stripe payments</h3>
   <p class="mute ed-note">Nobody reports a broken checkout — they close the tab. Everything the
     Upgrade buttons need is checked here, including the two price IDs, which are looked up in

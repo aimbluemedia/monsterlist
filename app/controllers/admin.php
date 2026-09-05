@@ -1137,7 +1137,31 @@ if ($sub === 'dashboard') {
                   'feed_boost_pro','feed_boost_featured'] as $k) {
             if (isset($_POST[$k])) setting_save($k, trim((string)$_POST[$k]));
         }
-        flash_set('success', 'Settings saved.');
+
+        // A checkbox posts nothing when it is off, so it cannot go through the
+        // loop above — that only saves keys that arrived.
+        setting_save('google_analytics_skip_staff', empty($_POST['google_analytics_skip_staff']) ? '0' : '1');
+
+        // The Measurement ID is checked rather than stored as typed. A wrong id
+        // fails silently: the page loads Google's script, Google accepts the
+        // request, and nothing ever appears in the reports — so the mistake
+        // surfaces weeks later as "analytics is broken" with nothing to go on.
+        $gaMsg = '';
+        if (isset($_POST['google_analytics_id'])) {
+            $gaRaw   = trim((string)$_POST['google_analytics_id']);
+            $gaClean = ga_normalise_id($gaRaw);
+            if ($gaRaw === '' || $gaClean !== '') {
+                setting_save('google_analytics_id', $gaClean);
+                $gaMsg = $gaRaw === '' ? ' Google Analytics is off.' : ' Google Analytics is on for ' . $gaClean . '.';
+            } else {
+                // Everything else on the form is saved; only this field is held
+                // back, so the box goes back to whatever was working before
+                // rather than keeping a value that would collect nothing. The
+                // message says what to paste instead.
+                flash_set('error', 'Measurement ID not saved — kept the previous one. ' . ga_id_problem($gaRaw));
+            }
+        }
+        flash_set('success', 'Settings saved.' . $gaMsg);
         redirect('/superadmin/settings');
     }
     view_raw('admin/settings', compact('meta', 'u'));
