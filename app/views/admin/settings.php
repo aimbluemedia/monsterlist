@@ -6,6 +6,13 @@
   <input type="text" name="site_name" value="<?= e(setting('site_name')) ?>">
   <label>Tagline</label>
   <input type="text" name="site_tagline" value="<?= e(setting('site_tagline')) ?>">
+  <?php // Shown under the site name in the logo, in the header and the footer,
+        // as "by <whoever>". The word "by" is added for you. ?>
+  <label>Byline — who the site is by</label>
+  <input type="text" name="site_byline" value="<?= e(setting('site_byline', 'Toutify')) ?>" maxlength="60" placeholder="Toutify">
+  <p class="form-note">Appears under the site name in the logo as
+    <strong><?= e(trim(setting('site_byline', 'Toutify')) !== '' ? 'by ' . trim(setting('site_byline', 'Toutify')) : 'nothing — the name stands alone') ?></strong>.
+    Leave empty to show the name on its own.</p>
 
   <h3 style="margin-top:24px">Membership pricing (USD/month)</h3>
   <div class="form-grid">

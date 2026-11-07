@@ -45,7 +45,7 @@ gtag('config', <?= json_encode($gaId, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JS
 <body>
 <header class="site-header">
   <div class="wrap nav-row">
-    <a class="logo" href="/"><span class="logo-mark">M</span> <?= e(setting('site_name')) ?></a>
+    <?php require APP_ROOT . '/views/layout/_logo.php'; ?>
     <nav class="main-nav">
       <a href="/browse">Browse</a>
       <a href="/search">Search</a>

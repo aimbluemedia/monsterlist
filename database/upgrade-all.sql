@@ -451,7 +451,10 @@ INSERT INTO settings (name, value) VALUES
   -- all, which is the right default: a site that has not asked for tracking
   -- should not be making requests to a third party on every page view.
   ('google_analytics_id',         ''),
-  ('google_analytics_skip_staff', '1')
+  ('google_analytics_skip_staff', '1'),
+  -- Shown under the site name in the logo, as "by <whoever>". Editable in
+  -- Settings -> Branding; empty shows the name on its own.
+  ('site_byline',                 'Toutify')
 ON DUPLICATE KEY UPDATE value = value;
 
 -- v8 rebalanced two of the v7 grants. Only touches them if they are still

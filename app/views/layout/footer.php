@@ -2,7 +2,7 @@
 <footer class="site-footer">
   <div class="wrap footer-grid">
     <div>
-      <a class="logo" href="/"><span class="logo-mark">M</span> <?= e(setting('site_name')) ?></a>
+      <?php require APP_ROOT . '/views/layout/_logo.php'; ?>
       <p class="mute"><?= e(setting('site_tagline')) ?>. Free listings for every small business, everywhere.</p>
     </div>
     <div>
