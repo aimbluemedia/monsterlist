@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$existing) {
     } else {
         q('INSERT INTO claims (business_id, user_id, message) VALUES (?,?,?)', [$biz['id'], $u['id'], $msg]);
         flash_set('success', 'Claim submitted! Our team will verify it and email you, usually within 24 hours.');
-        redirect('/account');
+        redirect('/members');
     }
 }
 

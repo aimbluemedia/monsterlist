@@ -8,7 +8,7 @@
             // own one — a member with a business already has the thing the
             // upgrade applies to, and the price list would only ask them again. ?>
       <?php if ($u['plan'] !== 'featured'): ?>
-        <a href="<?= $listings ? '/account/listings/upgrade?id=' . (int)$listings[0]['id'] : '/pricing' ?>"
+        <a href="<?= $listings ? '/members/listings/upgrade?id=' . (int)$listings[0]['id'] : '/pricing' ?>"
            style="color:var(--accent);font-weight:700">Upgrade →</a>
       <?php endif; ?>
     </p>
@@ -22,7 +22,7 @@
       <h3>Recent listings</h3>
       <?php if (!$listings): ?>
         <p class="mute">No listings yet.</p>
-        <a class="btn btn-primary" href="/account/listings/new">Create your first listing</a>
+        <a class="btn btn-primary" href="/members/listings/new">Create your first listing</a>
       <?php else: ?>
         <table class="table">
           <tr><th>Business</th><th>City</th><th>Status</th><th></th></tr>
@@ -31,7 +31,7 @@
               <td><strong><?= e($l['name']) ?></strong></td>
               <td><?= e($l['city_name'] ?? '—') ?></td>
               <td><span class="badge badge-<?= e($l['status']) ?>"><?= e($l['status']) ?></span></td>
-              <td><a href="/account/listings/edit?id=<?= (int)$l['id'] ?>" style="color:var(--accent);font-weight:700">Edit</a></td>
+              <td><a href="/members/listings/edit?id=<?= (int)$l['id'] ?>" style="color:var(--accent);font-weight:700">Edit</a></td>
             </tr>
           <?php endforeach; ?>
         </table>

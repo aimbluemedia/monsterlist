@@ -9,7 +9,7 @@
         no tokens spent, no posts to write.</p>
       <p class="mute">On <?= e($plan['label']) ?> you have the tokens to promote your own posts whenever you like.</p>
       <a class="btn btn-primary" href="/pricing">See plans</a>
-      <a class="btn btn-ghost" href="/account/promotions">Promote something now</a>
+      <a class="btn btn-ghost" href="/members/promotions">Promote something now</a>
     </div>
   </div>
 </div>

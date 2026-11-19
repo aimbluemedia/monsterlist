@@ -21,7 +21,7 @@
         <p class="mute" style="margin:0">Putting a link in the member feed costs
           <strong><?= (int)$rules['cost_promo'] ?> tokens</strong>. Blog posts, products, services, reviews,
           Facebook, Instagram, TikTok, YouTube, Pinterest, Reddit — whatever you have already published.</p>
-        <a class="btn btn-primary btn-sm" style="margin-top:12px" href="/account/promotions">Promote something</a>
+        <a class="btn btn-primary btn-sm" style="margin-top:12px" href="/members/promotions">Promote something</a>
       </div>
       <div class="card card-pad">
         <h3>Earn them</h3>

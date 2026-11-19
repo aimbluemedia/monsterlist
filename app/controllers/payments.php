@@ -15,7 +15,7 @@ if ($path === '/stripe/checkout' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     // Somewhere to send them when this cannot go ahead — back to the page they
     // pressed the button on, not out to the public price list.
-    $back = $bizId ? '/account/listings/upgrade?id=' . $bizId : '/pricing';
+    $back = $bizId ? '/members/listings/upgrade?id=' . $bizId : '/pricing';
     if (!in_array($plan, ['pro', 'featured'], true)) redirect($back);
     if (!stripe_configured()) {
         flash_set('error', 'Payments are not configured yet — add your Stripe keys to app/config.php.');
@@ -34,13 +34,13 @@ if ($path === '/stripe/portal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $u = require_login();
     if (!stripe_configured() || empty($u['stripe_customer_id'])) {
         flash_set('error', 'No billing profile found for this account.');
-        redirect('/account/billing');
+        redirect('/members/billing');
     }
     try {
         redirect(stripe_portal_url($u));
     } catch (Throwable $e) {
         flash_set('error', 'Could not open the billing portal: ' . $e->getMessage());
-        redirect('/account/billing');
+        redirect('/members/billing');
     }
 }
 

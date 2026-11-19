@@ -14,14 +14,14 @@
       <span>Balance: <b><?= number_format($tkBal) ?></b> token<?= $tkBal === 1 ? '' : 's' ?></span>
       <span class="mute">Each costs <?= (int)$tkRules['cost_promo'] ?>; you earn <?= (int)$tkRules['earn_view'] ?> per member promotion you open.</span>
       <span><b><?= max(0, $promoMax - $promoUsed) ?></b> of <?= (int)$promoMax ?> left this month</span>
-      <a class="btn btn-ghost btn-sm" style="margin-left:auto" href="/account/tokens">Tokens &amp; history</a>
+      <a class="btn btn-ghost btn-sm" style="margin-left:auto" href="/members/tokens">Tokens &amp; history</a>
     </div>
 
     <?php if (!$mine): ?>
       <div class="card card-pad" style="margin-top:16px">
         <strong>Add a listing first.</strong>
         <p class="mute">A promotion is attached to one of your businesses, so members know who it's from.</p>
-        <a class="btn btn-primary" href="/account/listings/new">Add my business</a>
+        <a class="btn btn-primary" href="/members/listings/new">Add my business</a>
       </div>
     <?php else: ?>
       <form method="post" class="card card-pad" style="max-width:640px;margin-top:16px"><?= csrf_field() ?>

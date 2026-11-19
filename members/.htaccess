@@ -1,4 +1,4 @@
-# Member area (alias of /account) — see superadmin/.htaccess for rationale.
+# Member area — see superadmin/.htaccess for rationale.
 DirectoryIndex index.php
 
 <IfModule mod_rewrite.c>

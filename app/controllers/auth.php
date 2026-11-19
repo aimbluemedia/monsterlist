@@ -5,7 +5,7 @@ $site = setting('site_name');
 
 switch ($path) {
     case '/signup':
-        if (is_logged_in()) redirect('/account');
+        if (is_logged_in()) redirect('/members');
         $errors = [];
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             csrf_check();
@@ -53,7 +53,7 @@ switch ($path) {
                 try { notify_welcome($email, $domain); }
                 catch (Throwable $e) { error_log('MonsterList: welcome email failed — ' . $e->getMessage()); }
                 flash_set('success', 'Welcome to ' . $site . '! Create your first listing below.');
-                redirect('/account/listings/new');
+                redirect('/members/listings/new');
             }
         }
         $meta = [
@@ -65,7 +65,7 @@ switch ($path) {
         break;
 
     case '/login':
-        if (is_logged_in()) redirect(is_admin() ? '/superadmin' : '/account');
+        if (is_logged_in()) redirect(is_admin() ? '/superadmin' : '/members');
         $errors = [];
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             csrf_check();
@@ -81,7 +81,15 @@ switch ($path) {
                         $errors[] = 'This is the member login. Administrators sign in at /superadmin/login.';
                     } else {
                         login_user($user);
-                        $to = $_SESSION['after_login'] ?? '/account';
+                        // Back to whatever they were trying to reach, and the
+                        // members area otherwise. A session that started before
+                        // the area was renamed can still be holding the old
+                        // path, so it is moved across rather than followed into
+                        // a redirect.
+                        $to = (string)($_SESSION['after_login'] ?? '/members');
+                        if (preg_match('#^/account(/|\?|$)#', $to)) {
+                            $to = '/members' . substr($to, strlen('/account'));
+                        }
                         unset($_SESSION['after_login']);
                         redirect($to);
                     }

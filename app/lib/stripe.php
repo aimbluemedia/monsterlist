@@ -97,9 +97,9 @@ function stripe_checkout_url(array $user, string $plan, int $businessId = 0): st
     // instead of trusting that the webhook has already arrived — see
     // stripe_fulfill_session(). Braces stay raw; Stripe does not substitute an
     // encoded placeholder.
-    $done   = ($businessId ? '/account/listings/edit?id=' . $businessId . '&' : '/account/billing?')
+    $done   = ($businessId ? '/members/listings/edit?id=' . $businessId . '&' : '/members/billing?')
             . 'upgraded=1&session_id={CHECKOUT_SESSION_ID}';
-    $cancel = $businessId ? '/account/listings/upgrade?id=' . $businessId : '/pricing';
+    $cancel = $businessId ? '/members/listings/upgrade?id=' . $businessId : '/pricing';
     $session = stripe_request('POST', '/checkout/sessions', [
         'mode'                 => 'subscription',
         'customer'             => stripe_customer_for($user),
@@ -121,7 +121,7 @@ function stripe_portal_url(array $user): string
 {
     $session = stripe_request('POST', '/billing_portal/sessions', [
         'customer'   => stripe_customer_for($user),
-        'return_url' => site_url('/account/billing'),
+        'return_url' => site_url('/members/billing'),
     ]);
     return $session['url'];
 }

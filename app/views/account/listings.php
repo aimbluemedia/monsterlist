@@ -3,7 +3,7 @@
   <div>
     <div class="section-head">
       <h1>My listings</h1>
-      <a class="btn btn-primary" href="/account/listings/new">+ New listing</a>
+      <a class="btn btn-primary" href="/members/listings/new">+ New listing</a>
     </div>
     <p class="mute">
       <?= count($listings) ?> listing<?= count($listings) === 1 ? '' : 's' ?> on the <?= e($plan['label']) ?> plan
@@ -19,7 +19,7 @@
       <?php endif; ?>
     </p>
     <?php if (!$listings): ?>
-      <div class="card card-pad">No listings yet — <a href="/account/listings/new" style="color:var(--accent);font-weight:700">create one now</a>.</div>
+      <div class="card card-pad">No listings yet — <a href="/members/listings/new" style="color:var(--accent);font-weight:700">create one now</a>.</div>
     <?php else: ?>
       <?php // City is on the listing itself and on its storefront; repeating it
             // here bought a whole column for a fact nobody comes to this page
@@ -42,24 +42,24 @@
                   <?php if ($l['status'] === 'live' && $l['city_id']): ?>
                     <a class="btn btn-sm btn-ghost" href="<?= e(business_path($l)) ?>">View Storefront</a>
                   <?php endif; ?>
-                  <a class="btn btn-sm btn-ghost" href="/account/listings/edit?id=<?= (int)$l['id'] ?>">Edit Listing</a>
-                  <a class="btn btn-sm btn-ghost" href="/account/listings/services?id=<?= (int)$l['id'] ?>"
+                  <a class="btn btn-sm btn-ghost" href="/members/listings/edit?id=<?= (int)$l['id'] ?>">Edit Listing</a>
+                  <a class="btn btn-sm btn-ghost" href="/members/listings/services?id=<?= (int)$l['id'] ?>"
                      title="Services, social links and review profiles">Edit Profile</a>
                   <?php if (tokens_ready()): ?>
                     <?php // The balance itself, not the word — a member deciding
                           // whether to promote needs the number, and this is the
                           // row they are deciding on. ?>
-                    <a class="btn btn-sm ls-tok" href="/account/tokens">
+                    <a class="btn btn-sm ls-tok" href="/members/tokens">
                       <?= number_format((int)$u['token_balance']) ?> Tokens
                     </a>
-                    <a class="btn btn-sm btn-ghost" href="/account/promotions?business=<?= (int)$l['id'] ?>">Add Promotion</a>
+                    <a class="btn btn-sm btn-ghost" href="/members/promotions?business=<?= (int)$l['id'] ?>">Add Promotion</a>
                   <?php endif; ?>
                   <?php // Offered per row, so the upgrade a member starts is tied to
                         // the listing they were looking at when they decided to. ?>
                   <?php if ($u['plan'] !== 'featured'): ?>
-                    <a class="btn btn-sm ls-up" href="/account/listings/upgrade?id=<?= (int)$l['id'] ?>">Upgrade</a>
+                    <a class="btn btn-sm ls-up" href="/members/listings/upgrade?id=<?= (int)$l['id'] ?>">Upgrade</a>
                   <?php endif; ?>
-                  <form method="post" action="/account/listings/delete"><?= csrf_field() ?>
+                  <form method="post" action="/members/listings/delete"><?= csrf_field() ?>
                     <input type="hidden" name="id" value="<?= (int)$l['id'] ?>">
                     <button class="btn btn-sm ls-del" data-confirm="Delete this listing permanently?">Delete</button>
                   </form>

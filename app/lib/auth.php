@@ -43,7 +43,7 @@ function require_login(): array
 {
     $u = current_user();
     if (!$u) {
-        $_SESSION['after_login'] = $_SERVER['REQUEST_URI'] ?? '/account';
+        $_SESSION['after_login'] = $_SERVER['REQUEST_URI'] ?? '/members';
         redirect('/login');
     }
     return $u;

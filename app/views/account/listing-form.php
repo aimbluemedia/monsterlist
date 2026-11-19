@@ -44,9 +44,9 @@ $revLinks = $editing ? wizard_links($biz['review_links'] ?? null) : [];
                   // upgrade page, so what is being bought is never in doubt. A
                   // listing being created has no id yet — the price list is the
                   // only honest destination until it is saved. ?>
-            <a class="btn btn-sm tk-strip-up" href="<?= $editing ? '/account/listings/upgrade?id=' . (int)$biz['id'] : '/pricing' ?>">Upgrade your listing</a>
+            <a class="btn btn-sm tk-strip-up" href="<?= $editing ? '/members/listings/upgrade?id=' . (int)$biz['id'] : '/pricing' ?>">Upgrade your listing</a>
           <?php endif; ?>
-          <a class="tk-strip-go" href="/account/tokens">Tokens &amp; history →</a>
+          <a class="tk-strip-go" href="/members/tokens">Tokens &amp; history →</a>
         </span>
       </div>
     <?php endif; ?>
@@ -308,7 +308,7 @@ $revLinks = $editing ? wizard_links($biz['review_links'] ?? null) : [];
 
       <div class="ed-actions">
         <button class="btn btn-primary btn-xl"><?= $editing ? 'Save changes' : 'Submit listing for review' ?></button>
-        <?php if ($editing): ?><a class="btn btn-ghost" href="/account/listings">Cancel</a><?php endif; ?>
+        <?php if ($editing): ?><a class="btn btn-ghost" href="/members/listings">Cancel</a><?php endif; ?>
       </div>
       <?php if (!$editing): ?><p class="form-note">New listings are reviewed by our team before going live — usually within 24 hours.</p><?php endif; ?>
     </form>

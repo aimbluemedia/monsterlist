@@ -238,7 +238,7 @@ function refresh_city_count(int $cityId): void
 }
 
 // ---------------------------------------------------------------------------
-// Listing form handling. Shared by the member area (/account/listings) and the
+// Listing form handling. Shared by the member area (/members/listings) and the
 // staff control panel (/superadmin/listings), so both write the same fields
 // through the same validation.
 // ---------------------------------------------------------------------------

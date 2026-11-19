@@ -96,7 +96,7 @@ function wizard_next(string $step): ?string
 
 function wizard_url(string $step, int $bizId): string
 {
-    return '/account/listings/' . $step . '?id=' . $bizId;
+    return '/members/listings/' . $step . '?id=' . $bizId;
 }
 
 /**

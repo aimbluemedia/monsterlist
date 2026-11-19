@@ -33,8 +33,8 @@ $where   = trim(($cityRow['name'] ?? '') . (!empty($cityRow['region_name']) ? ',
           posted out for you.
         </p>
         <p>
-          <a class="btn btn-primary" href="/account/listings/edit?id=<?= (int)$biz['id'] ?>">Back to this listing</a>
-          <a class="btn btn-ghost" href="/account/billing">Billing</a>
+          <a class="btn btn-primary" href="/members/listings/edit?id=<?= (int)$biz['id'] ?>">Back to this listing</a>
+          <a class="btn btn-ghost" href="/members/billing">Billing</a>
         </p>
       </div>
     <?php else: ?>

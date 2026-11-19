@@ -8,7 +8,7 @@ function notify_welcome(string $email, string $name): void
         "Hi $name,\n\n" .
         "Welcome to $site — your account is ready.\n\n" .
         "Next step: create your free listing (it takes about five minutes):\n" .
-        site_url('/account/listings/new') . "\n\n" .
+        site_url('/members/listings/new') . "\n\n" .
         "Every listing is reviewed by our team before going live, usually within 24 hours.\n\n" .
         "Want a bigger presence? Pro and Featured plans add photo galleries, video,\n" .
         "analytics and priority placement: " . site_url('/pricing') . "\n\n" .
@@ -34,7 +34,7 @@ function notify_listing_decision(array $biz, bool $approved): void
             "Hi {$owner['name']},\n\nYour listing \"{$biz['name']}\" was not approved in its current form.\n\n" .
             "Common reasons: incomplete details, duplicate listing, or content that doesn't\n" .
             "meet our guidelines. You can edit and resubmit it from your dashboard:\n" .
-            site_url('/account/listings') . "\n\nQuestions? Just reply to this email.\n\n— The $site team");
+            site_url('/members/listings') . "\n\nQuestions? Just reply to this email.\n\n— The $site team");
     }
 }
 
@@ -47,7 +47,7 @@ function notify_plan_change(int $userId, string $plan): void
     send_mail($user['email'], "You're on the $label plan — thank you! 🚀",
         "Hi {$user['name']},\n\nYour payment went through and your $site membership is now $label.\n" .
         "All your listings have been upgraded automatically.\n\n" .
-        "Manage your subscription anytime: " . site_url('/account/billing') . "\n\n— The $site team");
+        "Manage your subscription anytime: " . site_url('/members/billing') . "\n\n— The $site team");
 }
 
 function notify_claim_decision(array $claim, array $biz, bool $approved): void
@@ -58,7 +58,7 @@ function notify_claim_decision(array $claim, array $biz, bool $approved): void
     if ($approved) {
         send_mail($user['email'], "Claim approved — \"{$biz['name']}\" is yours on $site",
             "Hi {$user['name']},\n\nYour claim for \"{$biz['name']}\" was approved. You can now manage\n" .
-            "this listing from your dashboard:\n" . site_url('/account/listings') . "\n\n— The $site team");
+            "this listing from your dashboard:\n" . site_url('/members/listings') . "\n\n— The $site team");
     } else {
         send_mail($user['email'], "About your claim for \"{$biz['name']}\" on $site",
             "Hi {$user['name']},\n\nWe couldn't verify your claim for \"{$biz['name']}\" and it was declined.\n" .

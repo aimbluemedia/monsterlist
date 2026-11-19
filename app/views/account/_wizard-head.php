@@ -6,7 +6,7 @@ $wzAt    = array_search($step, array_column($wzSteps, 0), true);
 <div class="wrap dash">
   <?php require __DIR__ . '/_nav.php'; ?>
   <div>
-    <p class="wz-crumb"><a href="/account/listings">← My listings</a> · <?= e($biz['name']) ?></p>
+    <p class="wz-crumb"><a href="/members/listings">← My listings</a> · <?= e($biz['name']) ?></p>
 
     <ol class="wz-steps">
       <?php foreach ($wzSteps as $i => [$slug, $label]): ?>

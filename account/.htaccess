@@ -1,4 +1,4 @@
-# Member area — see superadmin/.htaccess for rationale.
+# Member area (the old name; index.php 301s to /members) — see superadmin/.htaccess.
 DirectoryIndex index.php
 
 <IfModule mod_rewrite.c>

@@ -2,9 +2,8 @@
 // ---------------------------------------------------------------------------
 // Real-folder entry point for the member area.
 //
-// "Members" is the friendlier public-facing name; /account/ is what the app's
-// internal links use. Both folders resolve to the same controller and the same
-// features, so either URL works.
+// This is the member area's address. /account/ was its old name and now
+// redirects here, so older links keep working.
 //
 // Member features reachable from here:
 //   /members/                    dashboard
@@ -17,7 +16,6 @@
 // ---------------------------------------------------------------------------
 $ML_WEB_ROOT = dirname(__DIR__);
 $ML_SECTION  = 'members';
-$ML_ALIAS    = 'account';   // the controller is written against /account
 require $ML_WEB_ROOT . '/app/entry.php';
 
 require APP_ROOT . '/controllers/account.php';

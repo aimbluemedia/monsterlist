@@ -25,7 +25,7 @@ switch ($path) {
 
     case '/add-listing':
         // Marketing page that routes to signup (or straight to the form if logged in)
-        if (is_logged_in()) redirect('/account/listings/new');
+        if (is_logged_in()) redirect('/members/listings/new');
         redirect('/signup');
 
     case '/about':

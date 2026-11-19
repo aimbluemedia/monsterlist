@@ -1,7 +1,7 @@
 <?php
 // ---------------------------------------------------------------------------
 // Shared bootstrap for the real-folder entry points (/superadmin, /members,
-// /account, /login, ...). Those folders exist so Apache can serve each section
+// /login, ...). Those folders exist so Apache can serve each section
 // directly, without depending on mod_rewrite to route virtual paths through
 // the front controller.
 //

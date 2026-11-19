@@ -1,11 +1,11 @@
 <?php
-// Member area: /account[/listings|/listings/new|/listings/edit|/listings/delete
+// Member area: /members[/listings|/listings/new|/listings/edit|/listings/delete
 //                        |/analytics|/billing|/settings]
 $u    = require_login();
 $site = setting('site_name');
 $plan = plan_for($u);
 
-$sub = $path === '/account' ? 'dashboard' : ($segments[1] ?? 'dashboard');
+$sub = $path === '/members' ? 'dashboard' : ($segments[1] ?? 'dashboard');
 $act = $segments[2] ?? '';
 
 // ---------- helpers ----------
@@ -84,7 +84,7 @@ if ($sub === 'dashboard') {
         flash_set('error', 'Your ' . $plan['label'] . ' plan covers '
             . strtolower(plan_listings_label($plan))
             . ($more ? '. Pro and Premium carry as many as you like.' : ' — contact us if you run several businesses.'));
-        redirect($more ? '/pricing' : '/account/listings');
+        redirect($more ? '/pricing' : '/members/listings');
     }
     $errors = [];
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -187,7 +187,7 @@ if ($sub === 'dashboard') {
             refresh_city_count((int)$biz['city_id']);
             if ((int)$data['city_id'] !== (int)$biz['city_id']) refresh_city_count((int)$data['city_id']);
             flash_set('success', 'Listing updated.' . ($needsReview ? ' Changes will be re-reviewed before going live.' : ''));
-            redirect('/account/listings');
+            redirect('/members/listings');
         }
     }
     $gallery   = rows('SELECT id, url FROM gallery WHERE business_id = ? ORDER BY sort', [$biz['id']]);
@@ -204,7 +204,7 @@ if ($sub === 'dashboard') {
     if (!$biz) not_found();
     $step = $act;
     $next = wizard_next($step);
-    $done = $next === null ? '/account/listings' : wizard_url($next, (int)$biz['id']);
+    $done = $next === null ? '/members/listings' : wizard_url($next, (int)$biz['id']);
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         csrf_check();
@@ -253,7 +253,7 @@ if ($sub === 'dashboard') {
         if ($biz['city_id']) refresh_city_count((int)$biz['city_id']);
         flash_set('success', 'Listing deleted.');
     }
-    redirect('/account/listings');
+    redirect('/members/listings');
 
 } elseif ($sub === 'promotions') {
     // The promotion engine: submit a link you've already published elsewhere.
@@ -270,7 +270,7 @@ if ($sub === 'dashboard') {
                 q('DELETE FROM promotions WHERE id = ? AND user_id = ?', [$promo['id'], $u['id']]);
                 flash_set('success', 'Promotion removed.');
             }
-            redirect('/account/promotions');
+            redirect('/members/promotions');
         }
 
         $bizId = (int)post('business_id');
@@ -315,7 +315,7 @@ if ($sub === 'dashboard') {
               [$biz['id'], $u['id'], $chan, $url, $title, $blurb ?: null]);
             flash_set('success', 'Submitted' . ($cost > 0 ? " for $cost tokens" : '')
                 . '. It goes live in the member feed once our team approves it — usually within 24 hours.');
-            redirect('/account/promotions');
+            redirect('/members/promotions');
         }
     }
 
@@ -357,7 +357,7 @@ if ($sub === 'dashboard') {
                        topic = VALUES(topic), brief = VALUES(brief)',
                   [$u['id'], $biz['id'] ?? null, $month, $topic, $brief ?: null]);
                 flash_set('success', 'Brief received. Our team writes it, publishes it, and posts it out across our channels and yours.');
-                redirect('/account/article');
+                redirect('/members/article');
             }
         }
         $current = article_for_month((int)$u['id'], $month);
@@ -418,7 +418,7 @@ if ($sub === 'dashboard') {
                 q('UPDATE users SET password_hash = ? WHERE id = ?', [password_hash($new, PASSWORD_DEFAULT), $u['id']]);
             }
         }
-        if (!$errors) { flash_set('success', 'Settings saved.'); redirect('/account/settings'); }
+        if (!$errors) { flash_set('success', 'Settings saved.'); redirect('/members/settings'); }
     }
     view('account/settings', compact('meta', 'u', 'plan', 'errors'));
 

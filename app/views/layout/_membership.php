@@ -18,7 +18,7 @@ $tfBy   = trim(setting('site_byline', 'Toutify')) ?: 'Toutify';
       <?php // Members are already in, so the panel stops selling and points at
             // the thing they actually came back for. ?>
       <?php if ($tfMe): ?>
-        <a class="tf-btn" href="/account">Go to your dashboard</a>
+        <a class="tf-btn" href="/members">Go to your dashboard</a>
         <p class="tf-alt">Signed in as <?= e($tfMe['email']) ?>.</p>
       <?php else: ?>
         <a class="tf-btn" href="/add-listing">Start free — takes a minute</a>

@@ -14,19 +14,19 @@ $navUsed = $navU ? promos_used_this_month((int)$navU['id']) : 0;
 ?>
 <div>
   <nav class="side-nav">
-    <a class="<?= $cur === '/account' ? 'active' : '' ?>" href="/account">Dashboard</a>
-    <a class="<?= $is('/account/listings') ?>" href="/account/listings">My listings</a>
-    <a class="<?= $is('/account/promotions') ?>" href="/account/promotions">Promotion engine</a>
-    <a class="<?= $is('/account/tokens') ?>" href="/account/tokens">Tokens</a>
-    <a class="<?= $is('/account/article') ?>" href="/account/article">Monthly article</a>
-    <a class="<?= $is('/account/analytics') ?>" href="/account/analytics">Analytics</a>
-    <a class="<?= $is('/account/billing') ?>" href="/account/billing">Plan &amp; billing</a>
-    <a class="<?= $is('/account/settings') ?>" href="/account/settings">Settings</a>
+    <a class="<?= $cur === '/members' ? 'active' : '' ?>" href="/members">Dashboard</a>
+    <a class="<?= $is('/members/listings') ?>" href="/members/listings">My listings</a>
+    <a class="<?= $is('/members/promotions') ?>" href="/members/promotions">Promotion engine</a>
+    <a class="<?= $is('/members/tokens') ?>" href="/members/tokens">Tokens</a>
+    <a class="<?= $is('/members/article') ?>" href="/members/article">Monthly article</a>
+    <a class="<?= $is('/members/analytics') ?>" href="/members/analytics">Analytics</a>
+    <a class="<?= $is('/members/billing') ?>" href="/members/billing">Plan &amp; billing</a>
+    <a class="<?= $is('/members/settings') ?>" href="/members/settings">Settings</a>
     <a href="/logout">Log out</a>
   </nav>
 
   <?php if ($navU && tokens_ready()): ?>
-    <a class="card card-pad tk-side" href="/account/tokens">
+    <a class="card card-pad tk-side" href="/members/tokens">
       <b><?= number_format($navBal) ?></b>
       <small>Token<?= $navBal === 1 ? '' : 's' ?></small>
       <span class="tk-side-note">

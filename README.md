@@ -70,7 +70,7 @@ no build step.
   or phone — same-name businesses in other towns are a real failure mode. Markdown is
   stripped on the way in, because the storefront prints the text as written.
 
-**Member area** (`/account`)
+**Member area** (`/members`, with `/account` redirecting to it)
 - Dashboard, listing CRUD with plan limits, analytics (views / website clicks / calls,
   daily rollups), billing, profile settings
 

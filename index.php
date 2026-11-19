@@ -9,7 +9,7 @@
 //   /pricing /about /contact /terms /privacy /add-listing
 //   /signup /login /logout /forgot /reset
 //   /promotions[/go/{id}]          live member promotion feed
-//   /account[...] /members[...]    member area (same thing, two names)
+//   /members[...]                  member area (/account 301s here)
 //   /superadmin[...]                    admin + superadmin
 //   /stripe/checkout|webhook|portal
 //   /sitemap.xml /sitemap-{n}.xml  dynamic sitemaps
@@ -38,8 +38,14 @@ $uri  = rawurldecode($uri);
 $path = rtrim($uri, '/') ?: '/';
 
 // Normalize: no trailing slashes, lowercase geo URLs get canonical redirects later.
+// The query string has to come along. Without it "/members/?p=listings" — which
+// is how the member area addresses its own pages on a server with no
+// mod_rewrite — was normalised to "/members" and quietly lost the page it was
+// asking for. Permanent, because the slashless form is the canonical one and
+// always will be.
 if ($uri !== '/' && substr($uri, -1) === '/') {
-    redirect($path === '' ? '/' : $path);
+    $qs = (string)($_SERVER['QUERY_STRING'] ?? '');
+    redirect(($path === '' ? '/' : $path) . ($qs !== '' ? '?' . $qs : ''), 301);
 }
 
 $segments = $path === '/' ? [] : explode('/', ltrim($path, '/'));
@@ -89,15 +95,17 @@ switch (true) {
         require $controllers . '/promotions.php';
         break;
 
-    case $first === 'account':
+    case $first === 'members':
         require $controllers . '/account.php';
         break;
 
-    // /members is a friendlier alias for the same member area.
-    case $first === 'members':
-        $segments[0] = 'account';
-        $path = '/' . implode('/', $segments);
-        require $controllers . '/account.php';
+    // /account was the member area's old name. It still answers, permanently
+    // redirected, so a bookmark or a link in an email sent before the rename
+    // lands where the page now is instead of on a 404.
+    case $first === 'account':
+        $segments[0] = 'members';
+        redirect('/' . implode('/', $segments)
+            . (($qs = (string)($_SERVER['QUERY_STRING'] ?? '')) !== '' ? '?' . $qs : ''), 301);
         break;
 
     case $first === 'superadmin':
