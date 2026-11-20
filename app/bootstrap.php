@@ -101,7 +101,7 @@ session_start();
 // behind by a partial FTP transfer — otherwise fatals on require and the
 // visitor gets a blank 500 with nothing to go on.
 $mlLibs = ['db', 'helpers', 'csrf', 'auth', 'seo', 'geo', 'blocklist', 'listings',
-           'promotions', 'plans', 'settings', 'stripe', 'mailer', 'uploads', 'notify', 'ai', 'wizard', 'tokens', 'intake', 'cycles', 'toutify'];
+           'promotions', 'plans', 'settings', 'stripe', 'mailer', 'uploads', 'notify', 'ai', 'wizard', 'tokens', 'intake', 'cycles', 'toutify', 'toutify_oidc'];
 $mlMissing = [];
 foreach ($mlLibs as $mlLib) {
     if (!is_file(APP_ROOT . '/lib/' . $mlLib . '.php')) $mlMissing[] = 'app/lib/' . $mlLib . '.php';
