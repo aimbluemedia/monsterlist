@@ -10,6 +10,7 @@
 //   /signup /login /logout /forgot /reset
 //   /promotions[/go/{id}]          live member promotion feed
 //   /members[...]                  member area (/account 301s here)
+//   /auth/toutify/...              sign in through Toutify (off unless configured)
 //   /superadmin[...]                    admin + superadmin
 //   /stripe/checkout|webhook|portal
 //   /sitemap.xml /sitemap-{n}.xml  dynamic sitemaps
@@ -106,6 +107,12 @@ switch (true) {
         $segments[0] = 'members';
         redirect('/' . implode('/', $segments)
             . (($qs = (string)($_SERVER['QUERY_STRING'] ?? '')) !== '' ? '?' . $qs : ''), 301);
+        break;
+
+    // Toutify sign-in and its two server-to-server endpoints. The controller
+    // answers 404 for everything unless Toutify is configured.
+    case $first === 'auth' && ($segments[1] ?? '') === 'toutify':
+        require $controllers . '/toutify.php';
         break;
 
     case $first === 'superadmin':

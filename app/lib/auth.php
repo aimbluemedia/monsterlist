@@ -7,6 +7,22 @@ function current_user(): ?array
     if ($user === false) {
         $id = $_SESSION['uid'] ?? null;
         $user = $id ? row('SELECT * FROM users WHERE id = ? AND status = "active"', [$id]) : null;
+
+        // A session Toutify has ended elsewhere — a back-channel logout, or the
+        // member being suspended — signs itself out here, on its next request.
+        //
+        // It has to work this way round. PHP keeps sessions as files keyed by
+        // id and gives no way to open somebody else's, so the browser that owns
+        // the session is the only one that can end it; what the other side does
+        // is leave a note. Only ever reached by a member who signed in through
+        // Toutify, so a site that is not using it pays nothing.
+        if ($user !== null && !empty($_SESSION['tf_sub']) && function_exists('toutify_session_revoked')) {
+            if (toutify_session_revoked(session_id())) {
+                toutify_session_forget(session_id());
+                logout_user();
+                $user = null;
+            }
+        }
     }
     return $user;
 }

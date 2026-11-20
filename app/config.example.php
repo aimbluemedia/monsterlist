@@ -40,4 +40,28 @@ return [
 
     // Set false in production to hide PHP errors from visitors.
     'debug' => false,
+
+    // -----------------------------------------------------------------------
+    // Toutify (toutify.com) — the parent account system.
+    //
+    // Leave 'mode' out, or set it to 'off', and none of this runs: the site's
+    // own login, sign-up and password reset are in charge and /auth/toutify/*
+    // answers 404. That is also the way back from any later step.
+    //
+    //   'test'  only the emails in test_allowlist may sign in through Toutify;
+    //           everyone else is sent to the normal login page
+    //   'live'  Toutify signs everybody in
+    //
+    // The two secrets come from Toutify. They are read from here and nowhere
+    // else — there is no getenv() in this codebase, so TOUTIFY_* environment
+    // variables would not be seen.
+    // -----------------------------------------------------------------------
+    'toutify' => [
+        'issuer'         => 'https://toutify.com',
+        'client_id'      => 'monsterlist',
+        'client_secret'  => '',
+        'webhook_secret' => '',
+        'mode'           => 'off',
+        'test_allowlist' => '',      // comma-separated emails, used by 'test'
+    ],
 ];
