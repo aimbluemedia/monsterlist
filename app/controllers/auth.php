@@ -3,9 +3,28 @@
 
 $site = setting('site_name');
 
+/**
+ * Is Toutify in charge of signing people in?
+ *
+ * BOTH halves matter. 'live' is the switch, but toutify_ready() is the seatbelt:
+ * it also checks that there is a client secret and that the database has the
+ * columns. Without that, a half-finished setup would send every visitor to a
+ * route that answers 404 and nobody — staff included — could get in. When
+ * anything is missing the form below is still here and still works.
+ *
+ * Setting mode back to 'test' or 'off' restores today's login, sign-up and
+ * password reset exactly as they are.
+ */
+function auth_toutify_runs_login(): bool
+{
+    return toutify_mode() === 'live' && toutify_ready();
+}
+
 switch ($path) {
     case '/signup':
         if (is_logged_in()) redirect('/members');
+        // prompt=create, so Toutify opens on its "create an account" step.
+        if (auth_toutify_runs_login()) redirect('/auth/toutify/login?signup=1');
         $errors = [];
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             csrf_check();
@@ -66,6 +85,13 @@ switch ($path) {
 
     case '/login':
         if (is_logged_in()) redirect(is_admin() ? '/superadmin' : '/members');
+        if (auth_toutify_runs_login()) {
+            // Straight to Toutify's own page. An email typed into the form
+            // before the switch — or posted by a password manager — is carried
+            // over as login_hint so it does not have to be typed twice.
+            $hint = trim((string)($_POST['email'] ?? $_GET['email'] ?? ''));
+            redirect('/auth/toutify/login' . ($hint !== '' ? '?login_hint=' . urlencode($hint) : ''));
+        }
         $errors = [];
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             csrf_check();
@@ -81,17 +107,16 @@ switch ($path) {
                         $errors[] = 'This is the member login. Administrators sign in at /superadmin/login.';
                     } else {
                         login_user($user);
-                        // Back to whatever they were trying to reach, and the
-                        // members area otherwise. A session that started before
-                        // the area was renamed can still be holding the old
-                        // path, so it is moved across rather than followed into
-                        // a redirect.
-                        $to = (string)($_SESSION['after_login'] ?? '/members');
-                        if (preg_match('#^/account(/|\?|$)#', $to)) {
-                            $to = '/members' . substr($to, strlen('/account'));
-                        }
+                        // Always the dashboard. Signing in used to continue to
+                        // whatever members-only page had been asked for while
+                        // logged out — but that address is remembered for the
+                        // whole browsing session, so someone who bounced off
+                        // /members/billing in the morning and signed in from
+                        // the homepage in the afternoon landed on billing with
+                        // no idea why. One predictable destination is worth
+                        // more than the occasional saved click.
                         unset($_SESSION['after_login']);
-                        redirect($to);
+                        redirect('/members');
                     }
                 } else {
                     record_failed_login($email);
@@ -104,10 +129,16 @@ switch ($path) {
         break;
 
     case '/logout':
+        // Signed in through Toutify? Then logging out of this site alone would
+        // leave them signed in at toutify.com, and the next click on "Log in"
+        // would walk straight back in without asking for anything.
+        if (!empty($_SESSION['tf_sub']) && toutify_ready()) redirect('/auth/toutify/logout');
         logout_user();
         redirect('/');
 
     case '/forgot':
+        // Passwords live on Toutify now, so this page has nothing to reset.
+        if (auth_toutify_runs_login()) redirect(toutify_issuer() . '/members/forgot.php');
         $done = false;
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             csrf_check();
@@ -127,6 +158,10 @@ switch ($path) {
         break;
 
     case '/reset':
+        // A reset link emailed before the switch. The token is no longer worth
+        // anything, so send them somewhere that can actually sign them in
+        // rather than showing a form that cannot.
+        if (auth_toutify_runs_login()) redirect('/auth/toutify/login');
         $errors = [];
         $email  = (string)($_GET['email'] ?? post('email'));
         $token  = (string)($_GET['token'] ?? post('token'));
