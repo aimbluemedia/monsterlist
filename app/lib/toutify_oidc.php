@@ -57,6 +57,40 @@ function toutify_ready(): bool
         && column_exists('users', 'toutify_sub');
 }
 
+/**
+ * Everything standing between the current setup and Toutify signing people in.
+ *
+ * Returns a list of [what, ok, what to do about it]. Empty means it is working.
+ * This exists because the failure is silent by design: toutify_ready() keeps
+ * the local login form when anything is missing, which is the right thing to do
+ * and also indistinguishable, from outside, from "the switch did not work".
+ */
+function toutify_blockers(): array
+{
+    $out = [];
+    $mode = toutify_mode();
+    $out[] = ['Mode', $mode !== 'off',
+        $mode === 'off'
+            ? "Set 'mode' => 'test' (or 'live') in the toutify block of app/config.php."
+            : "Currently '$mode'."];
+    $out[] = ['Client secret', toutify_client_secret() !== '',
+        "Paste Toutify's client secret into app/config.php. Note the shape: a 'toutify' "
+      . "array, not TOUTIFY_* environment variables — nothing here reads those."];
+    $out[] = ['Webhook secret', toutify_webhook_secret() !== '',
+        'Needed for member and website updates to arrive. Sign-in works without it.'];
+    $hasCols = column_exists('users', 'toutify_sub') && table_exists('toutify_sessions');
+    $out[] = ['Database upgraded', $hasCols,
+        'Run database/upgrade-all.sql from this release in phpMyAdmin. Until then the '
+      . 'local login stays in charge no matter what mode says.'];
+    if ($mode === 'live') {
+        $out[] = ['Live sign-in active', toutify_ready(),
+            toutify_ready() ? 'The login page sends people to Toutify.'
+                            : 'Mode is live, but something above is missing, so the local login form is '
+                            . 'still being served. Nobody is locked out.'];
+    }
+    return $out;
+}
+
 /** Emails allowed to sign in with Toutify while mode is 'test'. Lower-cased. */
 function toutify_test_allowlist(): array
 {

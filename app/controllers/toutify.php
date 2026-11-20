@@ -19,9 +19,13 @@
 
 $tfAction = $segments[2] ?? '';
 
-if (!toutify_ready() && $tfAction !== 'webhook') {
-    // Not configured: behave as though the routes do not exist, rather than
-    // half-answering and leaving somebody to wonder which half is broken.
+// The test page is the exception: it is the thing that says WHY the rest is not
+// working, so hiding it whenever the rest is not working makes it useless at
+// the only moment it is wanted. Everything else behaves as if it does not exist.
+if (!toutify_ready() && !in_array($tfAction, ['webhook', 'test'], true)) {
+    not_found();
+}
+if ($tfAction === 'test' && toutify_mode() === 'off' && !is_admin()) {
     not_found();
 }
 

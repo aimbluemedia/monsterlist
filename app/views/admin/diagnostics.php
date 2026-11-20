@@ -42,6 +42,41 @@
 </div>
 
 <div class="card card-pad ed-card">
+  <h3>Toutify sign-in</h3>
+  <?php $tfB = toutify_blockers(); $tfBad = array_values(array_filter($tfB, fn($b) => !$b[1])); ?>
+  <?php if (toutify_mode() === 'off'): ?>
+    <p class="mute ed-note">Switched off. This site's own login, sign-up and password reset are in
+      charge, and <code>/auth/toutify/*</code> answers 404. Set <code>'mode'</code> in the
+      <code>toutify</code> block of <code>app/config.php</code> to turn it on.</p>
+  <?php elseif (!$tfBad): ?>
+    <p class="flash flash-success" style="margin:0 0 12px">Working.
+      Mode <strong><?= e(toutify_mode()) ?></strong>.
+      <?= toutify_mode() === 'live' ? 'The login page sends people to Toutify.'
+          : 'Only allow-listed emails can sign in through Toutify; everyone else uses the normal login.' ?></p>
+  <?php else: ?>
+    <?php // The whole point of this card. The switch fails quietly on purpose —
+          // the local login keeps working — which from outside looks exactly
+          // like the switch not working. This says which it is. ?>
+    <p class="flash flash-error" style="margin:0 0 12px">Mode is
+      <strong><?= e(toutify_mode()) ?></strong>, but <?= count($tfBad) ?> thing<?= count($tfBad) === 1 ? ' is' : 's are' ?>
+      missing, so this site's own login is still being used. Nobody is locked out.</p>
+  <?php endif; ?>
+  <?php if (toutify_mode() !== 'off'): ?>
+    <div class="table-wrap table-narrow">
+      <table class="table">
+        <?php foreach ($tfB as [$what, $ok, $note]): ?>
+          <tr><td style="white-space:nowrap"><?= $ok ? '✅' : '❌' ?> <?= e($what) ?></td>
+              <td class="mute" style="font-size:.86rem"><?= e($note) ?></td></tr>
+        <?php endforeach; ?>
+      </table>
+    </div>
+    <p class="mute ed-note">Redirect URI to register with Toutify, exactly:
+      <code><?= e(site_url('/auth/toutify/callback')) ?></code> ·
+      <a href="/auth/toutify/test" style="color:var(--accent)">open the test page</a></p>
+  <?php endif; ?>
+</div>
+
+<div class="card card-pad ed-card">
   <h3>Google Analytics</h3>
   <?php $gaId = ga_measurement_id(); $gaSkip = setting('google_analytics_skip_staff', '1') === '1'; ?>
   <?php if ($gaId === ''): ?>

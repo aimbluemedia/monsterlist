@@ -11,6 +11,28 @@ $tfMode = toutify_mode();
     leave it alone. The normal login is untouched and still at
     <a href="/login" style="color:var(--accent)">/login</a>.</p>
 
+  <?php $tfBlock = toutify_blockers(); $tfBad = array_values(array_filter($tfBlock, fn($b) => !$b[1])); ?>
+  <div class="card card-pad" style="margin-top:22px">
+    <h3>Is it working?</h3>
+    <?php if (!$tfBad): ?>
+      <p class="flash flash-success" style="margin:0 0 12px">Everything Toutify needs is in place.</p>
+    <?php else: ?>
+      <p class="flash flash-error" style="margin:0 0 12px">
+        <?= count($tfBad) ?> thing<?= count($tfBad) === 1 ? '' : 's' ?> still to do. Until then this
+        site's own login, sign-up and password reset stay in charge — nobody is locked out.</p>
+    <?php endif; ?>
+    <div class="table-wrap">
+      <table class="table table-narrow">
+        <?php foreach ($tfBlock as [$what, $ok, $note]): ?>
+          <tr>
+            <td style="white-space:nowrap"><?= $ok ? '✅' : '❌' ?> <strong><?= e($what) ?></strong></td>
+            <td class="mute" style="font-size:.88rem"><?= e($note) ?></td>
+          </tr>
+        <?php endforeach; ?>
+      </table>
+    </div>
+  </div>
+
   <div class="card card-pad" style="margin-top:22px">
     <h3>Right now</h3>
     <div class="info-row"><span class="mute">Mode</span><span><strong><?= e($tfMode) ?></strong><?php
