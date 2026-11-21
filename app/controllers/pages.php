@@ -6,11 +6,38 @@ $site = setting('site_name');
 switch ($path) {
     case '/pricing':
         $planList = plans();
+        // The answers quote plans() and token_rules() rather than repeating
+        // numbers by hand, so a price or allowance changed in Settings cannot
+        // leave the FAQ promising something the site no longer does. This
+        // array also feeds the FAQ structured data below.
+        $fqP = plans();
+        $fqT = ['free' => token_rules('free'), 'pro' => token_rules('pro'), 'featured' => token_rules('featured')];
         $faq = [
-            ['Is the free plan really free?', 'Yes. One basic listing, forever free — name, category, location and contact details, visible in search and city pages.'],
-            ['Can I cancel my monthly membership anytime?', 'Yes. Manage or cancel from your billing page; your plan stays active until the end of the paid period.'],
-            ['What does Featured placement mean?', 'Featured listings appear on the homepage and at the top of their city and category pages, above Pro and free listings.'],
-            ['How do upgrades work?', 'Checkout is handled securely by Stripe. Your listings upgrade instantly after payment.'],
+            ['Is the free plan really free?',
+             'Yes, and it stays free. One listing with your description, category, city and a link to your website — '
+             . 'no credit card, no trial clock. ' . number_format((int)$fqT['free']['grant']) . ' tokens a month come with it.'],
+            ['Do I need a credit card to start?',
+             'Not for Free. You only enter card details if you choose Pro or Premium, and checkout is handled by Stripe — we never see your card number.'],
+            ['How many listings can I have?',
+             'One on Free. Pro and Premium are both unlimited, so a member with several businesses can run them all from one account.'],
+            ['How long before my listing is live?',
+             'A person reads every listing before it appears — usually the same day. That is the whole point of the directory: nothing goes live unchecked.'],
+            ['What is the difference between Pro and Premium?',
+             'Pro gives you the full storefront — profile, logo, photos, video, contact details and analytics. Premium adds priority placement across the site, '
+             . 'and one article a month that we write for you and post out to our channels and yours.'],
+            ['What does priority placement mean?',
+             'Premium listings appear on the homepage and at the top of their city and category pages, above Pro and free listings.'],
+            ['What are tokens for?',
+             'Tokens are how promotions work. You spend ' . (int)$fqT['free']['cost_promo'] . ' to put one of your links in front of the network, and earn them back by opening other members\' links. '
+             . 'Free gets ' . number_format((int)$fqT['free']['grant']) . ' a month, Pro ' . number_format((int)$fqT['pro']['grant'])
+             . ', Premium ' . number_format((int)$fqT['featured']['grant']) . '.'],
+            ['Can I upgrade or switch plans later?',
+             'Any time, in either direction. An upgrade takes effect the moment payment goes through, and your listings gain the new features straight away.'],
+            ['Can I cancel?',
+             'Yes, from your billing page, with no phone call and no notice period. Your plan keeps working until the end of the period you have already paid for.'],
+            ['Who writes the article on Premium?',
+             'We do — one a month, about your business, posted to our ' . implode(', ', article_channels())
+             . ', then promoted out to each of your own channels.'],
         ];
         $meta = [
             'title'       => "Pricing — free listings & monthly memberships | $site",

@@ -1,76 +1,93 @@
+<?php
+// The card bullets quote plans() and token_rules() for every number, so a
+// price or allowance changed in Settings changes this page with it. The
+// wording is curated rather than generated: plan_gains() returns ten lines for
+// Free→Pro, and ten bullets on a card is a wall nobody reads. The full,
+// generated detail is in the comparison table further down.
+$pkTok = [];
+foreach (['free','pro','featured'] as $pkK) $pkTok[$pkK] = token_rules($pkK);
+$pkFeat = [
+  'free' => [
+    [true,  plan_listings_label($planList['free']) . ' — your description, category and city'],
+    [true,  'A link to your website'],
+    [true,  'Shown in search, and on your city and category pages'],
+    [true,  number_format((int)$pkTok['free']['grant']) . ' tokens a month, up to ' . (int)$pkTok['free']['promos_max'] . ' promotions'],
+    [true,  'Read by a person before it goes live'],
+    [false, 'No phone, logo, photos or video'],
+  ],
+  'pro' => [
+    [true, 'Everything in Free, with unlimited listings'],
+    [true, number_format(PROFILE_MAX_WORDS) . '-word profile, logo, photo gallery and video'],
+    [true, 'Your phone number and a public email address'],
+    [true, 'Verified badge, and views and click analytics'],
+    [true, number_format((int)$pkTok['pro']['grant']) . ' tokens a month, up to ' . (int)$pkTok['pro']['promos_max'] . ' promotions'],
+    [true, plan_feed_boost('pro') . ' extra days at the top of the promotions feed'],
+  ],
+  'featured' => [
+    [true, 'Everything in Pro'],
+    [true, 'Priority placement on the homepage, city and category pages'],
+    [true, 'One article a month, written for you'],
+    [true, 'Posted to our ' . implode(', ', article_channels())],
+    [true, number_format((int)$pkTok['featured']['grant']) . ' tokens a month, up to ' . (int)$pkTok['featured']['promos_max'] . ' promotions'],
+    [true, plan_feed_boost('featured') . ' extra days at the top of the promotions feed'],
+  ],
+];
+?>
 <div class="wrap">
-  <section class="section" style="text-align:center">
-    <h1>Simple pricing. Cancel anytime.</h1>
-    <p class="mute">Start free. Upgrade when you want a bigger presence.</p>
+  <section class="pk-head">
+    <p class="pk-eyebrow"><?= e(setting('site_name')) ?> membership</p>
+    <h1 class="pk-h1">Pick your plan</h1>
+    <p class="pk-sub">Every plan puts a real listing in front of people searching — and a person checks
+      it before it goes live. Paid plans are monthly, cancel any time.</p>
   </section>
 
-  <div class="plans">
+  <div class="pk-plans">
     <?php foreach ($planList as $key => $p): ?>
-      <?php // Free spans the full width on top; the two paid plans share the row
-            // below it, so the choice reads as "start here" then "or upgrade to". ?>
       <?php
-      // Each card leads with a ribbon that says what this plan is FOR, not what
-      // it is called. The per-day figure is there because $19 a month and 63p a
-      // day are the same number and only one of them sounds like a decision
-      // worth agonising over.
-      $ribbon = ['free' => 'Start here', 'pro' => 'Most popular', 'featured' => 'We do it for you'][$key];
-      $perDay = $p['price'] > 0 ? '$' . number_format($p['price'] / 30.4, 2) . ' a day' : 'Free forever';
-      $reassure = $key === 'free'
-          ? 'Live in minutes · No credit card · Cancel anytime'
-          : 'Cancel anytime · Upgrade takes effect instantly';
+        $pkPopular = $key === 'pro';
+        $pkName    = plan_public_label($key);
+        $pkLead    = [
+          'free'     => 'Your business, listed and findable.',
+          'pro'      => 'The full storefront, and the tokens to promote it.',
+          'featured' => 'Everything in Pro, and we do the work for you.',
+        ][$key];
       ?>
-      <div class="card plan <?= $key === 'pro' ? 'popular ' : '' ?><?= $key === 'featured' ? 'plan-premium ' : '' ?><?= $key === 'free' ? 'plan-wide' : '' ?>">
-        <span class="plan-ribbon"><?= e($ribbon) ?></span>
+      <div class="pk-card<?= $pkPopular ? ' pk-pop' : '' ?>">
+        <?php if ($pkPopular): ?><span class="pk-badge">Most popular</span><?php endif; ?>
+        <h2 class="pk-name"><?= e($pkName) ?></h2>
+        <p class="pk-price">$<?= number_format($p['price'], 0) ?><small><?= $p['price'] > 0 ? '/month' : ' forever' ?></small></p>
+        <p class="pk-lead"><?= e($pkLead) ?></p>
 
-        <?php // The free card leads with the offer rather than the plan name —
-              // "Free" is what the price already says. ?>
-        <?php if ($key === 'free'): ?>
-          <h3>Add Your Business FREE</h3>
-          <p class="plan-sub">No Credit Card Needed</p>
-        <?php else: ?>
-          <h3><?= e($p['label']) ?></h3>
-        <?php endif; ?>
-        <div class="price">$<?= number_format($p['price'], 0) ?><small>/month</small></div>
-        <p class="plan-day"><?= e($perDay) ?></p>
-        <p class="mute"><?= e($p['blurb']) ?></p>
-        <?php // Headlines only. Fifteen bullets on one card is a wall nobody
-              // reads — the full detail is in the comparison table below. ?>
-        <?php $tk = token_rules($key); ?>
-        <ul>
-          <li><?= e(plan_listing_limit($p) === 0 ? 'Unlimited business listings' : plan_listings_label($p) . ' — one business') ?></li>
-          <li><?= number_format((int)$tk['grant']) ?> tokens a month</li>
-          <li>Up to <?= (int)$tk['promos_max'] ?> promotions a month</li>
-          <?php if ($p['enhanced']): ?>
-            <li><?= number_format(PROFILE_MAX_WORDS) ?>-word Profile, logo, photos &amp; video</li>
-            <li>Phone &amp; public email on your listing</li>
-          <?php else: ?>
-            <li class="no">About section only, no contact details or images</li>
-          <?php endif; ?>
-          <?php if (!empty($p['concierge'])): ?>
-            <li>One article a month, written and posted out for you</li>
-          <?php endif; ?>
-          <?php if ($p['featured']): ?><li>Priority placement across the site</li><?php endif; ?>
+        <ul class="pk-list">
+          <?php foreach ($pkFeat[$key] as [$pkOn, $pkTxt]): ?>
+            <li<?= $pkOn ? '' : ' class="pk-off"' ?>><?= e($pkTxt) ?></li>
+          <?php endforeach; ?>
         </ul>
+
         <?php if ($key === 'free'): ?>
-          <?php // Primary, not ghost: this is the highlighted card, and a ghost
-                // button on it would be the weakest call to action on the page. ?>
-          <a class="btn btn-primary btn-block btn-xl" href="/signup">Add my business free</a>
+          <a class="btn btn-block pk-btn pk-btn-ghost" href="/signup">Start free</a>
         <?php else: ?>
           <form method="post" action="/stripe/checkout"><?= csrf_field() ?>
             <input type="hidden" name="plan" value="<?= e($key) ?>">
-            <button class="btn btn-primary btn-block btn-xl">Get <?= e($p['label']) ?></button>
+            <button class="btn btn-block pk-btn <?= $pkPopular ? 'pk-btn-solid' : 'pk-btn-ghost' ?>">Choose <?= e($pkName) ?></button>
           </form>
         <?php endif; ?>
-        <p class="plan-note"><?= e($reassure) ?></p>
       </div>
     <?php endforeach; ?>
   </div>
+</div>
+
+<div class="wrap">
 
   <?php
   // The full comparison, built from the same plans() and token_rules() the site
   // actually enforces — change a number in Settings and this table changes with
   // it, so the page can never promise something the code does not do.
-  $cols = ['free' => 'Free', 'pro' => 'Pro', 'featured' => 'Featured'];
+  // plan_public_label(), not the raw labels: the cards above say Premium and
+  // a table underneath them saying Featured for the same \$49 reads as two
+  // different plans.
+  $cols = [];
+  foreach (plan_ladder() as $cK) $cols[$cK] = plan_public_label($cK);
   $tkr  = [];
   foreach ($cols as $k => $_) $tkr[$k] = token_rules($k);
   $yes  = fn(bool $on) => $on ? '<span class="cmp-yes">✓</span>' : '<span class="cmp-no">—</span>';
@@ -146,13 +163,30 @@
     </p>
   </section>
 
-  <section class="section" style="max-width:720px;margin:0 auto">
-    <h2>Frequently asked questions</h2>
-    <?php foreach ($faq as $qa): ?>
-      <div class="card card-pad" style="margin-bottom:10px">
-        <strong><?= e($qa[0]) ?></strong>
-        <p class="mute" style="margin:6px 0 0"><?= e($qa[1]) ?></p>
-      </div>
-    <?php endforeach; ?>
-  </section>
 </div>
+
+<?php // <details> rather than a script: it opens and closes, it is keyboard
+      // operable and screen readers announce its state, all without a line of
+      // JavaScript — and it still works if the JS on the page ever fails.
+      // Two columns, filled down the left then the right, so reading order
+      // and visual order agree.
+$fqHalf = (int)ceil(count($faq) / 2);
+$fqCols = [array_slice($faq, 0, $fqHalf), array_slice($faq, $fqHalf)];
+?>
+<section class="pk-faq">
+  <div class="wrap">
+    <h2 class="pk-faq-h">Questions</h2>
+    <div class="pk-faq-grid">
+      <?php foreach ($fqCols as $fqCol): ?>
+        <div class="pk-faq-col">
+          <?php foreach ($fqCol as $qa): ?>
+            <details class="pk-q">
+              <summary><span><?= e($qa[0]) ?></span><i aria-hidden="true"></i></summary>
+              <p><?= e($qa[1]) ?></p>
+            </details>
+          <?php endforeach; ?>
+        </div>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>

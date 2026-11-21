@@ -1594,3 +1594,65 @@ a.tf-card:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.
 .cat-subs{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
 .chip-on{background:var(--accent);border-color:var(--accent);color:#fff}
 .chip-on:hover{background:var(--accent);color:#fff}
+
+/* ===== pricing page ===== */
+.pk-head{text-align:center;padding:56px 0 34px;max-width:620px;margin:0 auto}
+.pk-eyebrow{color:var(--accent);font-weight:800;font-size:.86rem;margin:0 0 10px}
+.pk-h1{font-size:clamp(2.1rem,5vw,3.2rem);font-weight:800;letter-spacing:-1.2px;margin:0 0 14px;line-height:1.08}
+.pk-sub{color:var(--mute);margin:0;font-size:1.02rem;line-height:1.6}
+
+.pk-plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;align-items:start;padding-bottom:64px}
+/* The popular card is taller on purpose, so it stands proud of its
+   neighbours the way the badge promises. align-items:start above is what
+   stops the other two stretching to match it. */
+.pk-card{position:relative;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 24px;display:flex;flex-direction:column}
+.pk-pop{border:2px solid var(--accent);padding:34px 24px;box-shadow:0 18px 44px -20px rgba(37,99,235,.45)}
+.pk-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);white-space:nowrap;
+  background:var(--accent);color:#fff;font-weight:800;font-size:.72rem;letter-spacing:.3px;padding:5px 14px;border-radius:999px}
+.pk-name{font-size:1.1rem;font-weight:700;margin:0 0 6px}
+.pk-price{font-size:2.9rem;font-weight:800;letter-spacing:-1.5px;margin:0 0 10px;line-height:1}
+.pk-price small{font-size:.95rem;font-weight:600;color:var(--mute);letter-spacing:0}
+.pk-lead{color:var(--mute);margin:0 0 20px;font-size:.93rem;line-height:1.5}
+
+.pk-list{list-style:none;margin:0 0 26px;padding:0;display:flex;flex-direction:column;gap:11px;flex:1}
+.pk-list li{position:relative;padding-left:27px;font-size:.92rem;line-height:1.45}
+.pk-list li::before{content:"";position:absolute;left:0;top:2px;width:17px;height:17px;border-radius:50%;
+  background:var(--accent-soft) no-repeat center;background-size:11px 11px;
+  background-image:url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.4l2.3 2.3 4.7-5' fill='none' stroke='%232563eb' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+/* What a plan does NOT include is worth saying plainly, but it must not look
+   like a feature: a dash, and the grey of ordinary secondary text. */
+.pk-list li.pk-off{color:var(--faint)}
+.pk-list li.pk-off::before{background-color:var(--border2);background-image:linear-gradient(var(--faint),var(--faint));background-size:7px 1.5px;background-repeat:no-repeat;background-position:center}
+
+.pk-btn{padding:13px 20px;border-radius:999px;font-weight:700;font-size:.97rem;margin-top:auto}
+.pk-btn-solid{background:var(--accent);color:#fff;border:1.5px solid var(--accent)}
+.pk-btn-solid:hover{background:#1d4fd7;border-color:#1d4fd7}
+.pk-btn-ghost{background:#fff;color:var(--accent);border:1.5px solid #bcd3fb}
+.pk-btn-ghost:hover{background:var(--accent-soft)}
+
+.pk-faq{background:var(--bg);border-top:1px solid var(--border2);padding:62px 0 74px}
+.pk-faq-h{text-align:center;font-size:clamp(1.8rem,4.5vw,2.6rem);font-weight:800;letter-spacing:-1px;margin:0 0 32px}
+.pk-faq-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+.pk-faq-col{display:flex;flex-direction:column;gap:16px}
+.pk-q{background:var(--card);border:1px solid var(--border);border-radius:12px}
+.pk-q summary{display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:18px 20px;cursor:pointer;font-weight:700;font-size:.97rem;line-height:1.35;list-style:none}
+.pk-q summary::-webkit-details-marker{display:none}
+.pk-q summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:12px}
+/* The +/− is drawn from two bars so it can rotate into a minus on open; a
+   glyph would jump as the font swapped it. */
+.pk-q summary i{position:relative;flex:none;width:26px;height:26px;border-radius:50%;background:var(--accent-soft)}
+.pk-q summary i::before,.pk-q summary i::after{content:"";position:absolute;left:50%;top:50%;background:var(--accent);border-radius:2px;transform:translate(-50%,-50%)}
+.pk-q summary i::before{width:11px;height:2px}
+.pk-q summary i::after{width:2px;height:11px;transition:transform .18s ease}
+.pk-q[open] summary i::after{transform:translate(-50%,-50%) rotate(90deg)}
+.pk-q p{margin:0;padding:0 20px 18px;color:var(--mute);font-size:.93rem;line-height:1.6}
+
+@media(max-width:860px){
+  .pk-plans{grid-template-columns:1fr;gap:26px;max-width:460px;margin:0 auto}
+  /* Stacked, the popular card no longer sits between the other two, so its
+     negative-offset badge would collide with the card above it. */
+  .pk-pop{margin-top:10px}
+  .pk-faq-grid{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){.pk-q summary i::after{transition:none}}
