@@ -87,17 +87,24 @@
         <span class="lp-float-a">Desert Pipe &amp; Drain — 4.9★, open now</span>
       </div>
 
-      <div class="lp-float lp-float-lead">
-        <span class="lp-float-dot"></span>
-        <span><b>New enquiry</b><em>2 minutes ago</em></span>
-      </div>
-
-      <div class="lp-float lp-float-ok">
-        <span class="lp-float-check">✓</span>
-        <span><b>Checked by a person</b><em>Before it went live</em></span>
-      </div>
     </div>
 
+  </div>
+
+  <?php // The sister products, from the same list that feeds the band above
+        // the footer — one source of truth, so a product added there appears
+        // here too. 'short' rather than 'blurb': six cards share one row. ?>
+  <div class="wrap lp-member">
+    <p class="lp-member-h"><span class="lp-member-tick" aria-hidden="true"></span>Membership includes access to</p>
+    <div class="lp-member-grid">
+      <?php foreach (toutify_products() as $lpP): ?>
+        <div class="lp-member-card">
+          <span class="lp-member-ico"><?= toutify_icon($lpP['icon']) ?></span>
+          <b><?= e($lpP['name']) ?></b>
+          <em><?= e($lpP['short'] ?? '') ?></em>
+        </div>
+      <?php endforeach; ?>
+    </div>
   </div>
 </section>
 

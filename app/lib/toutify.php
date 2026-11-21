@@ -15,6 +15,10 @@
 //
 // 'key' is matched against TOUTIFY_HERE to decide which card says "you are
 // here". That card is never a link — it is this site.
+//
+// 'blurb' is the full sentence for the band above the footer; 'short' is the
+// two or three words the hero strip uses, where six cards share one row and a
+// sentence would not fit. Both come from here so the two never drift apart.
 // ---------------------------------------------------------------------------
 
 const TOUTIFY_HERE = 'monsterlist';
@@ -25,36 +29,42 @@ function toutify_products(): array
         ['key'  => 'leadcrazy',
          'name' => 'LeadCrazy',
          'blurb' => 'Turn visitors into quote requests with the Million Dollar Lead Form.',
+         'short' => 'Lead conversion',
          'icon' => 'form',
          'url'  => ''],
 
         ['key'  => 'searchmonster',
          'name' => 'SearchMonster',
          'blurb' => 'Show up when customers ask AI who to hire.',
+         'short' => 'AI search & free listing',
          'icon' => 'search',
          'url'  => ''],
 
         ['key'  => 'monsterlist',
          'name' => 'MonsterList',
          'blurb' => 'Get listed in directories across the web, free.',
+         'short' => 'Free listings everywhere',
          'icon' => 'list',
          'url'  => ''],
 
         ['key'  => 'promomonster',
          'name' => 'PromoMonster',
          'blurb' => 'Ask every customer for a review, reply to what comes back, show it off.',
+         'short' => 'Reviews & reputation',
          'icon' => 'star',
          'url'  => ''],
 
         ['key'  => 'contentvendor',
          'name' => 'ContentVendor',
          'blurb' => 'Posts and pages written for you, on a schedule.',
+         'short' => 'AI posts & content',
          'icon' => 'megaphone',
          'url'  => ''],
 
         ['key'  => 'directories',
          'name' => 'Official Directories',
          'blurb' => 'Claim your free spot in official state directories.',
+         'short' => 'Free state directory listings',
          'icon' => 'shield',
          'url'  => ''],
     ];
