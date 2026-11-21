@@ -16,24 +16,88 @@
 
 <!-- hero -->
 <section class="lp-hero">
-  <div class="wrap">
-    <span class="lp-badge">The promotion engine for small business &amp; creators</span>
-    <h1 class="lp-h1">GET FOUND<br><span class="lp-accent">EVERYWHERE</span><br>IN MINUTES.</h1>
-    <p class="lp-sub">The only all-in-one platform where <strong>AI builds your page</strong>, search engines
-      and AI assistants <strong>promote it</strong>, and your reviews, socials and content
-      <strong>work together</strong> to bring customers in. <span class="lp-free">100% free to join.</span></p>
-    <div class="lp-ctas">
-      <a class="btn btn-primary lp-btn-big" href="/signup">Join free — get listed today</a>
-      <a class="btn btn-ghost lp-btn-big" href="/browse">Explore the directory</a>
+  <div class="wrap lp-hero-grid">
+
+    <div class="lp-hero-copy">
+      <span class="lp-eyebrow">For small businesses</span>
+      <?php // Sentence case, not caps: at hero size, all-caps is what makes a
+            // page read as a flyer rather than a product. The accent word
+            // carries the emphasis instead. ?>
+      <h1 class="lp-h1">Get found everywhere<br>customers are<br>
+        <span class="lp-accent lp-underline">already looking.</span></h1>
+      <p class="lp-sub">List your business once and <strong>MonsterList puts it in front of people
+        searching</strong> — on Google, and in the AI assistants they now ask instead.
+        Every listing is read by a person before it goes live.</p>
+
+      <div class="lp-ctas">
+        <a class="btn btn-primary lp-btn-big" href="/signup">Add your business free</a>
+        <a class="btn btn-ghost lp-btn-big" href="/browse">Explore the directory</a>
+      </div>
+
+      <ul class="lp-ticks">
+        <li>Free forever</li>
+        <li>No credit card</li>
+        <li>Live in minutes</li>
+      </ul>
+
+      <div class="lp-pills">
+        <span class="lp-pill-label">Found on</span>
+        <span class="lp-pill">Google</span>
+        <span class="lp-pill">ChatGPT</span>
+        <span class="lp-pill">Claude</span>
+        <span class="lp-pill">Perplexity</span>
+        <span class="lp-pill">Bing</span>
+      </div>
     </div>
-    <div class="lp-pills">
-      <span class="lp-pill-label">Your Business Found On AI Platforms</span>
-      <span class="lp-pill">Google</span>
-      <span class="lp-pill">ChatGPT</span>
-      <span class="lp-pill">Claude</span>
-      <span class="lp-pill">Perplexity</span>
-      <span class="lp-pill">Bing</span>
+
+    <?php // A picture of the product, drawn in CSS rather than shipped as an
+          // image: nothing extra to load, it stays sharp on any screen, and it
+          // cannot go out of date the way a screenshot does. Decorative, so it
+          // is hidden from screen readers — everything it says is said in the
+          // copy beside it. ?>
+    <div class="lp-hero-art" aria-hidden="true">
+      <div class="lp-mock">
+        <div class="lp-mock-search">
+          <span class="lp-mock-ico"></span>
+          <span class="lp-mock-q">plumbers in Phoenix</span>
+          <span class="lp-mock-go">Search</span>
+        </div>
+        <div class="lp-mock-rows">
+          <div class="lp-mock-row lp-mock-row-top">
+            <span class="lp-mock-logo">DP</span>
+            <span class="lp-mock-txt"><b>Desert Pipe &amp; Drain</b><em>Plumber · Phoenix, AZ</em></span>
+            <span class="lp-mock-tag">Featured</span>
+          </div>
+          <div class="lp-mock-row">
+            <span class="lp-mock-logo lp-mock-logo-2">VR</span>
+            <span class="lp-mock-txt"><b>Valley Rooter Co.</b><em>Plumber · Phoenix, AZ</em></span>
+            <span class="lp-mock-stars">4.9</span>
+          </div>
+          <div class="lp-mock-row">
+            <span class="lp-mock-logo lp-mock-logo-3">CW</span>
+            <span class="lp-mock-txt"><b>Cactus Water Works</b><em>Plumber · Tempe, AZ</em></span>
+            <span class="lp-mock-stars">4.8</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="lp-float lp-float-ai">
+        <span class="lp-float-k">Asked an AI assistant</span>
+        <span class="lp-float-q">“Best plumber near Phoenix?”</span>
+        <span class="lp-float-a">Desert Pipe &amp; Drain — 4.9★, open now</span>
+      </div>
+
+      <div class="lp-float lp-float-lead">
+        <span class="lp-float-dot"></span>
+        <span><b>New enquiry</b><em>2 minutes ago</em></span>
+      </div>
+
+      <div class="lp-float lp-float-ok">
+        <span class="lp-float-check">✓</span>
+        <span><b>Checked by a person</b><em>Before it went live</em></span>
+      </div>
     </div>
+
   </div>
 </section>
 

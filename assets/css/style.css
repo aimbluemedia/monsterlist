@@ -515,18 +515,91 @@ a.tf-card:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.
 .lp-ticker-track span{font-size:.74rem;font-weight:800;letter-spacing:.6px;color:#c3c8d4}
 @keyframes lp-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-.lp-hero{background:linear-gradient(180deg,#fff 0%,#eef3ff 100%);padding:54px 0 40px;text-align:center}
+/* ===== hero =====
+   Two columns: the words on the left, a picture of the product on the right.
+   Centred hero text reads as a poster; left-aligned text beside something to
+   look at reads as a product, which is the whole difference here. */
+.lp-hero{background:linear-gradient(170deg,#fff 0%,#f4f7ff 55%,#eef3ff 100%);padding:60px 0 64px;overflow:hidden}
+.lp-hero-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.04fr);gap:48px;align-items:center}
+.lp-hero-copy{min-width:0}
+
+.lp-eyebrow{display:block;color:var(--faint);font-weight:800;font-size:.76rem;letter-spacing:1.3px;text-transform:uppercase;margin-bottom:14px}
 .lp-badge{display:inline-block;background:var(--accent-soft);color:var(--accent);font-weight:800;font-size:.8rem;letter-spacing:.4px;padding:8px 16px;border-radius:999px;margin-bottom:20px;text-transform:uppercase}
-.lp-h1{font-size:clamp(2.5rem,9vw,4.6rem);line-height:1.02;font-weight:800;letter-spacing:-1px;margin:0 0 18px}
+.lp-h1{font-size:clamp(2.1rem,4.4vw,3.4rem);line-height:1.08;font-weight:800;letter-spacing:-1.1px;margin:0 0 18px}
 .lp-accent{color:var(--accent)}
 .lp-accent2{color:#7db2ff}
-.lp-sub{max-width:620px;margin:0 auto 24px;color:var(--mute);font-size:clamp(1rem,2.6vw,1.12rem)}
+/* The stroke under the accent line, drawn rather than underlined so it sits
+   clear of the descenders instead of cutting through them. */
+.lp-underline{background-image:linear-gradient(var(--accent),var(--accent));background-size:100% 5px;background-repeat:no-repeat;background-position:0 102%;padding-bottom:3px;border-radius:2px}
+.lp-sub{max-width:520px;margin:0 0 26px;color:var(--mute);font-size:clamp(1rem,1.5vw,1.08rem);line-height:1.6}
 .lp-free{color:var(--green);font-weight:800}
-.lp-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.lp-ctas{display:flex;gap:12px;justify-content:flex-start;flex-wrap:wrap}
 .lp-btn-big{padding:15px 28px;font-size:1.02rem;border-radius:13px;font-weight:800}
-.lp-pills{margin-top:26px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;align-items:center}
-.lp-pill-label{color:var(--faint);font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;width:100%;margin-bottom:2px}
-.lp-pill{background:#fff;border:1px solid var(--border);border-radius:999px;padding:7px 15px;font-weight:800;font-size:.85rem;box-shadow:var(--shadow)}
+
+.lp-ticks{list-style:none;margin:22px 0 0;padding:0;display:flex;gap:20px;flex-wrap:wrap}
+.lp-ticks li{display:flex;align-items:center;gap:7px;color:var(--mute);font-weight:700;font-size:.9rem}
+/* A real tick, not two crossed rules — a flat bar reads as a minus sign. */
+.lp-ticks li::before{content:"";width:17px;height:17px;flex:none;border-radius:50%;background:var(--green-soft) no-repeat center;
+  background-image:url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.4l2.3 2.3 4.7-5' fill='none' stroke='%230ca678' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-size:11px 11px}
+
+.lp-pills{margin-top:28px;display:flex;gap:8px;justify-content:flex-start;flex-wrap:wrap;align-items:center}
+.lp-pill-label{color:var(--faint);font-size:.76rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-right:2px}
+.lp-pill{background:#fff;border:1px solid var(--border);border-radius:999px;padding:6px 13px;font-weight:700;font-size:.82rem;color:var(--mute);box-shadow:var(--shadow)}
+
+/* ----- the product picture -----
+   The padding is what the floating cards hang in. Without it they would have
+   to sit on top of the card itself, and they would cover the very things they
+   are pointing at — the search button and the rating. */
+.lp-hero-art{position:relative;min-width:0;padding:98px 20px 52px 16px}
+.lp-mock{background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:0 24px 60px -24px rgba(16,24,40,.28),0 2px 6px rgba(16,24,40,.05);padding:16px;position:relative;z-index:1}
+.lp-mock-search{display:flex;align-items:center;gap:10px;border:1.5px solid var(--border);border-radius:11px;padding:11px 12px;margin-bottom:14px}
+.lp-mock-ico{width:15px;height:15px;flex:none;border:2px solid var(--faint);border-radius:50%;position:relative}
+.lp-mock-ico::after{content:"";position:absolute;right:-5px;bottom:-3px;width:6px;height:2px;background:var(--faint);transform:rotate(45deg);border-radius:2px}
+.lp-mock-q{flex:1;color:var(--ink);font-weight:600;font-size:.92rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lp-mock-go{background:var(--accent);color:#fff;font-weight:800;font-size:.78rem;padding:7px 14px;border-radius:8px;flex:none}
+.lp-mock-rows{display:flex;flex-direction:column;gap:9px}
+.lp-mock-row{display:flex;align-items:center;gap:11px;padding:11px;border:1px solid var(--border2);border-radius:11px;background:#fff}
+.lp-mock-row-top{border-color:#d7e3ff;background:linear-gradient(180deg,#f7faff,#fff);box-shadow:0 1px 3px rgba(37,99,235,.08)}
+.lp-mock-logo{width:38px;height:38px;flex:none;border-radius:10px;background:var(--accent);color:#fff;font-weight:800;font-size:.8rem;display:flex;align-items:center;justify-content:center}
+.lp-mock-logo-2{background:#0ca678}
+.lp-mock-logo-3{background:#7c3aed}
+.lp-mock-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.lp-mock-txt b{font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lp-mock-txt em{font-style:normal;color:var(--faint);font-size:.76rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lp-mock-tag{flex:none;background:var(--gold-soft);color:var(--gold);font-weight:800;font-size:.68rem;letter-spacing:.3px;text-transform:uppercase;padding:5px 9px;border-radius:999px}
+.lp-mock-stars{flex:none;color:var(--star);font-weight:800;font-size:.82rem}
+.lp-mock-stars::before{content:"★ "}
+
+.lp-float{position:absolute;z-index:2;background:#fff;border:1px solid var(--border);border-radius:13px;padding:11px 13px;box-shadow:0 14px 34px -12px rgba(16,24,40,.3)}
+.lp-float b{display:block;font-size:.82rem;line-height:1.25}
+.lp-float em{font-style:normal;color:var(--faint);font-size:.72rem}
+.lp-float-ai{top:-4px;right:-2px;max-width:252px;display:flex;flex-direction:column;gap:3px}
+.lp-float-k{color:var(--faint);font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.7px}
+.lp-float-q{font-size:.82rem;font-weight:700;color:var(--ink)}
+.lp-float-a{font-size:.76rem;color:var(--accent);font-weight:700}
+.lp-float-lead{bottom:-2px;left:-6px;display:flex;align-items:center;gap:9px}
+.lp-float-dot{width:9px;height:9px;flex:none;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px var(--green-soft)}
+.lp-float-ok{bottom:6px;right:-2px;display:flex;align-items:center;gap:9px}
+.lp-float-check{width:21px;height:21px;flex:none;border-radius:50%;background:var(--green-soft);color:var(--green);font-weight:800;font-size:.74rem;display:flex;align-items:center;justify-content:center}
+
+@media(max-width:980px){
+  /* One column. The picture keeps its place under the words, but the cards
+     that hung off the edges come inside so nothing is clipped. */
+  .lp-hero-grid{grid-template-columns:1fr;gap:44px}
+  .lp-sub{max-width:none}
+  .lp-hero-art{padding:98px 8px 50px 8px}
+  .lp-float-ai{right:0}
+  .lp-float-ok{right:0}
+  .lp-float-lead{left:0}
+}
+@media(max-width:700px){
+  /* Narrow enough that there is no margin left to hang anything in: floated
+     here, the cards only stack on each other and on the search row. They drop
+     into the flow underneath instead — same message, nothing collides. */
+  .lp-hero-art{padding:0;display:flex;flex-direction:column;gap:10px}
+  .lp-float{position:static;max-width:none;box-shadow:var(--shadow)}
+}
 
 .lp-strip{background:#fff;border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);overflow-x:auto;-webkit-overflow-scrolling:touch}
 .lp-strip-track{display:flex;min-width:max-content;margin:0 auto;max-width:1120px}
