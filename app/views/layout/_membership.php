@@ -22,7 +22,7 @@ $tfBy   = trim(setting('site_byline', 'Toutify')) ?: 'Toutify';
         <p class="tf-alt">Signed in as <?= e($tfMe['email']) ?>.</p>
       <?php else: ?>
         <a class="tf-btn" href="/add-listing">Start free — takes a minute</a>
-        <p class="tf-alt">Already a member? <a href="/login">Log in</a></p>
+        <p class="tf-alt">Already a member? <a href="<?= e(login_url()) ?>">Log in</a></p>
       <?php endif; ?>
     </div>
 

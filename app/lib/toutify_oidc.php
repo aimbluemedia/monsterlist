@@ -58,6 +58,83 @@ function toutify_ready(): bool
 }
 
 /**
+ * Apply the Toutify database change from inside the site.
+ *
+ * The same columns and tables as database/upgrade-toutify.sql, run one
+ * statement at a time with the same "check before acting" guard, so running it
+ * twice does nothing the second time. It exists because the SQL file was the
+ * single most reliable way for this integration to look broken: it has to be
+ * pasted into phpMyAdmin with the right database selected, and when that has
+ * not happened the site silently keeps its own login and says nothing useful.
+ *
+ * Only ever reached from Superadmin -> Diagnostics, by a superadmin, through a
+ * CSRF-checked form. Nothing runs it automatically: a site that upgrades its
+ * own schema on a page load is a site that can fail in the middle of one.
+ *
+ * Returns [what it did, what went wrong].
+ */
+function toutify_migrate(): array
+{
+    $did = [];
+    $err = [];
+    $run = function (string $label, string $sql) use (&$did, &$err) {
+        try { q($sql); $did[] = $label; }
+        catch (Throwable $e) { $err[] = $label . ': ' . $e->getMessage(); }
+    };
+
+    $cols = [
+        ['users', 'toutify_sub',        'CHAR(26) DEFAULT NULL'],
+        ['users', 'toutify_status',     'VARCHAR(20) DEFAULT NULL'],
+        ['users', 'toutify_updated_at', 'INT UNSIGNED DEFAULT NULL'],
+        ['users', 'business_name',      'VARCHAR(180) DEFAULT NULL'],
+        ['users', 'phone',              'VARCHAR(40) DEFAULT NULL'],
+        ['businesses', 'toutify_website_id', 'CHAR(26) DEFAULT NULL'],
+        ['businesses', 'toutify_updated_at', 'INT UNSIGNED DEFAULT NULL'],
+        ['businesses', 'toutify_tier',       'VARCHAR(20) DEFAULT NULL'],
+        ['businesses', 'toutify_removed',    'TINYINT(1) NOT NULL DEFAULT 0'],
+    ];
+    foreach ($cols as [$t, $c, $type]) {
+        if (column_exists($t, $c)) continue;
+        $run("$t.$c", "ALTER TABLE `$t` ADD COLUMN `$c` $type");
+    }
+
+    // The caches these helpers keep are per-request and were filled before the
+    // ALTERs ran, so they still describe the old table.
+    db_schema_forget();
+
+    if (column_exists('users', 'toutify_sub') && !index_exists('users', 'uq_users_toutify_sub')) {
+        $run('users unique key on toutify_sub',
+             'ALTER TABLE `users` ADD UNIQUE KEY `uq_users_toutify_sub` (`toutify_sub`)');
+    }
+    if (column_exists('businesses', 'toutify_website_id') && !index_exists('businesses', 'idx_biz_toutify_website')) {
+        $run('businesses index on toutify_website_id',
+             'ALTER TABLE `businesses` ADD KEY `idx_biz_toutify_website` (`toutify_website_id`)');
+    }
+
+    if (!table_exists('toutify_sessions')) {
+        $run('toutify_sessions table', "CREATE TABLE `toutify_sessions` (
+              session_id VARCHAR(128) NOT NULL,
+              sid        CHAR(32) DEFAULT NULL,
+              sub        CHAR(26) NOT NULL,
+              created_at INT UNSIGNED NOT NULL,
+              revoked_at INT UNSIGNED DEFAULT NULL,
+              PRIMARY KEY (session_id), KEY idx_tf_sid (sid), KEY idx_tf_sub (sub)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    }
+    if (!table_exists('toutify_events')) {
+        $run('toutify_events table', "CREATE TABLE `toutify_events` (
+              event_id    VARCHAR(40) NOT NULL,
+              type        VARCHAR(40) DEFAULT NULL,
+              received_at INT UNSIGNED NOT NULL,
+              PRIMARY KEY (event_id), KEY idx_tfe_received (received_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    }
+
+    db_schema_forget();
+    return [$did, $err];
+}
+
+/**
  * Everything standing between the current setup and Toutify signing people in.
  *
  * Returns a list of [what, ok, what to do about it]. Empty means it is working.
@@ -393,6 +470,42 @@ function toutify_session_forget(string $sessionId): void
 {
     if (!toutify_sessions_ready()) return;
     q('DELETE FROM toutify_sessions WHERE session_id = ?', [$sessionId]);
+}
+
+/**
+ * Toutify's own hosted login page — where the "Log in" buttons point once the
+ * switch is on.
+ *
+ * client_id so Toutify knows which site is asking (its page says "Sign in to
+ * continue to MonsterList"), and return_to so it knows where to send them back
+ * afterwards. The address is a setting because it is Toutify's to change, not
+ * ours, and a hard-coded path in six views is six places to miss.
+ */
+function toutify_hosted_login_url(string $returnTo = ''): string
+{
+    $base = toutify_cfg('login_url', toutify_issuer() . '/members/login.php');
+    $qs = ['client_id' => toutify_client_id()];
+    if ($returnTo !== '') $qs['return_to'] = $returnTo;
+    return $base . (strpos($base, '?') === false ? '?' : '&') . http_build_query($qs);
+}
+
+/**
+ * Where a "Log in" link should point, right now.
+ *
+ * One function so the header, the footer and the membership band cannot
+ * disagree, and so that turning the switch off puts all three back at once.
+ */
+function login_url(): string
+{
+    return (toutify_mode() === 'live' && toutify_ready())
+        ? toutify_hosted_login_url(site_url('/auth/toutify/initiate?iss=' . rawurlencode(toutify_issuer())))
+        : '/login';
+}
+
+/** Likewise for "Sign up" / "Create an account". */
+function signup_url(): string
+{
+    return (toutify_mode() === 'live' && toutify_ready()) ? '/auth/toutify/login?signup=1' : '/signup';
 }
 
 // ---------------------------------------------------------------------------

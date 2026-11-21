@@ -27,7 +27,7 @@
     <div>
       <h4>Your account</h4>
       <a href="/add-listing">Add your business FREE</a>
-      <a href="/login">Log in</a>
+      <a href="<?= e(login_url()) ?>">Log in</a>
       <a href="/members">Members dashboard</a>
     </div>
     <div>

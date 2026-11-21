@@ -13,5 +13,5 @@
     <p class="form-note">At least 8 characters.</p>
     <button class="btn btn-primary btn-block" style="margin-top:14px">Sign up free</button>
   </form>
-  <p class="mute" style="margin-top:16px">Already a member? <a href="/login" style="color:var(--accent);font-weight:700">Log in</a></p>
+  <p class="mute" style="margin-top:16px">Already a member? <a href="<?= e(login_url()) ?>" style="color:var(--accent);font-weight:700">Log in</a></p>
 </div></div>

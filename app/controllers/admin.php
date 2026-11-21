@@ -563,6 +563,25 @@ if ($sub === 'dashboard') {
     view_raw('admin/member-tasks', compact('meta', 'u', 'due', 'roster', 'items', 'planKey', 'planLabel'));
 
 } elseif ($sub === 'diagnostics') {
+    // The Toutify database change, applied from here rather than from
+    // phpMyAdmin. Pasting SQL into the right database with the right tab
+    // selected turned out to be the single most reliable way for this
+    // integration to look broken, and the site can do it itself.
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && post('action') === 'toutify_migrate') {
+        csrf_check();
+        require_superadmin();
+        [$tfDid, $tfErr] = toutify_migrate();
+        if ($tfErr) {
+            flash_set('error', 'Could not finish: ' . implode('; ', array_slice($tfErr, 0, 3)));
+        } elseif (!$tfDid) {
+            flash_set('success', 'Nothing to do — the database already has everything Toutify needs.');
+        } else {
+            flash_set('success', 'Added ' . count($tfDid) . ' item' . (count($tfDid) === 1 ? '' : 's')
+                . ': ' . implode(', ', $tfDid) . '.');
+        }
+        redirect('/superadmin/diagnostics');
+    }
+
     // Answers the two questions that follow every upload: is this build live,
     // and has the database caught up with it? Plus a count of what listings
     // actually hold, so "the storefront isn't showing X" can be traced to

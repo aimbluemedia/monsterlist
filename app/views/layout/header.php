@@ -59,7 +59,7 @@ gtag('config', <?= json_encode($gaId, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JS
         <a class="btn btn-ghost" href="/members">My account</a>
         <a class="btn btn-primary" href="/members/listings/new">Add Your Business FREE</a>
       <?php else: ?>
-        <a class="btn btn-ghost" href="/login">Log in</a>
+        <a class="btn btn-ghost" href="<?= e(login_url()) ?>">Log in</a>
         <a class="btn btn-primary" href="/add-listing">Add Your Business FREE</a>
       <?php endif; ?>
     </div>

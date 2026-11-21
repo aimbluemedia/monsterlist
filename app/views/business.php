@@ -207,7 +207,7 @@ $hours    = $enhanced ? hours_parse($b['hours'] ?? null) : [];
             <button class="btn btn-primary" style="margin-top:12px">Post review</button>
           </form>
         <?php else: ?>
-          <p class="mute" style="margin-top:12px"><a href="/login" style="color:var(--accent);font-weight:700">Log in</a> to write a review.</p>
+          <p class="mute" style="margin-top:12px"><a href="<?= e(login_url()) ?>" style="color:var(--accent);font-weight:700">Log in</a> to write a review.</p>
         <?php endif; ?>
       </div>
       <?php endif; ?>

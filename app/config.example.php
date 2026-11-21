@@ -61,6 +61,9 @@ return [
         'client_id'      => 'monsterlist',
         'client_secret'  => '',
         'webhook_secret' => '',
+        // Where the "Log in" buttons point once mode is 'live'. Toutify's own
+        // hosted page; client_id and return_to are added automatically.
+        'login_url'      => 'https://toutify.com/members/login.php',
         'mode'           => 'off',
         'test_allowlist' => '',      // comma-separated emails, used by 'test'
     ],

@@ -61,6 +61,17 @@
       <strong><?= e(toutify_mode()) ?></strong>, but <?= count($tfBad) ?> thing<?= count($tfBad) === 1 ? ' is' : 's are' ?>
       missing, so this site's own login is still being used. Nobody is locked out.</p>
   <?php endif; ?>
+  <?php $tfDbReady = column_exists('users', 'toutify_sub') && table_exists('toutify_sessions'); ?>
+  <?php if (!$tfDbReady): ?>
+    <?php // One button instead of "paste this into phpMyAdmin, having first
+          // clicked the right database in the left-hand panel". ?>
+    <form method="post" style="margin:0 0 14px">
+      <?= csrf_field() ?><input type="hidden" name="action" value="toutify_migrate">
+      <button class="btn btn-primary">Add the Toutify columns and tables</button>
+      <span class="mute" style="margin-left:10px;font-size:.88rem">Adds columns and two tables.
+        Touches no passwords, deletes nothing, and does nothing the second time.</span>
+    </form>
+  <?php endif; ?>
   <?php if (toutify_mode() !== 'off'): ?>
     <div class="table-wrap table-narrow">
       <table class="table">

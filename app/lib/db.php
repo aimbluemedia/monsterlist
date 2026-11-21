@@ -109,9 +109,10 @@ function scalar(string $sql, array $params = [])
  *
  * One query per request, memoised: a schema does not change mid-request.
  */
-function db_tables(): array
+function db_tables(bool $forget = false): array
 {
     static $list = null;
+    if ($forget) { $list = null; return []; }
     if ($list === null) {
         $list = [];
         foreach (q('SHOW TABLES')->fetchAll(PDO::FETCH_COLUMN) as $t) $list[strtolower((string)$t)] = true;
@@ -131,9 +132,10 @@ function table_exists(string $table): bool
 }
 
 /** Every column on one table, keyed by lowercase name. Empty if no such table. */
-function db_columns(string $table): array
+function db_columns(string $table, bool $forget = false): array
 {
     static $seen = [];
+    if ($forget) { $seen = []; return []; }
     $key = strtolower($table);
     if (!isset($seen[$key])) {
         $seen[$key] = [];
@@ -153,4 +155,28 @@ function db_columns(string $table): array
 function column_exists(string $table, string $column): bool
 {
     return isset(db_columns($table)[strtolower($column)]);
+}
+
+/** Does a named index exist on a table? */
+function index_exists(string $table, string $index): bool
+{
+    if (!preg_match('/^[A-Za-z0-9_]+$/', $table) || !table_exists($table)) return false;
+    foreach (q("SHOW INDEX FROM `$table`")->fetchAll() as $r) {
+        if (strcasecmp((string)($r['Key_name'] ?? ''), $index) === 0) return true;
+    }
+    return false;
+}
+
+/**
+ * Throw away what we know about the schema.
+ *
+ * The two lookups above memoise for the request, which is right every time
+ * except one: a request that has just ALTERed a table is still holding the
+ * description of the table as it was. Anything that changes the schema calls
+ * this straight afterwards.
+ */
+function db_schema_forget(): void
+{
+    db_tables(true);
+    db_columns('', true);
 }
