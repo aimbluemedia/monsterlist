@@ -519,69 +519,87 @@ a.tf-card:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.
    Two columns: the words on the left, a picture of the product on the right.
    Centred hero text reads as a poster; left-aligned text beside something to
    look at reads as a product, which is the whole difference here. */
-.lp-hero{background:linear-gradient(170deg,#fff 0%,#f4f7ff 55%,#eef3ff 100%);padding:60px 0 64px;overflow:hidden}
+.lp-hero{position:relative;padding:60px 0 64px;overflow:hidden;color:#fff;
+  background:#0b1324 url("/assets/img/hero.webp") center/cover no-repeat}
+/* The scrim. The photo is bright and busy on the left, where the words go, so
+   it is darkened hardest there and left alone on the right, where there is
+   nothing to read and the glass cards want something to show through. */
+.lp-hero::before{content:"";position:absolute;inset:0;
+  background:linear-gradient(100deg,rgba(7,13,26,.94) 0%,rgba(7,13,26,.88) 34%,rgba(7,13,26,.62) 58%,rgba(7,13,26,.40) 100%)}
+.lp-hero>.wrap{position:relative;z-index:1}
 .lp-hero-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.04fr);gap:48px;align-items:center}
 .lp-hero-copy{min-width:0}
 
-.lp-eyebrow{display:block;color:var(--faint);font-weight:800;font-size:.76rem;letter-spacing:1.3px;text-transform:uppercase;margin-bottom:14px}
+.lp-eyebrow{display:block;color:rgba(255,255,255,.62);font-weight:800;font-size:.76rem;letter-spacing:1.3px;text-transform:uppercase;margin-bottom:14px}
 .lp-badge{display:inline-block;background:var(--accent-soft);color:var(--accent);font-weight:800;font-size:.8rem;letter-spacing:.4px;padding:8px 16px;border-radius:999px;margin-bottom:20px;text-transform:uppercase}
 .lp-h1{font-size:clamp(2.1rem,4.4vw,3.4rem);line-height:1.08;font-weight:800;letter-spacing:-1.1px;margin:0 0 18px}
 .lp-accent{color:var(--accent)}
+/* Scoped to the hero only: #2563eb is a 3:1 blue meant for white paper and it
+   disappears against the photo. Further down the page .lp-accent is still on
+   white and must stay as it is. */
+.lp-hero .lp-accent{color:#8fbcff}
 .lp-accent2{color:#7db2ff}
 /* The stroke under the accent line, drawn rather than underlined so it sits
    clear of the descenders instead of cutting through them. */
-.lp-underline{background-image:linear-gradient(var(--accent),var(--accent));background-size:100% 5px;background-repeat:no-repeat;background-position:0 102%;padding-bottom:3px;border-radius:2px}
-.lp-sub{max-width:520px;margin:0 0 26px;color:var(--mute);font-size:clamp(1rem,1.5vw,1.08rem);line-height:1.6}
+.lp-underline{background-image:linear-gradient(#7db2ff,#7db2ff);background-size:100% 5px;background-repeat:no-repeat;background-position:0 102%;padding-bottom:3px;border-radius:2px}
+.lp-sub{max-width:520px;margin:0 0 26px;color:rgba(255,255,255,.86);font-size:clamp(1rem,1.5vw,1.08rem);line-height:1.6}
 .lp-free{color:var(--green);font-weight:800}
 .lp-ctas{display:flex;gap:12px;justify-content:flex-start;flex-wrap:wrap}
 .lp-btn-big{padding:15px 28px;font-size:1.02rem;border-radius:13px;font-weight:800}
+.lp-hero .btn-ghost{background:rgba(255,255,255,.14);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.4);color:#fff}
+.lp-hero .btn-ghost:hover{background:rgba(255,255,255,.24)}
 
 .lp-ticks{list-style:none;margin:22px 0 0;padding:0;display:flex;gap:20px;flex-wrap:wrap}
-.lp-ticks li{display:flex;align-items:center;gap:7px;color:var(--mute);font-weight:700;font-size:.9rem}
+.lp-ticks li{display:flex;align-items:center;gap:7px;color:rgba(255,255,255,.88);font-weight:700;font-size:.9rem}
 /* A real tick, not two crossed rules — a flat bar reads as a minus sign. */
 .lp-ticks li::before{content:"";width:17px;height:17px;flex:none;border-radius:50%;background:var(--green-soft) no-repeat center;
   background-image:url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.4l2.3 2.3 4.7-5' fill='none' stroke='%230ca678' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-size:11px 11px}
 
 .lp-pills{margin-top:28px;display:flex;gap:8px;justify-content:flex-start;flex-wrap:wrap;align-items:center}
-.lp-pill-label{color:var(--faint);font-size:.76rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-right:2px}
-.lp-pill{background:#fff;border:1px solid var(--border);border-radius:999px;padding:6px 13px;font-weight:700;font-size:.82rem;color:var(--mute);box-shadow:var(--shadow)}
+.lp-pill-label{color:rgba(255,255,255,.6);font-size:.76rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-right:2px}
+.lp-pill{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.26);border-radius:999px;padding:6px 13px;font-weight:700;font-size:.82rem;color:#fff;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 
 /* ----- the product picture -----
    The padding is what the floating cards hang in. Without it they would have
    to sit on top of the card itself, and they would cover the very things they
    are pointing at — the search button and the rating. */
 .lp-hero-art{position:relative;min-width:0;padding:98px 20px 52px 16px}
-.lp-mock{background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:0 24px 60px -24px rgba(16,24,40,.28),0 2px 6px rgba(16,24,40,.05);padding:16px;position:relative;z-index:1}
-.lp-mock-search{display:flex;align-items:center;gap:10px;border:1.5px solid var(--border);border-radius:11px;padding:11px 12px;margin-bottom:14px}
-.lp-mock-ico{width:15px;height:15px;flex:none;border:2px solid var(--faint);border-radius:50%;position:relative}
-.lp-mock-ico::after{content:"";position:absolute;right:-5px;bottom:-3px;width:6px;height:2px;background:var(--faint);transform:rotate(45deg);border-radius:2px}
-.lp-mock-q{flex:1;color:var(--ink);font-weight:600;font-size:.92rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* "Smoke": a wash of white over a heavy blur, so the photo reads through the
+   card as colour and movement without any of it competing with the text on
+   top. Backdrop-filter is the whole effect — where a browser lacks it the
+   rgba background alone still gives a readable, if flatter, card. */
+.lp-mock{background:rgba(10,17,33,.46);-webkit-backdrop-filter:blur(22px) saturate(150%);backdrop-filter:blur(22px) saturate(150%);
+  border:1px solid rgba(255,255,255,.3);border-radius:18px;box-shadow:0 30px 70px -28px rgba(0,0,0,.6);padding:16px;position:relative;z-index:1}
+.lp-mock-search{display:flex;align-items:center;gap:10px;border:1.5px solid rgba(255,255,255,.3);background:rgba(10,17,33,.38);border-radius:11px;padding:11px 12px;margin-bottom:14px}
+.lp-mock-ico{width:15px;height:15px;flex:none;border:2px solid rgba(255,255,255,.75);border-radius:50%;position:relative}
+.lp-mock-ico::after{content:"";position:absolute;right:-5px;bottom:-3px;width:6px;height:2px;background:rgba(255,255,255,.75);transform:rotate(45deg);border-radius:2px}
+.lp-mock-q{flex:1;color:#fff;font-weight:600;font-size:.92rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lp-mock-go{background:var(--accent);color:#fff;font-weight:800;font-size:.78rem;padding:7px 14px;border-radius:8px;flex:none}
 .lp-mock-rows{display:flex;flex-direction:column;gap:9px}
-.lp-mock-row{display:flex;align-items:center;gap:11px;padding:11px;border:1px solid var(--border2);border-radius:11px;background:#fff}
-.lp-mock-row-top{border-color:#d7e3ff;background:linear-gradient(180deg,#f7faff,#fff);box-shadow:0 1px 3px rgba(37,99,235,.08)}
+.lp-mock-row{display:flex;align-items:center;gap:11px;padding:11px;border:1px solid rgba(255,255,255,.18);border-radius:11px;background:rgba(10,17,33,.4)}
+.lp-mock-row-top{border-color:rgba(147,185,255,.55);background:rgba(30,64,140,.46);box-shadow:0 1px 3px rgba(0,0,0,.15)}
 .lp-mock-logo{width:38px;height:38px;flex:none;border-radius:10px;background:var(--accent);color:#fff;font-weight:800;font-size:.8rem;display:flex;align-items:center;justify-content:center}
 .lp-mock-logo-2{background:#0ca678}
 .lp-mock-logo-3{background:#7c3aed}
 .lp-mock-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.lp-mock-txt b{font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lp-mock-txt em{font-style:normal;color:var(--faint);font-size:.76rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lp-mock-tag{flex:none;background:var(--gold-soft);color:var(--gold);font-weight:800;font-size:.68rem;letter-spacing:.3px;text-transform:uppercase;padding:5px 9px;border-radius:999px}
-.lp-mock-stars{flex:none;color:var(--star);font-weight:800;font-size:.82rem}
+.lp-mock-txt b{font-size:.9rem;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lp-mock-txt em{font-style:normal;color:rgba(255,255,255,.85);font-size:.76rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lp-mock-tag{flex:none;background:rgba(253,224,160,.9);color:#7a4a05;font-weight:800;font-size:.68rem;letter-spacing:.3px;text-transform:uppercase;padding:5px 9px;border-radius:999px}
+.lp-mock-stars{flex:none;color:#ffd27a;font-weight:800;font-size:.82rem}
 .lp-mock-stars::before{content:"★ "}
 
-.lp-float{position:absolute;z-index:2;background:#fff;border:1px solid var(--border);border-radius:13px;padding:11px 13px;box-shadow:0 14px 34px -12px rgba(16,24,40,.3)}
+.lp-float{position:absolute;z-index:2;background:rgba(10,17,33,.56);-webkit-backdrop-filter:blur(20px) saturate(150%);backdrop-filter:blur(20px) saturate(150%);border:1px solid rgba(255,255,255,.32);border-radius:13px;padding:11px 13px;box-shadow:0 18px 40px -14px rgba(0,0,0,.55);color:#fff}
 .lp-float b{display:block;font-size:.82rem;line-height:1.25}
-.lp-float em{font-style:normal;color:var(--faint);font-size:.72rem}
+.lp-float em{font-style:normal;color:rgba(255,255,255,.85);font-size:.72rem}
 .lp-float-ai{top:-4px;right:-2px;max-width:252px;display:flex;flex-direction:column;gap:3px}
-.lp-float-k{color:var(--faint);font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.7px}
-.lp-float-q{font-size:.82rem;font-weight:700;color:var(--ink)}
-.lp-float-a{font-size:.76rem;color:var(--accent);font-weight:700}
+.lp-float-k{color:rgba(255,255,255,.82);font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.7px}
+.lp-float-q{font-size:.82rem;font-weight:700;color:#fff}
+.lp-float-a{font-size:.76rem;color:#bcd8ff;font-weight:700}
 .lp-float-lead{bottom:-2px;left:-6px;display:flex;align-items:center;gap:9px}
-.lp-float-dot{width:9px;height:9px;flex:none;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px var(--green-soft)}
+.lp-float-dot{width:9px;height:9px;flex:none;border-radius:50%;background:#34d399;box-shadow:0 0 0 4px rgba(52,211,153,.25)}
 .lp-float-ok{bottom:6px;right:-2px;display:flex;align-items:center;gap:9px}
-.lp-float-check{width:21px;height:21px;flex:none;border-radius:50%;background:var(--green-soft);color:var(--green);font-weight:800;font-size:.74rem;display:flex;align-items:center;justify-content:center}
+.lp-float-check{width:21px;height:21px;flex:none;border-radius:50%;background:rgba(52,211,153,.25);color:#6ee7b7;font-weight:800;font-size:.74rem;display:flex;align-items:center;justify-content:center}
 
 @media(max-width:980px){
   /* One column. The picture keeps its place under the words, but the cards
@@ -598,7 +616,16 @@ a.tf-card:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.
      here, the cards only stack on each other and on the search row. They drop
      into the flow underneath instead — same message, nothing collides. */
   .lp-hero-art{padding:0;display:flex;flex-direction:column;gap:10px}
-  .lp-float{position:static;max-width:none;box-shadow:var(--shadow)}
+  .lp-float{position:static;max-width:none;box-shadow:0 10px 24px -10px rgba(0,0,0,.5)}
+  /* A tall, narrow viewport crops the photo hard horizontally; centred, that
+     lands on a face at close range. Pulling left keeps the worktop and the
+     kitchen in frame, so it still reads as a scene. */
+  /* A landscape photo told to cover a tall, narrow box zooms until all that
+     is left is somebody's eye. Instead it keeps its own proportions as a band
+     across the top and fades into the solid colour, so the scene stays a
+     scene and the text below sits on flat ground. */
+  .lp-hero{background-size:auto 460px;background-position:52% 0;background-repeat:no-repeat}
+  .lp-hero::before{background:linear-gradient(180deg,rgba(7,13,26,.62) 0%,rgba(7,13,26,.78) 26%,rgba(7,13,26,.95) 46%,#0b1324 62%)}
 }
 
 .lp-strip{background:#fff;border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);overflow-x:auto;-webkit-overflow-scrolling:touch}
