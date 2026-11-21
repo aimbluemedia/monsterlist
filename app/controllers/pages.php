@@ -19,7 +19,12 @@ switch ($path) {
             ['Do I need a credit card to start?',
              'Not for Free. You only enter card details if you choose Pro or Premium, and checkout is handled by Stripe — we never see your card number.'],
             ['How many listings can I have?',
-             'One on Free. Pro and Premium are both unlimited, so a member with several businesses can run them all from one account.'],
+             'One, on every plan. A ' . $site . ' account is one business — what the paid plans change is how much that listing can do, not how many you get.'],
+            ['Why upgrade if I still get one listing?',
+             'Because a free listing is a line in a directory and a paid one is a page worth landing on. Pro adds your phone number, a public email, your logo, '
+             . 'a photo gallery, a video, a ' . number_format(PROFILE_MAX_WORDS) . '-word profile and the analytics to see what it is doing — and '
+             . number_format((int)$fqT['pro']['grant']) . ' tokens a month instead of ' . number_format((int)$fqT['free']['grant'])
+             . '. Premium puts that page above everyone else\'s in your city and category, and we write and post an article about you every month.'],
             ['How long before my listing is live?',
              'A person reads every listing before it appears — usually the same day. That is the whole point of the directory: nothing goes live unchecked.'],
             ['What is the difference between Pro and Premium?',

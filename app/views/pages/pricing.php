@@ -8,15 +8,15 @@ $pkTok = [];
 foreach (['free','pro','featured'] as $pkK) $pkTok[$pkK] = token_rules($pkK);
 $pkFeat = [
   'free' => [
-    [true,  plan_listings_label($planList['free']) . ' — your description, category and city'],
-    [true,  'A link to your website'],
+    [true,  'Your description, category, city and website link'],
+    [true,  'Services, social and review-site links'],
     [true,  'Shown in search, and on your city and category pages'],
     [true,  number_format((int)$pkTok['free']['grant']) . ' tokens a month, up to ' . (int)$pkTok['free']['promos_max'] . ' promotions'],
     [true,  'Read by a person before it goes live'],
-    [false, 'No phone, logo, photos or video'],
+    [false, 'No phone, logo, photos, video or analytics'],
   ],
   'pro' => [
-    [true, 'Everything in Free, with unlimited listings'],
+    [true, 'Everything in Free, and your listing becomes a storefront'],
     [true, number_format(PROFILE_MAX_WORDS) . '-word profile, logo, photo gallery and video'],
     [true, 'Your phone number and a public email address'],
     [true, 'Verified badge, and views and click analytics'],
@@ -37,8 +37,8 @@ $pkFeat = [
   <section class="pk-head">
     <p class="pk-eyebrow"><?= e(setting('site_name')) ?> membership</p>
     <h1 class="pk-h1">Pick your plan</h1>
-    <p class="pk-sub">Every plan puts a real listing in front of people searching — and a person checks
-      it before it goes live. Paid plans are monthly, cancel any time.</p>
+    <p class="pk-sub">One listing per account on every plan — what you pay for is how much that
+      listing can do. A person checks it before it goes live. Paid plans are monthly, cancel any time.</p>
   </section>
 
   <div class="pk-plans">
@@ -46,10 +46,13 @@ $pkFeat = [
       <?php
         $pkPopular = $key === 'pro';
         $pkName    = plan_public_label($key);
+        // One listing on every plan, so these three lines have to say what
+        // actually separates them: being findable, being worth landing on,
+        // and being at the top with the marketing done for you.
         $pkLead    = [
-          'free'     => 'Your business, listed and findable.',
-          'pro'      => 'The full storefront, and the tokens to promote it.',
-          'featured' => 'Everything in Pro, and we do the work for you.',
+          'free'     => 'Be findable. Your business, in the directory.',
+          'pro'      => 'The same listing, turned into a full storefront.',
+          'featured' => 'Top of the page — and we write the marketing.',
         ][$key];
       ?>
       <div class="pk-card<?= $pkPopular ? ' pk-pop' : '' ?>">

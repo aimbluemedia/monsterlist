@@ -8,9 +8,11 @@ function plans(): array
         'free' => [
             'label'        => 'Free',
             'price'        => 0,
-            // One listing on Free; paid plans carry as many as you like. 0
-            // means unlimited — read it through plan_listing_limit() and the
-            // helpers beside it rather than comparing to it directly.
+            // One listing per account, on every plan. A MonsterList account
+            // is one business, and what you pay for is how much that listing
+            // can do, not how many you get. 0 would mean unlimited — read the
+            // number through plan_listing_limit() and the helpers beside it
+            // rather than comparing to it directly.
             'max_listings' => 1,
             // 'enhanced' is the paid-features gate: phone, public email, logo,
             // photo gallery, video, social links and the long description.
@@ -24,24 +26,24 @@ function plans(): array
         'pro' => [
             'label'        => 'Pro',
             'price'        => (float)setting('price_pro_monthly', '19'),
-            'max_listings' => 0,   // unlimited
+            'max_listings' => 1,
             'enhanced'     => true,
             'featured'     => false,
             'analytics'    => true,
             'profile'      => true,
             'concierge'    => false,
-            'blurb'        => 'Unlimited listings, each a full storefront: a 1,500-word profile, phone and public email, logo, photo gallery, video, verified badge and analytics — plus the tokens to promote it every month.',
+            'blurb'        => 'Your listing becomes a full storefront: a 1,500-word profile, phone and public email, logo, photo gallery, video, verified badge and analytics — plus the tokens to promote it every month.',
         ],
         'featured' => [
             'label'        => 'Featured',
             'price'        => (float)setting('price_featured_monthly', '49'),
-            'max_listings' => 0,   // unlimited
+            'max_listings' => 1,
             'enhanced'     => true,
             'featured'     => true,
             'analytics'    => true,
             'profile'      => true,
             'concierge'    => true,
-            'blurb'        => 'Unlimited listings with everything in Pro, plus priority placement — and we do the work: one article a month, written for you and posted out across our own channels and yours.',
+            'blurb'        => 'Everything in Pro, plus priority placement above every other listing in your city and category — and we do the work: one article a month, written for you and posted out across our own channels and yours.',
         ],
     ];
 }
