@@ -502,10 +502,18 @@ function login_url(): string
         : '/login';
 }
 
-/** Likewise for "Sign up" / "Create an account". */
+/**
+ * Likewise for "Sign up" / "Create an account" — always this site's own
+ * /signup.
+ *
+ * Unlike login_url(), this does not change with the mode: /signup decides for
+ * itself what to render, serving the embedded Toutify form once Toutify is in
+ * charge and this site's own form before that. Sending people straight to
+ * Toutify would take them off the site to do something they can do here.
+ */
 function signup_url(): string
 {
-    return (toutify_mode() === 'live' && toutify_ready()) ? '/auth/toutify/login?signup=1' : '/signup';
+    return '/signup';
 }
 
 // ---------------------------------------------------------------------------

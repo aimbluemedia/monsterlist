@@ -23,8 +23,24 @@ function auth_toutify_runs_login(): bool
 switch ($path) {
     case '/signup':
         if (is_logged_in()) redirect('/members');
-        // prompt=create, so Toutify opens on its "create an account" step.
-        if (auth_toutify_runs_login()) redirect('/auth/toutify/login?signup=1');
+        // The embedded Toutify form, rather than a redirect to Toutify: the
+        // visitor creates their account without leaving this site, which is
+        // what the other Toutify sites do.
+        //
+        // Shown whenever Toutify runs sign-in, and on demand at
+        // /signup?toutify=1 while mode is 'test' — that is how the form gets
+        // checked before every visitor sees it. In 'off' the query string does
+        // nothing and the form below is what loads.
+        if (auth_toutify_runs_login()
+            || (toutify_mode() === 'test' && toutify_ready() && isset($_GET['toutify']))) {
+            $meta = [
+                'title'       => "Create your free account — $site",
+                'description' => "Create a free account and list your business on $site in minutes.",
+                'canonical'   => site_url('/signup'),
+            ];
+            view('auth/signup_toutify', compact('meta'));
+            break;
+        }
         $errors = [];
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             csrf_check();
