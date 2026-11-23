@@ -1,4 +1,10 @@
 <?php
+// The site name, read here rather than taken from the caller. This partial is
+// included from more than one view now, and a view that did not happen to
+// define $site rendered the brand mark and the URL beneath it as empty text.
+$mlSite = setting('site_name');
+?>
+<?php
 // ---------------------------------------------------------------------------
 // Homepage promotion-engine graphic. HTML/CSS/SVG only — no images.
 //
@@ -95,12 +101,12 @@ $mlCount = count($mlNodes);
   <div class="ml-screen">
     <div class="ml-bar">
       <span class="ml-dots"><i></i><i></i><i></i></span>
-      <em><?= e(strtolower($site)) ?>.org/members</em>
+      <em><?= e(strtolower($mlSite)) ?>.org/members</em>
     </div>
 
     <div class="ml-app">
       <aside class="ml-side">
-        <span class="ml-brand"><b>M</b><?= e($site) ?></span>
+        <span class="ml-brand"><b>M</b><?= e($mlSite) ?></span>
         <u class="on">Dashboard</u>
         <u>Storefront</u>
         <u>Content</u>

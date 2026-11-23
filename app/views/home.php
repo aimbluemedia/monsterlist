@@ -183,17 +183,6 @@
   </div>
 </div>
 
-<!-- platform mockup -->
-<section class="lp-section">
-  <div class="wrap">
-    <h2 class="lp-h2">The All-In-One Platform That <span class="lp-accent">Does It For You</span></h2>
-    <p class="lp-center-sub">You run your business. <?= e($site) ?> runs your presence — one profile that
-      feeds search engines, AI assistants and your customers everything they need to choose you.</p>
-
-    <?php require __DIR__ . '/_promo-graphic.php'; ?>
-  </div>
-</section>
-
 <!-- benefit tiles -->
 <section class="lp-section lp-tint">
   <div class="wrap">
