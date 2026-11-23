@@ -284,38 +284,74 @@
     <div class="pe-demo">
       <div class="pe-try">
         <span class="pe-kicker">See it work</span>
-        <h3>What the engine writes</h3>
-        <p>Pick something you might publish. This is the promotion it would file for you.</p>
+        <h3>Watch it write one</h3>
+        <p>Pick something you might publish and run it. Every stage below is a step the
+          engine really performs — reading, writing, filing, publishing.</p>
         <div class="pe-picks" role="group" aria-label="Choose an example">
           <button type="button" class="on" data-demo="yt" aria-pressed="true">YouTube</button>
           <button type="button" data-demo="blog" aria-pressed="false">Blog post</button>
           <button type="button" data-demo="ig" aria-pressed="false">Instagram</button>
           <button type="button" data-demo="prod" aria-pressed="false">Product</button>
         </div>
-        <div class="pe-field">
+        <?php // A real input, because this one earns it: what you paste comes
+              // back in the card below. It still never calls the server, and
+              // the note under the button says so. ?>
+        <label class="pe-field" for="pe-url">
           <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-link"/></svg>
-          <span id="pe-url">https://youtube.com/watch?v=your-latest-video</span>
-        </div>
-        <a class="btn pe-boost" href="/signup">Promote my business — free</a>
-        <small class="pe-demo-note">Example wording. Yours is written from your own page.</small>
+          <input type="text" id="pe-url" spellcheck="false" autocomplete="off"
+                 value="https://youtube.com/watch?v=your-latest-video"
+                 aria-label="A link to promote">
+        </label>
+        <button type="button" class="btn pe-boost" id="pe-run">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-spark"/></svg>
+          <span id="pe-run-text">Write my promotion</span>
+        </button>
+
+        <?php // The stages, listed rather than hidden inside an animation, so
+              // the mechanism is readable even before anybody presses the
+              // button and still readable afterwards. ?>
+        <ol class="pe-stages" id="pe-stages">
+          <li data-stage="read"><i></i>Reads your page</li>
+          <li data-stage="write"><i></i>Writes the pitch in your voice</li>
+          <li data-stage="file"><i></i>Files it under a category and city</li>
+          <li data-stage="send"><i></i>Publishes it to the network</li>
+        </ol>
+        <small class="pe-demo-note">Paste one of your own links and run it again. Nothing is sent
+          anywhere — the real pitch is written from the page itself once you join.</small>
       </div>
 
-      <div class="pe-card" id="pe-card" aria-live="polite">
+      <div class="pe-card" id="pe-card">
         <div class="pe-card-head">
           <span class="pe-badge"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-yt" id="pe-badge-icon"/></svg><span id="pe-badge-text">YouTube</span></span>
-          <span class="pe-status">Written for you</span>
+          <span class="pe-status" id="pe-status">Ready</span>
         </div>
-        <div class="pe-thumb" id="pe-thumb">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-yt" id="pe-thumb-icon"/></svg>
+
+        <div class="pe-card-body" aria-live="polite">
+          <b class="pe-card-title" id="pe-title">How we doubled our bookings in 60 days</b>
+          <p class="pe-card-pitch" id="pe-pitch">A short walkthrough of the two changes that filled our
+            calendar — what we stopped doing, and the one question we started asking every caller.</p>
+          <div class="pe-tags">
+            <span class="pe-tag" id="pe-cat">Home services</span>
+            <span class="pe-tag pe-tag-city" id="pe-city">Phoenix, AZ</span>
+          </div>
         </div>
-        <b class="pe-card-title" id="pe-title">How we doubled our bookings in 60 days</b>
-        <p class="pe-card-pitch" id="pe-pitch">A short walkthrough of the two changes that filled our
-          calendar — what we stopped doing, and the one question we started asking every caller.</p>
-        <div class="pe-tags">
-          <span class="pe-tag" id="pe-cat">Home services</span>
-          <span class="pe-tag pe-tag-city" id="pe-city">Phoenix, AZ</span>
+
+        <?php // Where it lands. These light up as the run finishes — the same
+              // seven destinations the chip row above promises, so the card
+              // cannot claim a reach the section has not already named. ?>
+        <div class="pe-dest">
+          <?php // Two labels, swapped by the card's state in CSS: before a run
+                // nothing has been published, so it must not say it has. ?>
+          <span class="pe-dest-h"><em class="pe-dest-idle">Goes out to</em><em class="pe-dest-live">Published to</em></span>
+          <ul>
+            <?php foreach ([
+                ['people', 'Member network'], ['blog', 'Your storefront'], ['sr', 'Google Search'],
+                ['sp', 'ChatGPT'], ['cl', 'Claude'], ['pp', 'Perplexity'], ['gm', 'Gemini'],
+            ] as [$peD, $peDL]): ?>
+              <li title="<?= e($peDL) ?>"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-<?= $peD ?>"/></svg></li>
+            <?php endforeach; ?>
+          </ul>
         </div>
-        <p class="pe-card-foot">Views, clicks and calls land back in your dashboard.</p>
       </div>
     </div>
 
