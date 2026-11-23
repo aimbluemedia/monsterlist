@@ -214,101 +214,113 @@
   <div class="pe-glow" aria-hidden="true"></div>
   <div class="wrap pe-inner">
 
-    <span class="pe-eyebrow">AI Promotion Engine</span>
-    <h2 class="pe-title">YOU POSTED IT.<br><span>NOBODY SAW IT.</span></h2>
-    <p class="pe-lead">You wrote the post, filmed the video, listed the product — and it reached
-      almost no one. The AI Promotion Engine takes anything you publish and puts it in front of
-      <strong>people who have never heard of your business</strong>: our member network, Google,
-      and the AI assistants your customers now ask for recommendations. One link. Free to start.</p>
+    <div class="pe-head">
+      <span class="pe-eyebrow">AI Promotion Engine</span>
+      <h2 class="pe-title">You published it.<br><span>Now get it seen.</span></h2>
+      <p class="pe-lead">Paste a link to anything you have already published and the engine does the rest —
+        writing the pitch, filing it under the right category and city, and putting it in front of people
+        who have never heard of you.</p>
+    </div>
 
-    <h3 class="pe-net-h">The engine promotes <span>all of it</span></h3>
-    <div class="ai-card">
-      <div class="ai-glow" aria-hidden="true"></div>
-      <div class="ai-cols">
+    <?php // Three numbered steps, because the question a visitor actually has
+          // is "what do I have to do?" — and the honest answer is "paste one
+          // link". That was previously buried in the middle of a paragraph. ?>
+    <ol class="pe-steps">
+      <li>
+        <span class="pe-step-n" aria-hidden="true"></span>
+        <h3>Paste a link</h3>
+        <p>A blog post, a product, a service page, a new review, a video — anything with a URL.
+          That is the whole of your side of it.</p>
+      </li>
+      <li>
+        <span class="pe-step-n" aria-hidden="true"></span>
+        <h3>The AI writes the pitch</h3>
+        <p>It reads the page, writes a short pitch in your voice, and files it under the right
+          category and city. Nothing to write, nothing to schedule.</p>
+      </li>
+      <li>
+        <span class="pe-step-n" aria-hidden="true"></span>
+        <h3>It goes out</h3>
+        <p>To the member network, your storefront page, Google, and the AI assistants your
+          customers now ask for recommendations.</p>
+      </li>
+    </ol>
 
-        <div class="ai-pitch">
-          <span class="ai-chip">AI powered</span>
-          <h4>One link. The AI promotes all of it.</h4>
-          <p>Paste a link and the engine takes it from there — reading the page, writing the pitch in your
-            voice, filing it under the right category and city, then pushing it out. It works the same
-            whether you are promoting a blog post, a product, a service, a fresh review or a video.
-            Nothing to write, nothing to schedule, no agency retainer.</p>
-          <a class="ai-btn" href="/signup">Start free <span>+</span></a>
-        </div>
-
-        <div class="ai-col">
-          <h5>Promotes everything you publish</h5>
-          <ul class="ai-list">
-            <?php foreach ([
-                ['blog', 'Blog posts'], ['prod', 'Products'], ['serv', 'Services'], ['star', 'Reviews'],
-                ['yt', 'YouTube'], ['fb', 'Facebook'], ['ig', 'Instagram'],
-                ['tt', 'TikTok'], ['rd', 'Reddit'], ['pt', 'Pinterest'],
-            ] as [$aiIcon, $aiLabel]): ?>
-              <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-<?= $aiIcon ?>"/></svg></i><?= e($aiLabel) ?></li>
-            <?php endforeach; ?>
-          </ul>
-        </div>
-
-        <div class="ai-col">
-          <h5>Puts it where people look</h5>
-          <ul class="ai-list">
-            <?php foreach ([
-                ['people', 'The member network'], ['blog', 'Your storefront page'], ['sr', 'Google Search'],
-                ['sp', 'ChatGPT'], ['cl', 'Claude'], ['pp', 'Perplexity'], ['gm', 'Gemini'],
-            ] as [$aiIcon, $aiLabel]): ?>
-              <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-<?= $aiIcon ?>"/></svg></i><?= e($aiLabel) ?></li>
-            <?php endforeach; ?>
-          </ul>
-          <p class="ai-foot">Every view, click and call lands back in your dashboard.</p>
-        </div>
-
+    <?php // The two lists were 17 bulleted rows in side-by-side columns, which
+          // reads as a specification. As chips they are scanned in a second,
+          // which is all anybody does with a compatibility list. ?>
+    <div class="pe-rows">
+      <div class="pe-row">
+        <h4>Works with anything you publish</h4>
+        <ul>
+          <?php foreach ([
+              ['blog', 'Blog posts'], ['prod', 'Products'], ['serv', 'Services'], ['star', 'Reviews'],
+              ['yt', 'YouTube'], ['fb', 'Facebook'], ['ig', 'Instagram'],
+              ['tt', 'TikTok'], ['rd', 'Reddit'], ['pt', 'Pinterest'],
+          ] as [$peI, $peL]): ?>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-<?= $peI ?>"/></svg><?= e($peL) ?></li>
+          <?php endforeach; ?>
+        </ul>
+      </div>
+      <div class="pe-row">
+        <h4>Shows up where people look</h4>
+        <ul>
+          <?php foreach ([
+              ['people', 'Member network'], ['blog', 'Your storefront'], ['sr', 'Google Search'],
+              ['sp', 'ChatGPT'], ['cl', 'Claude'], ['pp', 'Perplexity'], ['gm', 'Gemini'],
+          ] as [$peI, $peL]): ?>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-<?= $peI ?>"/></svg><?= e($peL) ?></li>
+          <?php endforeach; ?>
+        </ul>
       </div>
     </div>
 
+    <?php // What the engine actually produces, shown rather than described.
+          // The old demo animated invented view counts and then admitted in
+          // small print that they were invented — which teaches a visitor that
+          // the numbers on this page cannot be trusted. The real output is the
+          // written pitch, the category and the city, so that is what this
+          // shows, and nothing here claims to be a result. ?>
     <div class="pe-demo">
       <div class="pe-try">
-        <span class="pe-kicker">Try it</span>
-        <h3>See what it does to a post.</h3>
-        <p>Pick something you'd publish and press the button — this is what the engine does with it.</p>
+        <span class="pe-kicker">See it work</span>
+        <h3>What the engine writes</h3>
+        <p>Pick something you might publish. This is the promotion it would file for you.</p>
+        <div class="pe-picks" role="group" aria-label="Choose an example">
+          <button type="button" class="on" data-demo="yt" aria-pressed="true">YouTube</button>
+          <button type="button" data-demo="blog" aria-pressed="false">Blog post</button>
+          <button type="button" data-demo="ig" aria-pressed="false">Instagram</button>
+          <button type="button" data-demo="prod" aria-pressed="false">Product</button>
+        </div>
         <div class="pe-field">
           <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-link"/></svg>
-          <input type="text" id="pe-url" value="https://youtube.com/watch?v=your-latest-video"
-                 aria-label="Example link to boost" spellcheck="false">
+          <span id="pe-url">https://youtube.com/watch?v=your-latest-video</span>
         </div>
-        <div class="pe-picks" role="group" aria-label="Choose an example">
-          <button type="button" class="on" data-demo="yt">YouTube</button>
-          <button type="button" data-demo="blog">Blog post</button>
-          <button type="button" data-demo="ig">Instagram</button>
-          <button type="button" data-demo="prod">Product</button>
-        </div>
-        <button type="button" class="btn pe-boost" id="pe-boost">Boost it now</button>
-        <small class="pe-demo-note">Interactive preview — illustrative numbers, no account needed.</small>
+        <a class="btn pe-boost" href="/signup">Promote my business — free</a>
+        <small class="pe-demo-note">Example wording. Yours is written from your own page.</small>
       </div>
 
-      <div class="pe-card" id="pe-card">
+      <div class="pe-card" id="pe-card" aria-live="polite">
         <div class="pe-card-head">
           <span class="pe-badge"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-yt" id="pe-badge-icon"/></svg><span id="pe-badge-text">YouTube</span></span>
-          <span class="pe-status" id="pe-status">Ready</span>
+          <span class="pe-status">Written for you</span>
         </div>
         <div class="pe-thumb" id="pe-thumb">
           <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-yt" id="pe-thumb-icon"/></svg>
         </div>
         <b class="pe-card-title" id="pe-title">How we doubled our bookings in 60 days</b>
-        <div class="pe-metrics">
-          <div><b data-boost="128">0</b><small>Views</small></div>
-          <div><b data-boost="34">0</b><small>Clicks</small></div>
-          <div><b data-boost="19">0</b><small>Engagements</small></div>
+        <p class="pe-card-pitch" id="pe-pitch">A short walkthrough of the two changes that filled our
+          calendar — what we stopped doing, and the one question we started asking every caller.</p>
+        <div class="pe-tags">
+          <span class="pe-tag" id="pe-cat">Home services</span>
+          <span class="pe-tag pe-tag-city" id="pe-city">Phoenix, AZ</span>
         </div>
-        <div class="pe-bar"><i id="pe-bar-fill"></i></div>
-        <div class="pe-faces" id="pe-faces">
-          <span>AM</span><span>KT</span><span>RJ</span><span>LP</span><span>DS</span><span>BW</span>
-          <em id="pe-faces-text">members ready to boost</em>
-        </div>
+        <p class="pe-card-foot">Views, clicks and calls land back in your dashboard.</p>
       </div>
     </div>
 
     <div class="pe-close">
-      <a class="btn btn-primary pe-btn" href="/signup">Promote my business — free</a>
+      <a class="btn btn-primary pe-btn" href="/signup">Add my business free</a>
       <a class="pe-see" href="/promotions">See live member promotions →</a>
       <p class="pe-note">Free forever. No card, no contract. Add your business, drop in your first link,
         and the engine starts working today.</p>

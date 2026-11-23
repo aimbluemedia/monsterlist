@@ -156,123 +156,64 @@ document.addEventListener('DOMContentLoaded', function () {
     io.observe(stage);
   }
 
-  // Promotion-engine demo: pick an example, hit boost, watch the preview move.
-  // Everything here is illustrative — it never calls the server.
-  var peBoost = document.getElementById('pe-boost');
-  if (peBoost) {
+  // Promotion-engine example: pick a content type, see the promotion the
+  // engine would write for it. Content only — no counters, no progress bar and
+  // no invented results. The previous version animated made-up view counts and
+  // then admitted in small print that they were made up, which is a strange
+  // thing to teach somebody on a page asking them to trust its numbers.
+  var pePicks = document.querySelector('.pe-picks');
+  if (pePicks) {
     var DEMOS = {
       yt:   { icon: 'ml-yt',   name: 'YouTube',   grad: 'linear-gradient(135deg,#2563eb,#7c3aed)',
               url: 'https://youtube.com/watch?v=your-latest-video',
-              title: 'How we doubled our bookings in 60 days', stats: [128, 34, 19] },
+              title: 'How we doubled our bookings in 60 days',
+              pitch: 'A short walkthrough of the two changes that filled our calendar \u2014 what we stopped doing, and the one question we started asking every caller.',
+              cat: 'Home services', city: 'Phoenix, AZ' },
       blog: { icon: 'ml-blog', name: 'Blog post',  grad: 'linear-gradient(135deg,#0ca678,#2563eb)',
               url: 'https://yoursite.com/blog/questions-customers-ask',
-              title: 'The 7 questions every customer asks before buying', stats: [96, 41, 12] },
+              title: 'The 7 questions every customer asks before buying',
+              pitch: 'The questions we hear on every first call, answered in full \u2014 so you know what to ask before you hire anybody.',
+              cat: 'Professional services', city: 'Austin, TX' },
       ig:   { icon: 'ml-ig',   name: 'Instagram', grad: 'linear-gradient(135deg,#db2777,#7c3aed)',
               url: 'https://instagram.com/p/your-latest-post',
-              title: 'Behind the scenes: our new spring collection', stats: [154, 28, 47] },
+              title: 'Behind the scenes: our new spring collection',
+              pitch: 'Eight new pieces, photographed in the workshop where they were made, with the story behind each one.',
+              cat: 'Retail & shopping', city: 'Portland, OR' },
       prod: { icon: 'ml-prod', name: 'Product',   grad: 'linear-gradient(135deg,#f59e0b,#db2777)',
               url: 'https://yourstore.com/products/oak-dining-table',
-              title: 'Handmade oak dining table — now in three finishes', stats: [83, 52, 16] }
+              title: 'Handmade oak dining table \u2014 now in three finishes',
+              pitch: 'Built to order from solid oak, seats six, and it ships flat-packed with the legs already fitted.',
+              cat: 'Home & garden', city: 'Nashville, TN' }
     };
 
-    var peUrl    = document.getElementById('pe-url');
-    var peTitle  = document.getElementById('pe-title');
-    var peThumb  = document.getElementById('pe-thumb');
-    var peStatus = document.getElementById('pe-status');
-    var peFill   = document.getElementById('pe-bar-fill');
-    var peFaces  = document.getElementById('pe-faces');
-    var peFacesT = document.getElementById('pe-faces-text');
-    var peNums   = document.querySelectorAll('#pe-card [data-boost]');
-    var peSlow   = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var peRun    = null;
-
-    var setUse = function (id, symbol) {
-      var el = document.getElementById(id);
-      if (el) el.setAttribute('href', '#' + symbol);
-    };
+    var setText = function (id, txt) { var el = document.getElementById(id); if (el) el.textContent = txt; };
+    var setUse  = function (id, symbol) { var el = document.getElementById(id); if (el) el.setAttribute('href', '#' + symbol); };
 
     var showDemo = function (key) {
       var d = DEMOS[key];
       if (!d) return;
-      peUrl.value = d.url;
-      peTitle.textContent = d.title;
-      peThumb.style.background = d.grad;
-      document.getElementById('pe-badge-text').textContent = d.name;
+      setText('pe-url', d.url);
+      setText('pe-title', d.title);
+      setText('pe-pitch', d.pitch);
+      setText('pe-cat', d.cat);
+      setText('pe-city', d.city);
+      setText('pe-badge-text', d.name);
       setUse('pe-badge-icon', d.icon);
       setUse('pe-thumb-icon', d.icon);
-      peNums.forEach(function (n, i) { n.setAttribute('data-boost', d.stats[i]); });
+      var thumb = document.getElementById('pe-thumb');
+      if (thumb) thumb.style.background = d.grad;
     };
 
-    var reset = function () {
-      if (peRun) { cancelAnimationFrame(peRun); peRun = null; }
-      peNums.forEach(function (n) { n.textContent = '0'; });
-      peFill.style.width = '0';
-      peFaces.querySelectorAll('span').forEach(function (f) { f.classList.remove('in'); });
-      peFacesT.textContent = 'members ready to boost';
-      peStatus.textContent = 'Ready';
-      peStatus.classList.remove('live');
-    };
-
-    var boost = function () {
-      reset();
-      peStatus.textContent = 'Boosting';
-      peStatus.classList.add('live');
-
-      var faces = peFaces.querySelectorAll('span');
-      var dur = peSlow ? 0 : 1900;
-
-      if (peSlow) {                                  // no animation: land on the end state
-        peNums.forEach(function (n) { n.textContent = n.getAttribute('data-boost'); });
-        peFill.style.width = '100%';
-        faces.forEach(function (f) { f.classList.add('in'); });
-        peFacesT.textContent = 'members boosted this';
-        peStatus.textContent = 'Boosted';
-        peStatus.classList.remove('live');
-        return;
-      }
-
-      var t0 = null;
-      var tick = function (now) {
-        if (t0 === null) t0 = now;
-        var p = Math.min((now - t0) / dur, 1);
-        var eased = 1 - Math.pow(1 - p, 3);
-        peNums.forEach(function (n) {
-          n.textContent = Math.round(parseInt(n.getAttribute('data-boost'), 10) * eased).toLocaleString();
-        });
-        peFill.style.width = (eased * 100) + '%';
-        faces.forEach(function (f, i) { if (eased > (i + 1) / (faces.length + 1)) f.classList.add('in'); });
-        if (p < 1) { peRun = requestAnimationFrame(tick); }
-        else {
-          peRun = null;
-          peFacesT.textContent = 'members boosted this';
-          peStatus.textContent = 'Boosted';
-          peStatus.classList.remove('live');
-        }
-      };
-      peRun = requestAnimationFrame(tick);
-    };
-
-    document.querySelectorAll('.pe-picks button').forEach(function (b) {
-      b.addEventListener('click', function () {
-        document.querySelectorAll('.pe-picks button').forEach(function (o) { o.classList.remove('on'); });
-        b.classList.add('on');
-        showDemo(b.getAttribute('data-demo'));
-        boost();
+    pePicks.addEventListener('click', function (ev) {
+      var btn = ev.target.closest('[data-demo]');
+      if (!btn) return;
+      pePicks.querySelectorAll('[data-demo]').forEach(function (b) {
+        var on = b === btn;
+        b.classList.toggle('on', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
       });
+      showDemo(btn.getAttribute('data-demo'));
     });
-    peBoost.addEventListener('click', boost);
-
-    // Run once when the module first comes into view.
-    if (window.IntersectionObserver) {
-      var peIo = new IntersectionObserver(function (entries) {
-        entries.forEach(function (en) {
-          if (!en.isIntersecting) return;
-          peIo.disconnect();
-          boost();
-        });
-      }, { threshold: 0.3 });
-      peIo.observe(document.getElementById('pe-card'));
-    }
   }
 
   // Client-side filter box on /browse lists

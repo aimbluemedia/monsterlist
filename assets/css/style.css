@@ -349,8 +349,10 @@ a.tf-card:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.
 .trunc{display:inline-block;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
 
 /* new-listing AI panel — the primary action on the page, so it gets the weight.
-   Named aifill-*, not ai-*: .ai-card is already the homepage's white-on-blue
-   gradient panel, and reusing it here painted dark text onto a blue card. */
+   Named aifill-*, not ai-*, because .ai-card used to be the homepage's
+   white-on-blue gradient panel and reusing it here painted dark text onto a
+   blue card. That panel is gone now, but the prefix stays: these class names
+   are in the markup, and renaming them would buy nothing. */
 .aifill-card{margin-bottom:16px;background:var(--accent-soft);border-color:var(--accent)}
 /* stacked: domain on its own line, button beneath it and left-aligned */
 .aifill-row{display:flex;flex-direction:column;align-items:flex-start;gap:12px}
@@ -667,7 +669,10 @@ a.tf-card:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.
 .lp-center-sub{text-align:center;max-width:640px;margin:0 auto 34px;color:var(--mute)}
 .lp-light-sub{color:#9aa1ad}
 
-/* ===== promotion engine — the headline module ===== */
+/* ===== promotion engine — the band itself =====
+   Everything inside it (steps, chip rows, the example card) is defined in
+   the "promotion engine — steps, chip rows, example card" block further
+   down. The old duplicates lived here and were silently overriding it. */
 .pe{position:relative;overflow:hidden;color:var(--ink);padding:74px 0 78px;margin:56px 0;
   background:linear-gradient(170deg,#eef4ff 0%,#f6f2ff 42%,#eafaf4 100%);
   border-top:1px solid #e3ebfb;border-bottom:1px solid #e3ebfb}
@@ -675,127 +680,9 @@ a.tf-card:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.
   background:radial-gradient(52% 40% at 50% 2%,rgba(37,99,235,.28),transparent 70%),
              radial-gradient(42% 34% at 10% 42%,rgba(168,85,247,.26),transparent 70%),
              radial-gradient(40% 32% at 90% 26%,rgba(16,185,129,.22),transparent 70%)}
-.pe-inner{position:relative;z-index:1;text-align:center}
-
 .pe-eyebrow{display:inline-block;background:#fff;border:1px solid #d6e2fb;color:var(--accent);
   font-size:.72rem;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;
   padding:7px 16px;border-radius:999px;box-shadow:0 6px 18px rgba(37,99,235,.14)}
-.pe-title{margin:18px 0 0;font-size:clamp(1.9rem,5.4vw,3.5rem);font-weight:800;line-height:1.05;
-  letter-spacing:-1px;color:#0b1020}
-.pe-title span{background:linear-gradient(92deg,#2563eb,#7c3aed 52%,#0ca678);
-  -webkit-background-clip:text;background-clip:text;color:transparent}
-.pe-lead{max-width:660px;margin:18px auto 0;color:#4a5468;font-size:1.04rem;line-height:1.65}
-.pe-lead strong{color:#0b1020}
-
-.pe-net-h{margin:44px 0 20px;font-size:clamp(1.15rem,2.4vw,1.5rem);font-weight:800;color:#0b1020}
-.pe-net-h span{background:linear-gradient(92deg,#2563eb,#7c3aed 55%,#0ca678);
-  -webkit-background-clip:text;background-clip:text;color:transparent}
-/* --- the AI card: three columns, the only card in this block --- */
-.ai-card{position:relative;overflow:hidden;max-width:1040px;margin:0 auto;border-radius:24px;color:#fff;
-  background:linear-gradient(135deg,#1d4ed8,#4f46e5 52%,#7c3aed);
-  box-shadow:0 26px 60px rgba(79,70,229,.34)}
-.ai-glow{position:absolute;inset:-35%;pointer-events:none;background:
-  radial-gradient(30% 26% at 78% 18%,rgba(255,255,255,.34),transparent 70%),
-  radial-gradient(26% 22% at 18% 84%,rgba(125,178,255,.42),transparent 70%)}
-.ai-cols{position:relative;display:grid;grid-template-columns:1.25fr .85fr .9fr;gap:30px;padding:34px 32px;
-  text-align:left}
-
-.ai-chip{display:inline-block;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);
-  border-radius:999px;padding:6px 14px;font-size:.68rem;font-weight:800;letter-spacing:1.1px;text-transform:uppercase}
-.ai-pitch h4{margin:14px 0 10px;font-size:1.42rem;font-weight:800;line-height:1.24;color:#fff}
-.ai-pitch p{margin:0;color:#d8ddfc;font-size:.92rem;line-height:1.65}
-.ai-btn{display:inline-flex;align-items:center;gap:10px;margin-top:18px;background:#fff;color:#1d3fd0;
-  border-radius:999px;padding:12px 22px;font-size:.82rem;font-weight:800;text-transform:uppercase;letter-spacing:.6px}
-.ai-btn span{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#1d3fd0;
-  color:#fff;font-size:.92rem;line-height:1}
-.ai-btn:hover{background:#eef3ff}
-
-.ai-col h5{margin:0 0 12px;font-size:.72rem;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;
-  color:#b9c4fb}
-.ai-list{list-style:none;margin:0;padding:0;display:grid;gap:9px}
-.ai-list li{display:flex;align-items:center;gap:10px;font-size:.88rem;font-weight:600;color:#eef1ff}
-.ai-list i{display:grid;place-items:center;width:28px;height:28px;border-radius:9px;flex-shrink:0;
-  background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24)}
-.ai-list i svg{width:15px;height:15px;color:#fff;fill:none;stroke:currentColor;stroke-width:1.7;
-  stroke-linecap:round;stroke-linejoin:round}
-.ai-foot{margin:14px 0 0;color:#b9c4fb;font-size:.8rem;line-height:1.55}
-
-@media(max-width:940px){
-  .ai-cols{grid-template-columns:1fr 1fr;gap:24px}
-  .ai-pitch{grid-column:1 / -1}
-}
-@media(max-width:560px){
-  .ai-cols{grid-template-columns:1fr;padding:26px 22px}
-  .ai-pitch h4{font-size:1.24rem}
-  .ai-btn{width:100%;justify-content:center}
-}
-
-/* --- live demo --- */
-.pe-demo{display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:960px;margin:40px auto 0;text-align:left}
-.pe-try,.pe-card{background:#fff;border:1px solid #e4ebf7;border-radius:20px;padding:26px;
-  box-shadow:0 18px 44px rgba(23,43,99,.11)}
-.pe-kicker{display:inline-block;background:linear-gradient(96deg,#2563eb,#7c3aed);color:#fff;
-  font-size:.66rem;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;padding:5px 12px;border-radius:999px}
-.pe-try h3{margin:12px 0 6px;font-size:1.3rem;color:#0b1020}
-.pe-try>p{margin:0 0 16px;color:var(--mute);font-size:.9rem;line-height:1.55}
-.pe-field{display:flex;align-items:center;gap:9px;background:var(--bg);border:1px solid #dce6f8;
-  border-radius:12px;padding:11px 13px}
-.pe-field svg{width:17px;height:17px;color:var(--accent);flex:0 0 auto;fill:none;stroke:currentColor;
-  stroke-width:1.7;stroke-linecap:round}
-.pe-field input{border:0;background:transparent;padding:0;font-size:.86rem;font-weight:600;color:#0b1020;
-  width:100%;min-width:0;text-overflow:ellipsis}
-.pe-field input:focus{outline:none}
-.pe-picks{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0 18px}
-.pe-picks button{background:#fff;border:1px solid #dce6f8;border-radius:999px;padding:7px 13px;
-  font:inherit;font-size:.8rem;font-weight:700;color:var(--mute);cursor:pointer}
-.pe-picks button:hover{border-color:var(--accent);color:var(--accent)}
-.pe-picks button.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
-.pe-boost{width:100%;justify-content:center;font-size:1rem;padding:14px;border-radius:12px;border:0;color:#fff;
-  background:linear-gradient(96deg,#2563eb,#7c3aed);box-shadow:0 12px 28px rgba(79,70,229,.36)}
-.pe-boost:hover{background:linear-gradient(96deg,#1d4ed8,#6d28d9)}
-.pe-demo-note{display:block;margin-top:10px;color:var(--faint);font-size:.76rem;text-align:center}
-
-.pe-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.pe-badge{display:inline-flex;align-items:center;gap:7px;background:var(--accent-soft);color:var(--accent);
-  border-radius:999px;padding:6px 13px;font-size:.78rem;font-weight:800}
-.pe-badge svg{width:15px;height:15px}
-.pe-status{font-size:.72rem;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--faint)}
-.pe-status.live{color:var(--green)}
-.pe-status.live::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;
-  background:var(--green);margin-right:6px;animation:ml-pulse 1.4s ease-in-out infinite}
-.pe-thumb{display:grid;place-items:center;height:132px;margin:14px 0 12px;border-radius:14px;color:#fff;
-  background:linear-gradient(135deg,#2563eb,#7c3aed);transition:background .35s}
-.pe-thumb svg{width:44px;height:44px;opacity:.95}
-.pe-card-title{display:block;font-size:1rem;line-height:1.4;color:#0b1020}
-.pe-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 12px}
-.pe-metrics div{background:var(--bg);border:1px solid var(--border2);border-radius:11px;padding:10px;text-align:center}
-.pe-metrics b{display:block;font-size:1.18rem;font-variant-numeric:tabular-nums}
-.pe-metrics small{color:var(--faint);font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.3px}
-.pe-bar{height:6px;border-radius:999px;background:#e9eef8;overflow:hidden}
-.pe-bar i{display:block;height:100%;width:0;border-radius:999px;
-  background:linear-gradient(90deg,#2563eb,#7c3aed);transition:width .25s linear}
-.pe-faces{display:flex;align-items:center;gap:0;margin-top:14px}
-.pe-faces span{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:.64rem;
-  font-weight:800;color:#fff;border:2px solid #fff;margin-right:-9px;opacity:0;transform:scale(.6);
-  transition:opacity .3s,transform .3s;background:linear-gradient(140deg,#2563eb,#7c3aed)}
-.pe-faces span:nth-child(2){background:linear-gradient(140deg,#7c3aed,#db2777)}
-.pe-faces span:nth-child(3){background:linear-gradient(140deg,#0ca678,#2563eb)}
-.pe-faces span:nth-child(4){background:linear-gradient(140deg,#f59e0b,#db2777)}
-.pe-faces span:nth-child(5){background:linear-gradient(140deg,#2563eb,#0ca678)}
-.pe-faces span:nth-child(6){background:linear-gradient(140deg,#db2777,#7c3aed)}
-.pe-faces span.in{opacity:1;transform:scale(1)}
-.pe-faces em{font-style:normal;margin-left:19px;color:var(--mute);font-size:.8rem;font-weight:700}
-@media(max-width:860px){.pe-demo{grid-template-columns:1fr;max-width:520px}}
-
-.pe-close{margin-top:38px}
-.pe-btn{font-size:1.06rem;padding:16px 34px;border-radius:14px;border:0;
-  background:linear-gradient(96deg,#2563eb,#7c3aed);box-shadow:0 16px 36px rgba(79,70,229,.42)}
-.pe-btn:hover{background:linear-gradient(96deg,#1d4ed8,#6d28d9)}
-.pe-note{max-width:520px;margin:14px auto 0;color:var(--mute);font-size:.86rem;line-height:1.6}
-.pe-see{display:inline-block;margin-top:14px;color:var(--accent);font-weight:800;font-size:.94rem;
-  border-bottom:2px solid rgba(37,99,235,.28);padding-bottom:2px}
-.pe-see:hover{border-bottom-color:var(--accent)}
-
 @media(max-width:560px){
   .pe{padding:52px 0 56px;margin:36px 0}
   .pe-lead{font-size:.98rem}
@@ -1656,3 +1543,84 @@ a.tf-card:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.
   .pk-faq-grid{grid-template-columns:1fr}
 }
 @media(prefers-reduced-motion:reduce){.pk-q summary i::after{transition:none}}
+
+/* ===== promotion engine — steps, chip rows, example card ===== */
+.pe-head{max-width:640px;margin:0 auto 42px;text-align:center}
+.pe-title{font-size:clamp(2rem,4.6vw,3.1rem);line-height:1.06;letter-spacing:-1.3px;font-weight:800;margin:0 0 16px}
+.pe-title span{color:var(--accent)}
+.pe-lead{color:var(--mute);font-size:1.04rem;line-height:1.6;margin:0}
+
+/* The three steps answer "what do I have to do?" — the one question that
+   decides whether somebody signs up. A counter rather than typed numbers, so
+   adding or removing a step cannot leave them out of order. */
+.pe-steps{list-style:none;counter-reset:pe;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin:0 0 44px;padding:0}
+.pe-steps li{counter-increment:pe;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px 22px;text-align:left}
+.pe-step-n{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;
+  background:var(--accent);color:#fff;font-weight:800;font-size:1rem;margin-bottom:14px}
+.pe-step-n::before{content:counter(pe)}
+.pe-steps h3{font-size:1.08rem;font-weight:700;margin:0 0 7px}
+.pe-steps p{color:var(--mute);font-size:.93rem;line-height:1.55;margin:0}
+
+/* Seventeen bulleted rows in two columns read as a specification sheet. As
+   chips they are scanned in a second, which is all anybody does with a
+   compatibility list. */
+.pe-rows{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:0 0 46px;text-align:left}
+.pe-row{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px}
+.pe-row h4{font-size:.78rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--faint);margin:0 0 14px}
+.pe-row ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.pe-row li{display:inline-flex;align-items:center;gap:7px;background:var(--bg);border:1px solid var(--border2);
+  border-radius:999px;padding:7px 13px;font-size:.86rem;font-weight:600}
+.pe-row svg{width:15px;height:15px;flex:none;fill:none;stroke:var(--accent);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+.pe-demo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.9fr);gap:28px;align-items:center;margin:0 0 42px;text-align:left}
+.pe-kicker{display:inline-block;color:var(--accent);font-weight:800;font-size:.76rem;letter-spacing:1.1px;text-transform:uppercase;margin-bottom:10px}
+.pe-try h3{font-size:clamp(1.4rem,3vw,1.9rem);font-weight:800;letter-spacing:-.6px;margin:0 0 10px}
+.pe-try>p{color:var(--mute);margin:0 0 18px;line-height:1.55}
+.pe-picks{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.pe-picks button{background:var(--card);border:1.5px solid var(--border);border-radius:999px;padding:8px 15px;
+  font:inherit;font-size:.86rem;font-weight:700;color:var(--mute);cursor:pointer}
+.pe-picks button:hover{border-color:#bcd3fb;color:var(--accent)}
+.pe-picks button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.pe-picks button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* Not an <input>: nothing is typed here and nothing is submitted. A real text
+   box invites somebody to paste their own link and wait for something to
+   happen, which is a promise this preview cannot keep. */
+.pe-field{display:flex;align-items:center;gap:9px;background:var(--card);border:1.5px solid var(--border);
+  border-radius:11px;padding:11px 13px;margin-bottom:16px;color:var(--mute);font-size:.88rem;overflow:hidden}
+.pe-field svg{width:16px;height:16px;flex:none;fill:none;stroke:var(--faint);stroke-width:1.9;stroke-linecap:round}
+.pe-field span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pe-boost{background:var(--accent);color:#fff;font-weight:800;padding:13px 24px;border-radius:999px;font-size:.98rem}
+.pe-boost:hover{background:#1d4fd7}
+.pe-demo-note{display:block;color:var(--faint);font-size:.8rem;margin-top:10px}
+
+.pe-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;
+  box-shadow:0 22px 50px -24px rgba(16,24,40,.3)}
+.pe-card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.pe-badge{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:.85rem}
+.pe-badge svg{width:17px;height:17px;fill:none;stroke:var(--accent);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.pe-status{background:var(--green-soft);color:var(--green);font-weight:800;font-size:.7rem;letter-spacing:.3px;
+  text-transform:uppercase;padding:5px 10px;border-radius:999px}
+.pe-thumb{height:116px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;
+  background:linear-gradient(135deg,#2563eb,#7c3aed)}
+.pe-thumb svg{width:38px;height:38px;fill:none;stroke:#fff;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.pe-card-title{display:block;font-size:1.02rem;line-height:1.3;margin-bottom:8px}
+.pe-card-pitch{color:var(--mute);font-size:.9rem;line-height:1.55;margin:0 0 14px}
+.pe-tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
+.pe-tag{background:var(--accent-soft);color:var(--accent);font-weight:700;font-size:.78rem;padding:5px 11px;border-radius:999px}
+.pe-tag-city{background:var(--bg);color:var(--mute);border:1px solid var(--border2)}
+.pe-card-foot{margin:0;padding-top:13px;border-top:1px solid var(--border2);color:var(--faint);font-size:.82rem}
+
+.pe-close{text-align:center}
+.pe-btn{padding:15px 30px;border-radius:999px;font-size:1.02rem;font-weight:800}
+.pe-see{display:inline-block;margin-left:14px;color:var(--accent);font-weight:700}
+.pe-note{color:var(--mute);font-size:.9rem;margin:16px auto 0;max-width:520px;line-height:1.55}
+
+@media(max-width:900px){
+  .pe-steps{grid-template-columns:1fr;gap:14px}
+  .pe-rows{grid-template-columns:1fr}
+  .pe-demo{grid-template-columns:1fr;gap:24px}
+}
+@media(max-width:560px){
+  .pe-see{display:block;margin:14px 0 0}
+  .pe-btn{width:100%;justify-content:center}
+}
