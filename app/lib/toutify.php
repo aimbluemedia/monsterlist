@@ -6,11 +6,14 @@
 // same panel listing all of them, with the one you are standing on marked.
 //
 // ===========================================================================
-// PUT THE REAL ADDRESSES IN HERE. Every 'url' below is deliberately empty,
-// because inventing a domain for a sister product is worse than linking
-// nowhere: a wrong link looks right until somebody clicks it. A product with
-// no url still gets its card — it just is not a link yet. Fill them in and
-// the cards start working; nothing else needs changing.
+// ADDRESSES. A product with no url still gets its card — it just is not a
+// link yet, because a wrong link looks right until somebody clicks it.
+//
+// ContentVendor, PromoMonster and LeadCrazy were filled in on the owner's
+// instruction. They have NOT been reached from here: contentvendor.com did
+// not resolve from this container, which proves nothing either way about the
+// live site, but does mean nobody has clicked these. Worth one click each
+// after a deploy. SearchMonster and Official Directories stay empty.
 // ===========================================================================
 //
 // 'key' is matched against TOUTIFY_HERE to decide which card says "you are
@@ -31,7 +34,7 @@ function toutify_products(): array
          'blurb' => 'Turn visitors into quote requests with the Million Dollar Lead Form.',
          'short' => 'Lead conversion',
          'icon' => 'form',
-         'url'  => ''],
+         'url'  => 'https://leadcrazy.com'],
 
         ['key'  => 'searchmonster',
          'name' => 'SearchMonster',
@@ -52,14 +55,14 @@ function toutify_products(): array
          'blurb' => 'Ask every customer for a review, reply to what comes back, show it off.',
          'short' => 'Reviews & reputation',
          'icon' => 'star',
-         'url'  => ''],
+         'url'  => 'https://promomonster.com'],
 
         ['key'  => 'contentvendor',
          'name' => 'ContentVendor',
          'blurb' => 'Posts and pages written for you, on a schedule.',
          'short' => 'AI posts & content',
          'icon' => 'megaphone',
-         'url'  => ''],
+         'url'  => 'https://contentvendor.com'],
 
         ['key'  => 'directories',
          'name' => 'Official Directories',

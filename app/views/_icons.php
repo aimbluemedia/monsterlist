@@ -17,6 +17,7 @@ define('ML_ICONS', 1);
   <symbol id="ml-yt" viewBox="0 0 24 24"><rect x="2.5" y="5.5" width="19" height="13" rx="4.2"/><path d="m10.4 9.3 5 2.7-5 2.7z"/></symbol>
   <symbol id="ml-rd" viewBox="0 0 24 24"><circle cx="12" cy="13.6" r="7.2"/><circle cx="9.4" cy="13" r="1.05"/><circle cx="14.6" cy="13" r="1.05"/><path d="M9.2 16.4c1.8 1.3 3.8 1.3 5.6 0"/><path d="M16.3 5.6 14.4 12"/><circle cx="16.8" cy="5.1" r="1.5"/></symbol>
   <symbol id="ml-pt" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.4"/><path d="M10.2 20.4 12.6 11"/><path d="M9.4 13.4c-.9-2.7.5-5.3 3.1-5.6 2.3-.3 3.9 1.2 3.7 3.4-.2 2.3-1.8 3.7-3.4 3.3-.9-.2-1.3-1-1.1-1.9"/></symbol>
+  <symbol id="ml-find" viewBox="0 0 24 24"><circle cx="10.6" cy="10.6" r="6.8"/><path d="m15.6 15.6 4.8 4.8"/></symbol>
   <symbol id="ml-sr" viewBox="0 0 24 24"><path d="M20.5 12a8.5 8.5 0 1 1-2.5-6"/><path d="M20.5 12h-7.7"/></symbol>
   <symbol id="ml-sp" viewBox="0 0 24 24"><path d="m12 2.8 2.3 6.6 6.6 2.3-6.6 2.3-2.3 6.6-2.3-6.6L3.1 11.7l6.6-2.3z"/></symbol>
   <symbol id="ml-pp" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.6"/><path d="m16 16 4.6 4.6"/><path d="M11 7.6v6.8M7.6 11h6.8"/></symbol>

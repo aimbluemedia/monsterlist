@@ -1701,3 +1701,43 @@ a.tf-card:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.
   .pe-card.pe-done{transform:none}
   .pe-card.pe-done .pe-dest li{transition-delay:0s}
 }
+
+/* ===== how it works — the case, the engines, the free tools ===== */
+.hiw-crumbs{padding-top:18px}
+.hiw-engines{display:flex;flex-wrap:wrap;justify-content:center;gap:9px;margin:0 0 40px}
+.hiw-engine{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);
+  border-radius:999px;padding:9px 16px;font-weight:700;font-size:.9rem;box-shadow:var(--shadow)}
+.hiw-engine svg{width:16px;height:16px;flex:none;fill:none;stroke:var(--accent);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+/* The three reasons reuse the step cards' shape but are not a sequence, so
+   their markers carry no number — the counter would imply an order that the
+   argument does not have. */
+.hiw-why{counter-reset:none}
+.hiw-why li{counter-increment:none}
+.hiw-why .pe-step-n::before{content:""}
+.hiw-why .pe-step-n{position:relative}
+.hiw-why .pe-step-n::after{content:"";position:absolute;inset:0;border-radius:inherit;background:no-repeat center;
+  background-size:16px 16px;
+  background-image:url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.4l2.3 2.3 4.7-5' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+.hiw-why h2{font-size:1.08rem;font-weight:700;margin:0 0 7px}
+.hiw-why p{color:var(--mute);font-size:.93rem;line-height:1.55;margin:0}
+
+.hiw-tools{margin:52px 0 44px;text-align:center}
+.hiw-tools-h{font-size:clamp(1.5rem,3.4vw,2.1rem);font-weight:800;letter-spacing:-.8px;margin:0 0 8px}
+.hiw-tools-sub{color:var(--mute);margin:0 0 26px}
+.hiw-tools-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;text-align:left}
+.hiw-tool{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--border);
+  border-radius:16px;padding:24px 22px;color:inherit;transition:border-color .2s,box-shadow .2s,transform .2s}
+a.hiw-tool:hover{border-color:#bcd3fb;box-shadow:0 18px 40px -22px rgba(37,99,235,.5);transform:translateY(-2px)}
+.hiw-tool-ico{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;margin-bottom:14px;
+  background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff}
+.hiw-tool-ico svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.hiw-tool h3{font-size:1.1rem;font-weight:700;margin:0 0 7px}
+.hiw-tool p{color:var(--mute);font-size:.93rem;line-height:1.55;margin:0 0 14px;flex:1}
+.hiw-tool-go{color:var(--accent);font-weight:700;font-size:.9rem}
+
+@media(max-width:900px){
+  .hiw-tools-grid{grid-template-columns:1fr}
+  .hiw-tools{margin:40px 0 34px}
+}
+@media(prefers-reduced-motion:reduce){a.hiw-tool:hover{transform:none}}
