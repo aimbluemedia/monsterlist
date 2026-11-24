@@ -6,7 +6,7 @@
 //   /browse                        interactive explorer
 //   /search?q=                     full-text search
 //   /category/{cat}                category landing page
-//   /pricing /about /contact /terms /privacy /add-listing
+//   /pricing /about /contact /terms /privacy /add-listing /how-it-works
 //   /signup /login /logout /forgot /reset
 //   /promotions[/go/{id}]          live member promotion feed
 //   /members[...]                  member area (/account 301s here)
@@ -84,7 +84,7 @@ switch (true) {
         require $controllers . '/claim.php';
         break;
 
-    case in_array($path, ['/pricing', '/about', '/contact', '/terms', '/privacy', '/add-listing'], true):
+    case in_array($path, ['/pricing', '/about', '/contact', '/terms', '/privacy', '/add-listing', '/how-it-works'], true):
         require $controllers . '/pages.php';
         break;
 

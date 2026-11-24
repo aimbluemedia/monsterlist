@@ -52,6 +52,7 @@ gtag('config', <?= json_encode($gaId, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JS
             // /browse — it is in the sitemap, the canonical tag, llms.txt and
             // whatever already links to it. ?>
       <a href="/browse">Categories</a>
+      <a href="/how-it-works">How it works</a>
       <a href="/search">Search</a>
       <a href="/pricing">Pricing</a>
     </nav>

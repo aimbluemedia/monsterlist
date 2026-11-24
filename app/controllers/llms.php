@@ -23,6 +23,7 @@ echo "- Category in a city: " . site_url('/category/{category}/{country-code}/{r
 echo "## Key pages\n\n";
 echo "- [Browse the directory](" . site_url('/browse') . "): all countries and categories\n";
 echo "- [Search](" . site_url('/search') . "): full-text business search\n";
+echo "- [How it works](" . site_url('/how-it-works') . "): the AI Promotion Engine — what it does to a link\n";
 echo "- [Pricing](" . site_url('/pricing') . "): free listings; Pro and Featured monthly memberships\n";
 echo "- [Sitemap](" . site_url('/sitemap.xml') . "): full URL inventory, updated live\n\n";
 

@@ -1,5 +1,5 @@
 <?php
-// Static-ish pages: /pricing /about /contact /terms /privacy /add-listing
+// Static-ish pages: /pricing /about /contact /terms /privacy /add-listing /how-it-works
 
 $site = setting('site_name');
 
@@ -59,6 +59,21 @@ switch ($path) {
         // Marketing page that routes to signup (or straight to the form if logged in)
         if (is_logged_in()) redirect('/members/listings/new');
         redirect('/signup');
+
+    case '/how-it-works':
+        $meta = [
+            'title'       => "How it works — the AI Promotion Engine | $site",
+            'description' => 'Paste a link to anything you have published and ' . $site . ' writes the pitch, '
+                             . 'files it under the right category and city, and puts it in front of the member '
+                             . 'network, Google and the AI assistants your customers ask for recommendations.',
+            'canonical'   => site_url('/how-it-works'),
+            'jsonld'      => [jsonld_breadcrumbs([
+                ['name' => 'Home', 'path' => '/'],
+                ['name' => 'How it works', 'path' => '/how-it-works'],
+            ])],
+        ];
+        view('pages/how-it-works', compact('meta'));
+        break;
 
     case '/about':
         $meta = [

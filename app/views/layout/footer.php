@@ -12,6 +12,7 @@
     <div>
       <h4><?= e(setting('site_name')) ?></h4>
       <a href="/browse">Browse the directory</a>
+      <a href="/how-it-works">How it works</a>
       <a href="/search">Search businesses</a>
       <a href="/pricing">Pricing &amp; plans</a>
       <a href="/about">About</a>

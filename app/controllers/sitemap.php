@@ -39,6 +39,7 @@ echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
 if ($path === '/sitemap-static.xml') {
     echo sm_url(site_url('/'), 'daily', '1.0');
     echo sm_url(site_url('/browse'), 'weekly', '0.8');
+    echo sm_url(site_url('/how-it-works'), 'monthly', '0.7');
     echo sm_url(site_url('/pricing'), 'monthly', '0.7');
     echo sm_url(site_url('/about'), 'monthly', '0.4');
     foreach (rows('SELECT id FROM categories') as $c) {
