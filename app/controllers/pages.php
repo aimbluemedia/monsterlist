@@ -69,7 +69,7 @@ switch ($path) {
             'canonical'   => site_url('/how-it-works'),
             'jsonld'      => [jsonld_breadcrumbs([
                 ['name' => 'Home', 'path' => '/'],
-                ['name' => 'How it works', 'path' => '/how-it-works'],
+                ['name' => 'How it Works', 'path' => '/how-it-works'],
             ])],
         ];
         view('pages/how-it-works', compact('meta'));

@@ -4,7 +4,7 @@
       // live under "promotion engine" in assets/css/style.css and the staged
       // run is in assets/js/app.js, both already loaded site-wide. ?>
 <div class="wrap hiw-crumbs">
-  <nav class="crumbs"><a href="/">Home</a><span>&rsaquo;</span>How it works</nav>
+  <nav class="crumbs"><a href="/">Home</a><span>&rsaquo;</span>How it Works</nav>
 </div>
 
 <section class="pe" id="engine">
