@@ -47,7 +47,11 @@ gtag('config', <?= json_encode($gaId, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JS
   <div class="wrap nav-row">
     <?php require APP_ROOT . '/views/layout/_logo.php'; ?>
     <nav class="main-nav">
-      <a href="/browse">Browse</a>
+      <?php // "Categories" rather than "Browse": it names what is on the other
+            // end instead of describing the act of clicking. The URL stays
+            // /browse — it is in the sitemap, the canonical tag, llms.txt and
+            // whatever already links to it. ?>
+      <a href="/browse">Categories</a>
       <a href="/search">Search</a>
       <a href="/pricing">Pricing</a>
     </nav>
