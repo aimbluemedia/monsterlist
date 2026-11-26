@@ -1991,3 +1991,11 @@ a.hiw-tool:hover{border-color:#bcd3fb;box-shadow:0 18px 40px -22px rgba(37,99,23
   .sr-bar{display:none}
 }
 @media(prefers-reduced-motion:reduce){.sr:hover{transform:none}}
+
+/* Unranked board — "Just joined" has no rank column, so the grid drops it
+   rather than leaving an empty 36px gutter down the left of every row. */
+.sr-board-plain .sr{grid-template-columns:42px minmax(0,1fr) auto 190px}
+.sr-board-plain li:nth-child(1) .sr{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12)}
+.sr-flag-new{background:rgba(96,165,250,.22);color:#9ec5ff}
+@media(max-width:860px){.sr-board-plain .sr{grid-template-columns:38px minmax(0,1fr) 112px}}
+@media(max-width:480px){.sr-board-plain .sr{grid-template-columns:34px minmax(0,1fr) 54px}}

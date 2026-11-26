@@ -113,6 +113,25 @@
       // that used to sit here — the mockup, the benefit tiles, the promotion
       // pitch — is aimed at the other visitor, the one thinking of joining.
       // They still get all of it, just after the proof that the thing works. ?>
+<?php if ($topScored): ?>
+<section class="sky sr-section">
+  <div class="wrap">
+    <div class="sky-head">
+      <h2>Standout profiles</h2>
+      <span>The most complete listings in the directory, by MonsterScore</span>
+    </div>
+    <ol class="sr-board">
+      <?php foreach ($topScored as $srRank => $b): ?>
+        <li><?php $srRank++; require __DIR__ . '/_score-row.php'; ?></li>
+      <?php endforeach; ?>
+    </ol>
+    <p class="sr-foot">MonsterScore rates how complete a listing is — contact details, photos,
+      a real description, reviews and verification. Every listing has one, and yours goes up
+      the moment you fill something in.</p>
+  </div>
+</section>
+<?php endif; ?>
+
 <?php if ($featured): ?>
 <section class="sky">
   <div class="wrap">
@@ -155,37 +174,22 @@
       // section would be empty on the directory that most needs filling. This
       // is NOT the Featured section wearing a different hat — these listings
       // are not featured and the heading does not say they are. ?>
-<?php if ($topScored): ?>
-<section class="sky sr-section">
-  <div class="wrap">
-    <div class="sky-head">
-      <h2>Standout profiles</h2>
-      <span>The most complete listings in the directory, by MonsterScore</span>
-    </div>
-    <ol class="sr-board">
-      <?php foreach ($topScored as $srRank => $b): ?>
-        <li><?php $srRank++; require __DIR__ . '/_score-row.php'; ?></li>
-      <?php endforeach; ?>
-    </ol>
-    <p class="sr-foot">MonsterScore rates how complete a listing is — contact details, photos,
-      a real description, reviews and verification. Every listing has one, and yours goes up
-      the moment you fill something in.</p>
-  </div>
-</section>
-<?php endif; ?>
-
 <?php if ($newest): ?>
-<section class="sky sky-alt">
+<?php // Same rows as Standout profiles, which is what was asked for, but
+      // without the rank numbers: this list is ordered by join date and a
+      // 1-to-6 down its edge would read as a ranking it does not have. The
+      // New flag takes that column's place. ?>
+<section class="sky sr-section">
   <div class="wrap">
     <div class="sky-head">
       <h2>Just joined</h2>
       <span>Welcome our newest members</span>
     </div>
-    <div class="mc-grid">
+    <ol class="sr-board sr-board-plain">
       <?php foreach ($newest as $b): ?>
-        <?php $mcBadge = 'New'; require __DIR__ . '/_member-card.php'; ?>
+        <li><?php $srRank = null; $srFlag = 'New'; require __DIR__ . '/_score-row.php'; ?></li>
       <?php endforeach; ?>
-    </div>
+    </ol>
   </div>
 </section>
 <?php endif; ?>
