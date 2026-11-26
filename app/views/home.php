@@ -114,26 +114,24 @@
       // pitch — is aimed at the other visitor, the one thinking of joining.
       // They still get all of it, just after the proof that the thing works. ?>
 <?php if ($topScored): ?>
-<section class="sky sr-section">
+<section class="sky">
   <div class="wrap">
     <div class="sky-head">
       <h2>Standout profiles</h2>
       <span>The most complete listings in the directory, by MonsterScore</span>
     </div>
-    <ol class="sr-board">
-      <?php foreach ($topScored as $srRank => $b): ?>
-        <li><?php $srRank++; require __DIR__ . '/_score-row.php'; ?></li>
+    <div class="mc-grid">
+      <?php foreach ($topScored as $b): ?>
+        <?php $mcBadge = is_featured_listing($b) ? 'Featured' : null;
+              require __DIR__ . '/_member-card.php'; ?>
       <?php endforeach; ?>
-    </ol>
-    <p class="sr-foot">MonsterScore rates how complete a listing is — contact details, photos,
-      a real description, reviews and verification. Every listing has one, and yours goes up
-      the moment you fill something in.</p>
+    </div>
   </div>
 </section>
 <?php endif; ?>
 
 <?php if ($featured): ?>
-<section class="sky">
+<section class="sky sky-alt">
   <div class="wrap">
     <div class="sky-head">
       <h2>Featured members</h2>
@@ -175,21 +173,18 @@
       // is NOT the Featured section wearing a different hat — these listings
       // are not featured and the heading does not say they are. ?>
 <?php if ($newest): ?>
-<?php // Same rows as Standout profiles, which is what was asked for, but
-      // without the rank numbers: this list is ordered by join date and a
-      // 1-to-6 down its edge would read as a ranking it does not have. The
-      // New flag takes that column's place. ?>
-<section class="sky sr-section">
+<?php // The same card grid as every other listing section. ?>
+<section class="sky sky-alt">
   <div class="wrap">
     <div class="sky-head">
       <h2>Just joined</h2>
       <span>Welcome our newest members</span>
     </div>
-    <ol class="sr-board sr-board-plain">
+    <div class="mc-grid">
       <?php foreach ($newest as $b): ?>
-        <li><?php $srRank = null; $srFlag = 'New'; require __DIR__ . '/_score-row.php'; ?></li>
+        <?php $mcBadge = 'New'; require __DIR__ . '/_member-card.php'; ?>
       <?php endforeach; ?>
-    </ol>
+    </div>
   </div>
 </section>
 <?php endif; ?>
