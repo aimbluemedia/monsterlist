@@ -13,7 +13,6 @@
 <div class="stat-row">
   <div class="card stat"><div class="n"><?= $stats['views7'] ?></div><div class="l">Listing views (7d)</div></div>
   <div class="card stat"><div class="n"><?= $stats['reviews'] ?></div><div class="l">New reviews (7d)</div></div>
-  <div class="card stat"><div class="n"><?= $stats['claims'] ?></div><div class="l">Pending claims</div></div>
   <div class="card stat"><div class="n"><?= $stats['promos'] ?></div><div class="l">Pending promotions</div></div>
 </div>
 <div class="card card-pad">

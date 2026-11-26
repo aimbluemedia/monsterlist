@@ -119,9 +119,9 @@ $hours    = $enhanced ? hours_parse($b['hours'] ?? null) : [];
       // one is a standing invitation to the owner to fill it in rather than a
       // gap they never see.
       $revLinks = array_filter(wizard_links($b['review_links'] ?? null));
-      $addPrompt = !$b['owner_id']
-          ? ' <a href="/claim/' . (int)$b['id'] . '" style="color:var(--accent);font-weight:700">Claim this listing</a> to add them.'
-          : '';
+        // The claim feature is gone, so the empty state states the fact and
+        // stops there rather than offering a route that no longer exists.
+        $addPrompt = '';
       ?>
       <div class="card card-pad" style="margin-bottom:14px">
         <h3>Social Media</h3>
@@ -266,13 +266,6 @@ $hours    = $enhanced ? hours_parse($b['hours'] ?? null) : [];
         </div>
       <?php endif; ?>
 
-      <?php if (!$b['owner_id']): ?>
-        <div class="card card-pad" style="background:var(--accent-soft);border-color:var(--accent)">
-          <h3>Is this your business?</h3>
-          <p class="mute">Claim this listing to update details, add photos and reply to reviews.</p>
-          <a class="btn btn-primary btn-block" href="/claim/<?= (int)$b['id'] ?>">Claim this listing</a>
-        </div>
-      <?php endif; ?>
     </aside>
   </div>
 </div>

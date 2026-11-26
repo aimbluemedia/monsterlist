@@ -50,23 +50,6 @@ function notify_plan_change(int $userId, string $plan): void
         "Manage your subscription anytime: " . site_url('/members/billing') . "\n\n— The $site team");
 }
 
-function notify_claim_decision(array $claim, array $biz, bool $approved): void
-{
-    $user = row('SELECT email, name FROM users WHERE id = ?', [$claim['user_id']]);
-    if (!$user) return;
-    $site = setting('site_name');
-    if ($approved) {
-        send_mail($user['email'], "Claim approved — \"{$biz['name']}\" is yours on $site",
-            "Hi {$user['name']},\n\nYour claim for \"{$biz['name']}\" was approved. You can now manage\n" .
-            "this listing from your dashboard:\n" . site_url('/members/listings') . "\n\n— The $site team");
-    } else {
-        send_mail($user['email'], "About your claim for \"{$biz['name']}\" on $site",
-            "Hi {$user['name']},\n\nWe couldn't verify your claim for \"{$biz['name']}\" and it was declined.\n" .
-            "If you believe this is a mistake, reply to this email with proof of ownership\n" .
-            "(a company email address, website access, or business documents).\n\n— The $site team");
-    }
-}
-
 /** Canonical storefront path for a business id (or null). */
 function business_url_by_id(int $bizId): ?string
 {

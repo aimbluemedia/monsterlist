@@ -1,5 +1,5 @@
 <?php
-// Staff area: /superadmin[/listings|/members|/claims|/reviews|/categories|/admins|/settings]
+// Staff area: /superadmin[/listings|/members|/reviews|/categories|/admins|/settings]
 // Roles: admin = moderation + members; superadmin = admins + site settings too.
 $site = setting('site_name');
 $sub  = $segments[1] ?? 'dashboard';
@@ -60,7 +60,6 @@ if ($sub === 'dashboard') {
         'live'     => (int)scalar('SELECT COUNT(*) FROM businesses WHERE status = "live"'),
         'members'  => (int)scalar('SELECT COUNT(*) FROM users WHERE role = "member"'),
         'paid'     => (int)scalar('SELECT COUNT(*) FROM users WHERE plan != "free" AND role = "member"'),
-        'claims'   => (int)scalar('SELECT COUNT(*) FROM claims WHERE status = "pending"'),
         'promos'   => (int)scalar('SELECT COUNT(*) FROM promotions WHERE status = "pending"'),
         'reviews'  => (int)scalar('SELECT COUNT(*) FROM reviews WHERE created_at > (NOW() - INTERVAL 7 DAY)'),
         'views7'   => (int)scalar('SELECT COALESCE(SUM(count),0) FROM listing_events WHERE event = "view" AND day > (CURDATE() - INTERVAL 7 DAY)'),
@@ -915,36 +914,6 @@ if ($sub === 'dashboard') {
                       ORDER BY u.created_at DESC LIMIT 30 OFFSET $offset", $mParams);
     $domains = member_domains_bulk(array_column($list, 'id'));
     view_raw('admin/members', compact('meta', 'u', 'list', 'qstr', 'page', 'domains', 'total'));
-
-} elseif ($sub === 'claims') {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        csrf_check();
-        $claim = row('SELECT * FROM claims WHERE id = ? AND status = "pending"', [(int)post('id')]);
-        if ($claim) {
-            $biz = row('SELECT * FROM businesses WHERE id = ?', [$claim['business_id']]);
-            if (post('action') === 'approve' && $biz && empty($biz['owner_id'])) {
-                $newOwner = row('SELECT * FROM users WHERE id = ?', [$claim['user_id']]);
-                q('UPDATE businesses SET owner_id = ?, tier = ? WHERE id = ?',
-                  [$claim['user_id'], $newOwner['plan'] ?? 'free', $biz['id']]);
-                q('UPDATE claims SET status = "approved" WHERE id = ?', [$claim['id']]);
-                q('UPDATE claims SET status = "rejected" WHERE business_id = ? AND status = "pending"', [$biz['id']]);
-                notify_claim_decision($claim, $biz, true);
-                flash_set('success', 'Claim approved — listing transferred.');
-            } elseif (post('action') === 'reject') {
-                q('UPDATE claims SET status = "rejected" WHERE id = ?', [$claim['id']]);
-                if ($biz) notify_claim_decision($claim, $biz, false);
-                flash_set('success', 'Claim rejected.');
-            }
-        }
-        redirect('/superadmin/claims');
-    }
-    $list = rows(
-        'SELECT cl.*, b.name AS business_name, u.name AS claimant_name, u.email AS claimant_email, u.plan AS claimant_plan
-         FROM claims cl
-         JOIN businesses b ON b.id = cl.business_id
-         JOIN users u ON u.id = cl.user_id
-         ORDER BY cl.status = "pending" DESC, cl.created_at DESC LIMIT 50');
-    view_raw('admin/claims', compact('meta', 'u', 'list'));
 
 } elseif ($sub === 'reviews') {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
