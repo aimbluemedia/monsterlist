@@ -1826,3 +1826,101 @@ a.hiw-tool:hover{border-color:#bcd3fb;box-shadow:0 18px 40px -22px rgba(37,99,23
 @media(max-width:560px){
   .hiw-value{grid-template-columns:1fr}
 }
+
+/* ===== how it works — band rhythm =====
+   The page alternates: photo, white, dark, tint, dark, white, gradient. The
+   old version was one tinted wash behind six identical card rows, which is
+   what made it read as flat however good the individual cards were. */
+.hiw-b{padding:64px 0}
+.hiw-b-white{background:var(--card);border-top:1px solid var(--border2);border-bottom:1px solid var(--border2)}
+.hiw-b:not(.hiw-b-white){background:linear-gradient(180deg,#f7f8fb,#eef2fb)}
+.hiw-b .hiw-block{margin:0}
+
+/* 1. the hook, over the same photograph the homepage uses */
+.hiw-hero{position:relative;overflow:hidden;color:#fff;padding:26px 0 64px;
+  background:#0b1324 url("/assets/img/hero.webp") center/cover no-repeat}
+.hiw-hero::before{content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(7,13,26,.86) 0%,rgba(7,13,26,.76) 45%,rgba(7,13,26,.92) 100%)}
+.hiw-hero>.wrap{position:relative;z-index:1}
+.crumbs-light,.crumbs-light a{color:rgba(255,255,255,.72)}
+.crumbs-light a:hover{color:#fff}
+.hiw-hero .pe-head{margin:30px auto 34px}
+.hiw-hero .pe-eyebrow{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);color:#fff;
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.hiw-hero .pe-title{color:#fff}
+.hiw-hero .pe-title span{color:#8fbcff}
+.hiw-hero .pe-lead{color:rgba(255,255,255,.88)}
+.hiw-hero .hiw-engines{margin-bottom:0}
+.hiw-hero .hiw-engine{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.28);color:#fff;
+  box-shadow:none;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.hiw-hero .hiw-engine svg{stroke:#9ec5ff}
+
+/* 2. the argument — no card chrome, so it does not read as another card row */
+.hiw-b-white .hiw-why{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:34px}
+.hiw-b-white .hiw-why li{background:none;border:0;padding:0}
+.hiw-b-white .hiw-why li::after{display:none}
+.hiw-b-white .hiw-why h2{font-size:1.18rem}
+
+/* 3. the proof band. Big numerals are the one thing on the page that can be
+   read from across a room, which is the whole job of this strip. */
+.hiw-stats{background:linear-gradient(110deg,#102a6b,#1d4ed8 48%,#5b2bd9);color:#fff;padding:46px 0}
+.hiw-stats ul{list-style:none;margin:0;padding:0;display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:26px;text-align:center}
+.hiw-stats li{display:flex;flex-direction:column;gap:4px}
+.hiw-stats b{font-size:clamp(1.9rem,4vw,2.9rem);font-weight:800;letter-spacing:-1.4px;line-height:1;
+  font-variant-numeric:tabular-nums}
+.hiw-stats span{color:rgba(255,255,255,.76);font-size:.84rem;font-weight:700;letter-spacing:.3px}
+
+/* 5. the engine on dark, so the demo reads as a product rather than a card */
+.hiw-ondark{position:relative;overflow:hidden;color:#fff;padding:66px 0 70px;margin:0;
+  background:linear-gradient(165deg,#0d1730,#15224a 55%,#241a54)}
+.hiw-ondark-glow{position:absolute;inset:-40% -10% auto;height:150%;pointer-events:none;
+  background:radial-gradient(42% 46% at 22% 28%,rgba(37,99,235,.42),transparent 70%),
+             radial-gradient(38% 42% at 78% 22%,rgba(124,58,237,.4),transparent 70%)}
+.hiw-ondark .pe-inner{position:relative;z-index:1}
+.hiw-ondark .hiw-block-head h2,.hiw-ondark .pe-try h3{color:#fff}
+.hiw-ondark .hiw-block-head p,.hiw-ondark .pe-try>p{color:rgba(255,255,255,.82)}
+.hiw-ondark .hiw-free{background:rgba(52,211,153,.2);color:#6ee7b7}
+.hiw-ondark .pe-kicker{color:#9ec5ff}
+.hiw-ondark .pe-picks button{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.26);color:rgba(255,255,255,.86)}
+.hiw-ondark .pe-picks button:hover{border-color:#9ec5ff;color:#fff}
+.hiw-ondark .pe-picks button.on{background:#2563eb;border-color:#2563eb;color:#fff}
+.hiw-ondark .pe-field{background:rgba(10,17,33,.5);border-color:rgba(255,255,255,.26)}
+.hiw-ondark .pe-field input{color:#fff}
+.hiw-ondark .pe-field svg{stroke:rgba(255,255,255,.7)}
+.hiw-ondark .pe-stages li{color:rgba(255,255,255,.6)}
+.hiw-ondark .pe-stages li i{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.3)}
+.hiw-ondark .pe-stages li.on{color:#9ec5ff}
+.hiw-ondark .pe-stages li.on i{border-color:#9ec5ff}
+.hiw-ondark .pe-stages li.on i::after{background:#9ec5ff}
+.hiw-ondark .pe-stages li.done{color:#fff}
+.hiw-ondark .pe-demo-note{color:rgba(255,255,255,.6)}
+/* the output card, in the same smoked glass as the homepage hero */
+.hiw-ondark .pe-card{background:rgba(10,17,33,.5);border-color:rgba(255,255,255,.24);
+  -webkit-backdrop-filter:blur(20px) saturate(150%);backdrop-filter:blur(20px) saturate(150%);
+  box-shadow:0 30px 70px -28px rgba(0,0,0,.7)}
+.hiw-ondark .pe-card.pe-done{border-color:rgba(110,231,183,.5);box-shadow:0 30px 70px -26px rgba(12,166,120,.45)}
+.hiw-ondark .pe-badge{color:#fff}
+.hiw-ondark .pe-badge svg{stroke:#9ec5ff}
+.hiw-ondark .pe-card-title{color:#fff}
+.hiw-ondark .pe-card-pitch{color:rgba(255,255,255,.84)}
+.hiw-ondark .pe-tag{background:rgba(147,185,255,.22);color:#cfe0ff}
+.hiw-ondark .pe-tag-city{background:rgba(255,255,255,.1);color:rgba(255,255,255,.82);border-color:rgba(255,255,255,.2)}
+.hiw-ondark .pe-card:not(.pe-working):not(.pe-done) .pe-status{background:rgba(255,255,255,.12);color:rgba(255,255,255,.75)}
+.hiw-ondark .pe-dest{border-top-color:rgba(255,255,255,.16)}
+.hiw-ondark .pe-dest-h{color:rgba(255,255,255,.66)}
+.hiw-ondark .pe-dest li{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.16)}
+.hiw-ondark .pe-dest svg{stroke:rgba(255,255,255,.55)}
+.hiw-ondark .pe-card.pe-done .pe-dest li{background:rgba(147,185,255,.2);border-color:rgba(147,185,255,.42)}
+.hiw-ondark .pe-card.pe-done .pe-dest svg{stroke:#cfe0ff}
+
+/* 7. the ask */
+.hiw-close{background:linear-gradient(180deg,#eef2fb,#fff);padding:60px 0 68px}
+.hiw-close .pe-close{margin:0}
+
+@media(max-width:900px){
+  .hiw-b{padding:46px 0}
+  .hiw-b-white .hiw-why{grid-template-columns:1fr;gap:26px}
+  .hiw-ondark{padding:48px 0 52px}
+  .hiw-hero{padding:20px 0 46px}
+}

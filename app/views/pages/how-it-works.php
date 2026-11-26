@@ -1,19 +1,31 @@
-<?php // How It Works — the AI Promotion Engine, moved off the homepage so it
-      // has room to be read rather than scrolled past. The markup is the
-      // homepage's, unchanged apart from the include path below; its styles
-      // live under "promotion engine" in assets/css/style.css and the staged
-      // run is in assets/js/app.js, both already loaded site-wide. ?>
-<div class="wrap hiw-crumbs">
-  <nav class="crumbs"><a href="/">Home</a><span>&rsaquo;</span>How it Works</nav>
-</div>
+<?php // How It Works.
+      //
+      // Built as a stack of full-bleed bands that alternate dark and light,
+      // rather than one tinted section with six near-identical card rows in
+      // it. The old version could not alternate: everything lived inside a
+      // single <section class="pe"> that owned the background, so every
+      // section arrived with the same weight and the eye had nowhere to land.
+      //
+      // The demo's markup is untouched — app.js binds to #pe-run, #pe-url,
+      // #pe-card and the ids inside it. Only its surroundings changed. ?>
+<?php require APP_ROOT . '/views/_icons.php'; ?>
 
-<section class="pe" id="engine">
-  <?php // APP_ROOT, not __DIR__: this view lives in views/pages/, where the
-        // homepage's relative path resolved to a file that does not exist. ?>
-  <?php require APP_ROOT . '/views/_icons.php'; ?>
-  <div class="pe-glow" aria-hidden="true"></div>
-  <div class="wrap pe-inner">
+<?php // Live figures. A number that is really zero is left out rather than
+      // printed as "0 businesses listed", which would be the single most
+      // discouraging thing on a page asking somebody to join.
+$hiwStats = [];
+$hiwLive  = (int)scalar('SELECT COUNT(*) FROM businesses WHERE status = "live"');
+if ($hiwLive > 0) $hiwStats[] = [number_format($hiwLive), 'businesses listed'];
+$hiwStats[] = [number_format((int)scalar('SELECT COUNT(*) FROM cities')),     'cities covered'];
+$hiwStats[] = [number_format((int)scalar('SELECT COUNT(*) FROM countries')),  'countries'];
+$hiwStats[] = [number_format((int)scalar('SELECT COUNT(*) FROM categories')), 'categories and trades'];
+$hiwStats[] = ['$0', 'to be in all of it'];
+?>
 
+<?php // ---- 1. the hook, on the photo -------------------------------- ?>
+<section class="hiw-hero">
+  <div class="wrap">
+    <nav class="crumbs crumbs-light"><a href="/">Home</a><span>&rsaquo;</span>How it Works</nav>
     <div class="pe-head">
       <span class="pe-eyebrow">Why a listing matters</span>
       <h1 class="pe-title">People stopped searching.<br><span>They started asking.</span></h1>
@@ -21,10 +33,6 @@
         Perplexity, Gemini or Claude who to hire — and get one answer, or three. A listing is how those
         answers find you, and how Google and Bing keep finding you too. It is free to join.</p>
     </div>
-
-    <?php // The named engines, as the one row that carries the argument: these
-          // are the places an answer gets assembled, and a business that is not
-          // in the source material is not in the answer. ?>
     <div class="hiw-engines">
       <?php foreach ([
           ['sr', 'Google'], ['find', 'Bing'], ['sp', 'ChatGPT'],
@@ -33,9 +41,12 @@
         <span class="hiw-engine"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-<?= $hiwI ?>"/></svg><?= e($hiwL) ?></span>
       <?php endforeach; ?>
     </div>
+  </div>
+</section>
 
-    <?php // Three reasons, each one a thing this directory actually does —
-          // the markup, the moderation and the price are all checkable. ?>
+<?php // ---- 2. the argument, on white ------------------------------- ?>
+<section class="hiw-b hiw-b-white">
+  <div class="wrap">
     <ol class="pe-steps hiw-why">
       <li>
         <span class="pe-step-n" aria-hidden="true"></span>
@@ -57,8 +68,23 @@
           nothing — the free plan stays free, with no card and no trial clock.</p>
       </li>
     </ol>
+  </div>
+</section>
 
+<?php // ---- 3. the proof, dark and numeric --------------------------- ?>
+<section class="hiw-stats">
+  <div class="wrap">
+    <ul>
+      <?php foreach ($hiwStats as [$hiwN, $hiwL]): ?>
+        <li><b><?= e($hiwN) ?></b><span><?= e($hiwL) ?></span></li>
+      <?php endforeach; ?>
+    </ul>
+  </div>
+</section>
 
+<?php // ---- 4. what the listing is worth ----------------------------- ?>
+<section class="hiw-b">
+  <div class="wrap">
     <?php // What the listing actually gets you, as opposed to why listings
           // matter — that argument is above. Token figures come from
           // token_rules() so this cannot promise an allowance the ledger does
@@ -72,7 +98,7 @@
         <p>Most directories give you a row in a table. Yours is a page of its own, written to be read
           by people and quoted by machines — and it stays free.</p>
       </div>
-
+    
       <div class="hiw-value">
         <div class="hiw-v">
           <span class="hiw-v-ico hiw-v-blue"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-blog"/></svg></span>
@@ -101,14 +127,19 @@
         </div>
       </div>
     </section>
+  </div>
+</section>
 
+<?php // ---- 5. the engine, dark so the demo reads as a product ------- ?>
+<section class="pe hiw-ondark" id="engine">
+  <div class="hiw-ondark-glow" aria-hidden="true"></div>
+  <div class="wrap pe-inner">
     <section class="hiw-block-head hiw-engine-head" aria-hidden="false">
       <span class="hiw-free">Included free</span>
       <h2>Then the engine goes and promotes it</h2>
       <p>A listing that sits there is half the job. Paste a link to anything you publish and the
         engine writes the pitch, files it, and pushes it out — the same four steps every time.</p>
     </section>
-
     <div class="pe-demo">
       <div class="pe-try">
         <span class="pe-kicker">See it work</span>
@@ -134,7 +165,7 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-spark"/></svg>
           <span id="pe-run-text">Write my promotion</span>
         </button>
-
+    
         <?php // The stages, listed rather than hidden inside an animation, so
               // the mechanism is readable even before anybody presses the
               // button and still readable afterwards. ?>
@@ -147,13 +178,13 @@
         <small class="pe-demo-note">Paste one of your own links and run it again. Nothing is sent
           anywhere — the real pitch is written from the page itself once you join.</small>
       </div>
-
+    
       <div class="pe-card" id="pe-card">
         <div class="pe-card-head">
           <span class="pe-badge"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ml-yt" id="pe-badge-icon"/></svg><span id="pe-badge-text">YouTube</span></span>
           <span class="pe-status" id="pe-status">Ready</span>
         </div>
-
+    
         <div class="pe-card-body" aria-live="polite">
           <b class="pe-card-title" id="pe-title">How we doubled our bookings in 60 days</b>
           <p class="pe-card-pitch" id="pe-pitch">A short walkthrough of the two changes that filled our
@@ -163,7 +194,7 @@
             <span class="pe-tag pe-tag-city" id="pe-city">Phoenix, AZ</span>
           </div>
         </div>
-
+    
         <?php // Where it lands. These light up as the run finishes — the same
               // seven destinations the chip row above promises, so the card
               // cannot claim a reach the section has not already named. ?>
@@ -182,22 +213,12 @@
         </div>
       </div>
     </div>
+  </div>
+</section>
 
-
-    <?php // The other free tools. Name, icon and address come from
-          // toutify_products(), the list that already feeds the homepage strip
-          // and the band above the footer, so an address corrected there is
-          // corrected here. The wording is local: these three are framed by
-          // what they cost, which is the point of this section and not of the
-          // others. A product with no address is a plain card, not a dead link.
-    $hiwTools = [];
-    foreach (toutify_products() as $hiwP) $hiwTools[$hiwP['key']] = $hiwP;
-    $hiwPick = [
-      ['key' => 'contentvendor', 'line' => 'Content and social media tools. Posts and pages written for you, on a schedule.'],
-      ['key' => 'promomonster',  'line' => 'Free customer reviews. Ask every customer, reply to what comes back, show it off.'],
-      ['key' => 'leadcrazy',     'line' => 'The Million Dollar Lead Form, free. Turn visitors into quote requests.'],
-    ];
-    ?>
+<?php // ---- 6. the free tools, on white ------------------------------ ?>
+<section class="hiw-b hiw-b-white">
+  <div class="wrap">
     <?php // The three sister tools, one block each. Name, icon and address come
           // from toutify_products(), the list that also feeds the homepage
           // strip and the band above the footer, so a corrected address is
@@ -251,7 +272,7 @@
         <p>The same free <?= e(trim(setting('site_byline', 'Toutify')) ?: 'Toutify') ?> account that
           carries your listing carries these. No credit card on any of them.</p>
       </div>
-
+    
       <?php foreach ($hiwBlocks as $hiwI => $hiwB): ?>
         <?php
           $hiwD = $hiwAll[$hiwB['key']] ?? null;
@@ -274,7 +295,7 @@
               <a class="hiw-tool-link" href="<?= e($hiwD['url']) ?>" rel="noopener">Open <?= e($hiwD['name']) ?> &rarr;</a>
             <?php endif; ?>
           </div>
-
+    
           <?php // A small picture of the thing, drawn in CSS. Not a screenshot:
                 // these are other people's products and a mock-up that claimed
                 // to be their interface would be a lie about software I have
@@ -307,13 +328,17 @@
         </div>
       <?php endforeach; ?>
     </section>
+  </div>
+</section>
 
+<?php // ---- 7. the ask ----------------------------------------------- ?>
+<section class="hiw-close">
+  <div class="wrap">
     <div class="pe-close">
       <a class="btn btn-primary pe-btn" href="/signup">Add my business free</a>
       <a class="pe-see" href="/promotions">See live member promotions →</a>
       <p class="pe-note">Free forever. No card, no contract. Add your business, drop in your first link,
         and the engine starts working today.</p>
     </div>
-
   </div>
 </section>
