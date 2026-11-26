@@ -64,6 +64,26 @@ $listUrl    = e(listings_url($back, $listQ, 1, $backTier));
                 title="<?= $biz['verified'] ? 'Verified — click to remove the badge' : 'Not verified — click to add the badge' ?>">
           <?= $biz['verified'] ? '✓ Verified' : 'UnVerified' ?>
         </button></form>
+        <?php // Featured by hand. Reads its own state the way the button
+              // beside it does. Hidden altogether until the column exists,
+              // rather than offered and then failing on click.
+              $lbFeat   = !empty($biz['featured_manual']);
+              $lbByPlan = ($biz['tier'] ?? '') === 'featured';
+        ?>
+        <?php if (featured_manual_ready()): ?>
+          <form method="post"><?= csrf_field() ?><input type="hidden" name="bar" value="feature">
+            <button class="btn btn-sm <?= $lbFeat ? 'lbar-feat-on' : 'lbar-feat-off' ?>"
+                    title="<?= $lbFeat
+                        ? 'Featured by hand. Click to remove; placement then follows the owner\'s plan.'
+                        : ($lbByPlan
+                            ? 'Already Featured through the owner\'s Premium plan. Clicking pins it whatever the plan.'
+                            : 'Not featured. Click to give this listing priority placement.') ?>">
+              <?= $lbFeat ? '★ Featured' : 'Not featured' ?>
+            </button></form>
+          <?php if ($lbByPlan && !$lbFeat): ?>
+            <span class="lbar-note" title="Placement comes from the owner's Premium plan, not a manual mark.">via plan</span>
+          <?php endif; ?>
+        <?php endif; ?>
     </div>
   </div>
 

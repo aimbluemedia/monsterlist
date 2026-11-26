@@ -67,7 +67,7 @@ function featured_businesses(int $limit = 6): array
          LEFT JOIN categories c ON c.id = b.category_id
          JOIN cities ci ON ci.id = b.city_id
          LEFT JOIN regions r ON r.id = ci.region_id
-         WHERE b.status = 'live' AND b.tier = 'featured'
+         WHERE b.status = 'live' AND " . featured_sql('b') . "
          ORDER BY b.rating DESC, b.review_count DESC
          LIMIT " . (int)$limit
     );
@@ -130,7 +130,7 @@ function spotlight_category(int $limit = 6, int $min = 6): array
                JOIN cities ci ON ci.id = b.city_id
                LEFT JOIN regions r ON r.id = ci.region_id
               WHERE b.status = 'live' AND b.category_id = ?
-           ORDER BY b.tier = 'featured' DESC, b.rating DESC, b.review_count DESC
+           ORDER BY " . featured_sql('b') . " DESC, b.rating DESC, b.review_count DESC
               LIMIT " . (int)$limit,
             [$pick['id']]
         ),
@@ -161,7 +161,7 @@ function best_scored_businesses(int $limit = 6, int $pool = 60): array
            JOIN cities ci ON ci.id = b.city_id
            LEFT JOIN regions r ON r.id = ci.region_id
           WHERE b.status = 'live'
-       ORDER BY b.tier = 'featured' DESC, b.tier = 'pro' DESC, b.review_count DESC, b.id DESC
+       ORDER BY " . featured_sql('b') . " DESC, b.tier = 'pro' DESC, b.review_count DESC, b.id DESC
           LIMIT " . (int)$pool
     );
     if (!$rows) return [];
@@ -623,6 +623,37 @@ function handle_listing_images(int $bizId, array $plan, array &$errors): void
 // reviews count for trust, and a paid tier plus linked socials widen reach.
 // Nothing here is random — the same listing always scores the same.
 // ---------------------------------------------------------------------------
+/**
+ * Does this listing take Featured placement?
+ *
+ * Two ways in: the owner pays for Premium (tier), or staff marked it by hand
+ * (featured_manual). They are separate on purpose — the tier is a copy of
+ * users.plan and gets rewritten by every plan change, so a manual mark stored
+ * there would quietly disappear.
+ *
+ * Returns false for the manual half until the column exists, so the site runs
+ * normally between deploying this code and running the migration.
+ */
+function featured_manual_ready(): bool
+{
+    static $ok = null;
+    if ($ok === null) $ok = column_exists('businesses', 'featured_manual');
+    return $ok;
+}
+
+function is_featured_listing(array $b): bool
+{
+    return ($b['tier'] ?? '') === 'featured' || !empty($b['featured_manual']);
+}
+
+/** The SQL half of the same question, for ORDER BY and WHERE. */
+function featured_sql(string $alias = 'b'): string
+{
+    return featured_manual_ready()
+        ? "($alias.tier = 'featured' OR $alias.featured_manual = 1)"
+        : "($alias.tier = 'featured')";
+}
+
 function monster_score(array $b): int
 {
     // Completeness — is there enough on the page to rank and to convince? (45)

@@ -135,6 +135,20 @@ if ($sub === 'dashboard') {
             q('UPDATE businesses SET verified = 1 - verified WHERE id = ?', [$biz['id']]);
             flash_set('success', $biz['verified'] ? 'Verified badge removed.' : 'Marked as verified.');
 
+        } elseif ($barAction === 'feature') {
+            // Its own column, never businesses.tier: the tier is a copy of the
+            // owner's plan and the next plan change would wipe a mark written
+            // there. See featured_sql() in app/lib/listings.php.
+            if (!featured_manual_ready()) {
+                flash_set('error', 'The database is missing businesses.featured_manual. '
+                    . 'Run database/upgrade-featured-manual.sql, then try again.');
+            } else {
+                q('UPDATE businesses SET featured_manual = 1 - featured_manual WHERE id = ?', [$biz['id']]);
+                flash_set('success', !empty($biz['featured_manual'])
+                    ? 'Featured removed — placement goes back to the owner\'s plan.'
+                    : 'Featured on. This listing now takes priority placement whatever plan its owner is on.');
+            }
+
         } elseif ($barAction === 'delete') {
             q('DELETE FROM businesses WHERE id = ?', [$biz['id']]);
             if ($biz['city_id']) refresh_city_count((int)$biz['city_id']);

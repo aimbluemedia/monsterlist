@@ -1924,3 +1924,9 @@ a.hiw-tool:hover{border-color:#bcd3fb;box-shadow:0 18px 40px -22px rgba(37,99,23
   .hiw-ondark{padding:48px 0 52px}
   .hiw-hero{padding:20px 0 46px}
 }
+
+/* the manual Featured toggle in the listing toolbar, matching the verified one */
+.lbar-feat-on{background:var(--gold-soft);border-color:#f0c070;color:#8a5208}
+.lbar-feat-off{background:var(--card);border-color:var(--border);color:var(--mute)}
+.lbar-feat-off:hover{border-color:#f0c070;color:#8a5208}
+.lbar-note{align-self:center;color:var(--faint);font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
