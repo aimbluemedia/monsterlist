@@ -1,9 +1,12 @@
 <?php
-// Homepage: hero search, categories, featured + new members, top locations.
+// Homepage: hero search, categories, featured, a rotating category spotlight,
+// the strongest profiles, new members, top locations.
 
 $cats      = categories_all();
 $featured  = featured_businesses(6);
 $newest    = newest_businesses(6);
+$topScored = best_scored_businesses(6);
+$spotlight = spotlight_category(6, 6);   // a category with at least six live listings
 $popCities = popular_cities(12);
 $popStates = popular_states();
 $popCtries = popular_countries();
@@ -22,4 +25,5 @@ $meta = [
     'jsonld'      => [jsonld_website(), jsonld_organization()],
 ];
 
-view('home', compact('meta', 'cats', 'featured', 'newest', 'popCities', 'popStates', 'popCtries', 'stats'));
+view('home', compact('meta', 'cats', 'featured', 'newest', 'topScored', 'spotlight',
+                     'popCities', 'popStates', 'popCtries', 'stats'));

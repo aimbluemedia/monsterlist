@@ -89,6 +89,90 @@ function newest_businesses(int $limit = 6): array
     );
 }
 
+/**
+ * A category worth putting on the homepage, and the listings in it.
+ *
+ * Only categories with at least $min live listings are eligible — a spotlight
+ * on a category with two entries in it advertises an empty directory.
+ *
+ * Which one rotates by the day rather than at random: a visitor who reloads
+ * sees the same page twice, which is what they expect, while somebody coming
+ * back next week sees something else. The day number picks the offset, so the
+ * rotation moves through every eligible category in turn instead of landing on
+ * the same one repeatedly the way rand() does.
+ *
+ * Returns [] when nothing qualifies, and the caller renders nothing — better
+ * than a heading over four cards.
+ */
+function spotlight_category(int $limit = 6, int $min = 6): array
+{
+    $eligible = rows(
+        "SELECT b.category_id AS id, c.label, c.icon, COUNT(*) AS n
+           FROM businesses b
+           JOIN categories c ON c.id = b.category_id
+          WHERE b.status = 'live' AND b.category_id IS NOT NULL
+       GROUP BY b.category_id
+         HAVING n >= " . (int)$min . "
+       ORDER BY b.category_id"
+    );
+    if (!$eligible) return [];
+
+    $pick = $eligible[(int)floor(time() / 86400) % count($eligible)];
+
+    return [
+        'category' => $pick,
+        'listings' => rows(
+            "SELECT b.*, c.label AS category_label, c.icon AS category_icon,
+                    ci.name AS city_name, ci.slug AS city_slug, ci.country_code, ci.region_id,
+                    r.slug AS region_slug
+               FROM businesses b
+               LEFT JOIN categories c ON c.id = b.category_id
+               JOIN cities ci ON ci.id = b.city_id
+               LEFT JOIN regions r ON r.id = ci.region_id
+              WHERE b.status = 'live' AND b.category_id = ?
+           ORDER BY b.tier = 'featured' DESC, b.rating DESC, b.review_count DESC
+              LIMIT " . (int)$limit,
+            [$pick['id']]
+        ),
+    ];
+}
+
+/**
+ * The strongest listings by MonsterScore, for the slot the Featured section
+ * leaves empty while nobody is on Premium.
+ *
+ * Ranked by score rather than by rating, because rating only separates
+ * listings that have reviews and most here have none — a review-ranked
+ * section would be empty on exactly the directory that needs it most.
+ * monster_score() is PHP, not a column, so the ranking happens here: take a
+ * wider slice, score it, keep the top $limit.
+ *
+ * Deliberately NOT named or labelled "featured". These are not featured
+ * listings and the homepage must not imply they are.
+ */
+function best_scored_businesses(int $limit = 6, int $pool = 60): array
+{
+    $rows = rows(
+        "SELECT b.*, c.label AS category_label, c.icon AS category_icon,
+                ci.name AS city_name, ci.slug AS city_slug, ci.country_code, ci.region_id,
+                r.slug AS region_slug
+           FROM businesses b
+           LEFT JOIN categories c ON c.id = b.category_id
+           JOIN cities ci ON ci.id = b.city_id
+           LEFT JOIN regions r ON r.id = ci.region_id
+          WHERE b.status = 'live'
+       ORDER BY b.tier = 'featured' DESC, b.tier = 'pro' DESC, b.review_count DESC, b.id DESC
+          LIMIT " . (int)$pool
+    );
+    if (!$rows) return [];
+
+    usort($rows, function (array $x, array $y) {
+        return monster_score($y) <=> monster_score($x);
+    });
+    return array_slice($rows, 0, $limit);
+}
+
+
 function search_businesses(string $qstr, int $page = 1, int $perPage = 20): array
 {
     $offset = ($page - 1) * $perPage;

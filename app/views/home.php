@@ -129,6 +129,48 @@
 </section>
 <?php endif; ?>
 
+<?php // A category spotlight, rotating by the day. Only categories with six or
+      // more live listings qualify, so the row is always full — a spotlight on
+      // a category with two entries advertises an empty directory. ?>
+<?php if (!empty($spotlight['listings'])): ?>
+<section class="sky">
+  <div class="wrap">
+    <div class="sky-head">
+      <h2><?= e($spotlight['category']['label']) ?></h2>
+      <span><?= number_format((int)$spotlight['category']['n']) ?> businesses listed &mdash;
+        <a href="/category/<?= e($spotlight['category']['id']) ?>">see them all &rarr;</a></span>
+    </div>
+    <div class="mc-grid">
+      <?php foreach ($spotlight['listings'] as $b): ?>
+        <?php $mcBadge = ($b['tier'] ?? '') === 'featured' ? 'Featured' : null;
+              require __DIR__ . '/_member-card.php'; ?>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+<?php endif; ?>
+
+<?php // Ranked by MonsterScore, which every card already shows. Not by
+      // rating: most listings here have no reviews at all, so a review-ranked
+      // section would be empty on the directory that most needs filling. This
+      // is NOT the Featured section wearing a different hat — these listings
+      // are not featured and the heading does not say they are. ?>
+<?php if ($topScored): ?>
+<section class="sky sky-alt">
+  <div class="wrap">
+    <div class="sky-head">
+      <h2>Standout profiles</h2>
+      <span>The most complete listings in the directory, by MonsterScore</span>
+    </div>
+    <div class="mc-grid">
+      <?php foreach ($topScored as $b): ?>
+        <?php $mcBadge = null; require __DIR__ . '/_member-card.php'; ?>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+<?php endif; ?>
+
 <?php if ($newest): ?>
 <section class="sky sky-alt">
   <div class="wrap">
