@@ -1930,3 +1930,64 @@ a.hiw-tool:hover{border-color:#bcd3fb;box-shadow:0 18px 40px -22px rgba(37,99,23
 .lbar-feat-off{background:var(--card);border-color:var(--border);color:var(--mute)}
 .lbar-feat-off:hover{border-color:#f0c070;color:#8a5208}
 .lbar-note{align-self:center;color:var(--faint);font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+
+/* ===== Standout profiles — a leaderboard, not a fourth card grid =====
+   Three card grids already sit around this section on the homepage. Ranked by
+   score, it earns a different shape: numbered rows, dark ground, and the score
+   drawn as a bar so the ranking is visible rather than asserted. */
+.sr-section{background:linear-gradient(165deg,#0e1830,#17224a 55%,#241c54);color:#fff;position:relative;overflow:hidden}
+.sr-section::before{content:"";position:absolute;inset:-40% -10% auto;height:150%;pointer-events:none;
+  background:radial-gradient(40% 44% at 20% 25%,rgba(37,99,235,.38),transparent 70%),
+             radial-gradient(36% 40% at 80% 20%,rgba(124,58,237,.34),transparent 70%)}
+.sr-section>.wrap{position:relative;z-index:1}
+.sr-section .sky-head h2{color:#fff}
+.sr-section .sky-head span{color:rgba(255,255,255,.72)}
+
+.sr-board{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;counter-reset:none}
+.sr{display:grid;grid-template-columns:36px 42px minmax(0,1fr) auto 190px;align-items:center;gap:16px;
+  padding:13px 18px;border-radius:14px;color:#fff;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+  transition:background .2s,border-color .2s,transform .2s}
+.sr:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.26);transform:translateX(3px)}
+/* The top three get the weight, the way a leaderboard should. */
+.sr-board li:nth-child(1) .sr{background:rgba(255,255,255,.13);border-color:rgba(255,210,122,.5)}
+.sr-board li:nth-child(1) .sr-rank{color:#ffd27a}
+.sr-board li:nth-child(2) .sr-rank,.sr-board li:nth-child(3) .sr-rank{color:#cfe0ff}
+
+.sr-rank{font-size:1.25rem;font-weight:800;color:rgba(255,255,255,.4);text-align:center;font-variant-numeric:tabular-nums}
+.sr-avatar{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;overflow:hidden;
+  background:linear-gradient(135deg,#2563eb,#7c3aed);font-weight:800;font-size:1rem;color:#fff}
+.sr-avatar img{width:100%;height:100%;object-fit:cover}
+.sr-id{min-width:0;display:flex;flex-direction:column;gap:2px}
+.sr-id b{font-size:.98rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sr-id small{color:rgba(255,255,255,.7);font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.sr-flags{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.sr-flag{font-style:normal;font-size:.68rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
+  padding:4px 9px;border-radius:999px;white-space:nowrap}
+.sr-flag-feat{background:rgba(255,210,122,.2);color:#ffd27a}
+.sr-flag-ver{background:rgba(110,231,183,.18);color:#6ee7b7}
+
+.sr-meter{display:flex;align-items:center;gap:12px}
+.sr-bar{flex:1;height:8px;border-radius:999px;background:rgba(255,255,255,.14);overflow:hidden}
+.sr-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#60a5fa,#a78bfa)}
+.sr-strong .sr-bar i{background:linear-gradient(90deg,#34d399,#60a5fa)}
+.sr-fair .sr-bar i{background:linear-gradient(90deg,#fbbf24,#fb923c)}
+.sr-meter b{font-size:1.05rem;font-weight:800;min-width:30px;text-align:right;font-variant-numeric:tabular-nums}
+
+.sr-foot{margin:22px auto 0;max-width:640px;text-align:center;color:rgba(255,255,255,.66);
+  font-size:.88rem;line-height:1.6}
+
+@media(max-width:860px){
+  /* Flags drop first: the name, the score and the ranking are what the row is
+     for, and at this width there is no room for all five columns. */
+  .sr{grid-template-columns:28px 38px minmax(0,1fr) 112px;gap:12px;padding:12px 14px}
+  .sr-flags{display:none}
+  .sr-meter{gap:9px}
+  .sr-meter b{font-size:.95rem;min-width:26px}
+}
+@media(max-width:480px){
+  .sr{grid-template-columns:24px 34px minmax(0,1fr) 54px;gap:10px}
+  .sr-bar{display:none}
+}
+@media(prefers-reduced-motion:reduce){.sr:hover{transform:none}}

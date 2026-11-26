@@ -156,17 +156,20 @@
       // is NOT the Featured section wearing a different hat — these listings
       // are not featured and the heading does not say they are. ?>
 <?php if ($topScored): ?>
-<section class="sky sky-alt">
+<section class="sky sr-section">
   <div class="wrap">
     <div class="sky-head">
       <h2>Standout profiles</h2>
       <span>The most complete listings in the directory, by MonsterScore</span>
     </div>
-    <div class="mc-grid">
-      <?php foreach ($topScored as $b): ?>
-        <?php $mcBadge = null; require __DIR__ . '/_member-card.php'; ?>
+    <ol class="sr-board">
+      <?php foreach ($topScored as $srRank => $b): ?>
+        <li><?php $srRank++; require __DIR__ . '/_score-row.php'; ?></li>
       <?php endforeach; ?>
-    </div>
+    </ol>
+    <p class="sr-foot">MonsterScore rates how complete a listing is — contact details, photos,
+      a real description, reviews and verification. Every listing has one, and yours goes up
+      the moment you fill something in.</p>
   </div>
 </section>
 <?php endif; ?>
