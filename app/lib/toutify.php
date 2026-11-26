@@ -95,3 +95,80 @@ function toutify_icon(string $name): string
     return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" '
          . 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . $paths[$name] . '</svg>';
 }
+
+// ---------------------------------------------------------------------------
+// Which Toutify tools a member has active.
+//
+// IMPORTANT, and the reason the toggles start off: Toutify does not currently
+// tell us. Its discovery document lists every claim it publishes — sub, name,
+// email, phone_number, business_name, website, tier, account_status, websites
+// — and not one of them says which products a member has turned on. The
+// webhook sends member.* and website.* events, and nothing about products
+// either.
+//
+// So the state is stored here, and two readers are wired to pick it up the
+// moment Toutify starts sending it: toutify_tools_from_claims() below, called
+// on every sign-in and member webhook, and the product.* webhook types. Until
+// then both are inert and staff set the flags by hand on the member page.
+// ---------------------------------------------------------------------------
+
+/** The four sister tools a member can have active, in display order. */
+function toutify_tool_keys(): array
+{
+    return ['searchmonster', 'contentvendor', 'promomonster', 'leadcrazy'];
+}
+
+function toutify_tools_ready(): bool
+{
+    static $ok = null;
+    if ($ok === null) $ok = column_exists('users', 'toutify_tools');
+    return $ok;
+}
+
+/** Decoded flags for a user row: ['searchmonster' => true, ...]. */
+function toutify_tools_for(array $u): array
+{
+    $raw  = json_decode((string)($u['toutify_tools'] ?? ''), true);
+    $out  = [];
+    foreach (toutify_tool_keys() as $k) {
+        $out[$k] = is_array($raw) && !empty($raw[$k]);
+    }
+    return $out;
+}
+
+function toutify_tool_set(int $userId, string $key, bool $on): void
+{
+    if (!toutify_tools_ready() || !in_array($key, toutify_tool_keys(), true)) return;
+    $u = row('SELECT toutify_tools FROM users WHERE id = ?', [$userId]);
+    if (!$u) return;
+    $flags = toutify_tools_for($u);
+    $flags[$key] = $on;
+    q('UPDATE users SET toutify_tools = ? WHERE id = ?',
+      [json_encode(array_map('intval', $flags)), $userId]);
+}
+
+/**
+ * Read tool flags out of a claim set, if one ever carries them.
+ *
+ * Accepts the two shapes a provider is likely to use — a list of active
+ * product keys, or an object of key => bool — under either of the two names
+ * this would plausibly be given. Returns null when the claims say nothing,
+ * which is the case today and must leave the stored flags alone rather than
+ * blanking them.
+ */
+function toutify_tools_from_claims(array $claims): ?array
+{
+    foreach (['tools', 'products'] as $name) {
+        if (!array_key_exists($name, $claims)) continue;
+        $v = $claims[$name];
+        if (!is_array($v)) continue;
+        $flags = [];
+        foreach (toutify_tool_keys() as $k) {
+            $flags[$k] = array_is_list($v)
+                ? in_array($k, array_map('strval', $v), true)
+                : !empty($v[$k]);
+        }
+        return $flags;
+    }
+    return null;
+}

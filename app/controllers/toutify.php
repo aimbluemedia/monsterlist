@@ -71,6 +71,17 @@ function toutify_apply_member(array $user, array $c, bool $force = false): void
         $sets[] = 'status = ?';
         $args[] = $c['account_status'] === 'active' ? 'active' : 'suspended';
     }
+    // Tool flags, if the claims ever carry them. null means the claims said
+    // nothing, which is the case today — and must leave what is stored alone
+    // rather than blanking flags staff have set by hand.
+    if (toutify_tools_ready()) {
+        $tools = toutify_tools_from_claims($c);
+        if ($tools !== null) {
+            $sets[] = 'toutify_tools = ?';
+            $args[] = json_encode(array_map('intval', $tools));
+        }
+    }
+
     if ($now > 0) { $sets[] = 'toutify_updated_at = ?'; $args[] = $now; }
     if (!$sets) return;
 
@@ -442,6 +453,15 @@ if ($tfAction === 'login') {
                 // that putting it back is one flag and nothing else was lost.
                 q('UPDATE businesses SET toutify_removed = 1, toutify_updated_at = ? WHERE toutify_website_id = ?',
                   [(int)($w['updated_at'] ?? time()), $wid]);
+            }
+        } elseif (in_array($type, ['product.activated', 'product.deactivated'], true)) {
+            // Not a type Toutify sends today. Wired now so that the day it
+            // does, the member's cards light up with nothing to deploy here.
+            $sub  = (string)($m['sub'] ?? ($body['sub'] ?? ''));
+            $prod = strtolower(trim((string)($body['product'] ?? ($body['product_id'] ?? ''))));
+            $user = $sub !== '' ? row('SELECT id FROM users WHERE toutify_sub = ?', [$sub]) : null;
+            if ($user && in_array($prod, toutify_tool_keys(), true)) {
+                toutify_tool_set((int)$user['id'], $prod, $type === 'product.activated');
             }
         }
         // Any other type — site.test included — is accepted and ignored.

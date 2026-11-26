@@ -1999,3 +1999,35 @@ a.hiw-tool:hover{border-color:#bcd3fb;box-shadow:0 18px 40px -22px rgba(37,99,23
 .sr-flag-new{background:rgba(96,165,250,.22);color:#9ec5ff}
 @media(max-width:860px){.sr-board-plain .sr{grid-template-columns:38px minmax(0,1fr) 112px}}
 @media(max-width:480px){.sr-board-plain .sr{grid-template-columns:34px minmax(0,1fr) 54px}}
+
+/* ===== member dashboard — Toutify tool cards ===== */
+.dt-card{margin-top:16px}
+.dt-head{margin-bottom:16px}
+.dt-head h3{margin:0 0 4px}
+.dt-head span{color:var(--mute);font-size:.88rem}
+.dt-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.dt-tool{display:flex;flex-direction:column;gap:5px;padding:16px;border-radius:13px;
+  background:var(--bg);border:1px solid var(--border2)}
+/* Active is stated, not implied: a green edge and a filled dot, so the four
+   can be told apart at a glance without reading every label. */
+.dt-on{background:var(--green-soft);border-color:#9fd9c4}
+.dt-ico{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;margin-bottom:5px;
+  background:var(--border);color:var(--mute)}
+.dt-on .dt-ico{background:linear-gradient(135deg,#0ca678,#36c79b);color:#fff}
+.dt-ico svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.dt-tool b{font-size:.95rem}
+.dt-tool em{font-style:normal;color:var(--mute);font-size:.8rem;line-height:1.4;flex:1}
+.dt-state{display:inline-flex;align-items:center;gap:7px;font-size:.78rem;font-weight:800;
+  text-transform:uppercase;letter-spacing:.5px;color:var(--faint);margin-top:4px}
+.dt-state i{width:9px;height:9px;border-radius:50%;background:var(--border);flex:none}
+.dt-on .dt-state{color:var(--green)}
+.dt-on .dt-state i{background:var(--green);box-shadow:0 0 0 3px rgba(12,166,120,.2)}
+.dt-go{font-size:.82rem;font-weight:700;color:var(--accent)}
+.dt-go-off{color:var(--faint);font-weight:600}
+@media(max-width:900px){.dt-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.dt-grid{grid-template-columns:1fr}}
+/* staff toggles for the Toutify tool flags */
+.mt-row{display:flex;gap:8px;flex-wrap:wrap}
+.mt-on{background:var(--green-soft);border-color:#9fd9c4;color:#0a6b4c}
+.mt-off{background:var(--card);border-color:var(--border);color:var(--mute)}
+.mt-off:hover{border-color:#9fd9c4;color:#0a6b4c}

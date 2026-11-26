@@ -18,6 +18,46 @@
       <div class="card stat"><div class="n"><?= $plan['analytics'] ? (int)$stats['views'] : '—' ?></div><div class="l">Views (30d)</div></div>
       <div class="card stat"><div class="n"><?= $plan['analytics'] ? (int)$stats['clicks'] : '—' ?></div><div class="l">Website clicks (30d)</div></div>
     </div>
+      <?php // The sister tools and whether this member has them active.
+            //
+            // The state is read here, not set: Toutify owns it. What Toutify
+            // does not yet do is tell us — no claim and no webhook event
+            // carries it — so until that changes the flags are set by staff,
+            // and a card that is off links out to go and activate it.
+            $dtTools = toutify_tools_for($u);
+            $dtAll   = [];
+            foreach (toutify_products() as $dtP) $dtAll[$dtP['key']] = $dtP;
+            $dtBy    = trim(setting('site_byline', 'Toutify')) ?: 'Toutify';
+      ?>
+      <?php if (toutify_tools_ready()): ?>
+      <div class="card card-pad dt-card">
+        <div class="dt-head">
+          <h3>Your <?= e($dtBy) ?> tools</h3>
+          <span>One account covers all of them. Switching one on happens on <?= e($dtBy) ?>.</span>
+        </div>
+        <div class="dt-grid">
+          <?php foreach (toutify_tool_keys() as $dtKey): ?>
+            <?php
+              $dtD  = $dtAll[$dtKey] ?? null;
+              if (!$dtD) continue;
+              $dtOn = !empty($dtTools[$dtKey]);
+            ?>
+            <div class="dt-tool<?= $dtOn ? ' dt-on' : '' ?>">
+              <span class="dt-ico"><?= toutify_icon($dtD['icon']) ?></span>
+              <b><?= e($dtD['name']) ?></b>
+              <em><?= e($dtD['short'] ?? '') ?></em>
+              <span class="dt-state"><i></i><?= $dtOn ? 'Active' : 'Not active' ?></span>
+              <?php if (!$dtOn && $dtD['url'] !== ''): ?>
+                <a class="dt-go" href="<?= e($dtD['url']) ?>" rel="noopener">Activate &rarr;</a>
+              <?php elseif (!$dtOn): ?>
+                <span class="dt-go dt-go-off">Ask us to switch it on</span>
+              <?php endif; ?>
+            </div>
+          <?php endforeach; ?>
+        </div>
+      </div>
+      <?php endif; ?>
+
     <div class="card card-pad">
       <h3>Recent listings</h3>
       <?php if (!$listings): ?>

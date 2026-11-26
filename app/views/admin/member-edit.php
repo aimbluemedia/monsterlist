@@ -22,6 +22,32 @@
   <?php endif; ?>
 </div>
 
+<?php // Toutify tool flags. Staff set these by hand because Toutify does
+      // not report them: no claim in its discovery document and no webhook
+      // event carries which products a member has active. The readers are
+      // already wired in app/lib/toutify.php, so these buttons become
+      // redundant the day that changes rather than needing to be undone. ?>
+<?php if (toutify_tools_ready()): ?>
+<div class="card card-pad ed-card">
+  <h3>Toutify tools <span class="mute" style="font-weight:400">(set by hand &mdash; Toutify does not report these yet)</span></h3>
+  <div class="mt-row">
+    <?php $mtFlags = toutify_tools_for($m); $mtAll = []; ?>
+    <?php foreach (toutify_products() as $mtP) $mtAll[$mtP['key']] = $mtP; ?>
+    <?php foreach (toutify_tool_keys() as $mtK): $mtOn = !empty($mtFlags[$mtK]); ?>
+      <form method="post" action="/superadmin/member-tool"><?= csrf_field() ?>
+        <input type="hidden" name="id" value="<?= (int)$m['id'] ?>">
+        <input type="hidden" name="tool" value="<?= e($mtK) ?>">
+        <button class="btn btn-sm <?= $mtOn ? 'mt-on' : 'mt-off' ?>"
+                title="<?= $mtOn ? 'Active — click to switch off' : 'Not active — click to switch on' ?>">
+          <?= e($mtAll[$mtK]['name'] ?? $mtK) ?>: <?= $mtOn ? 'on' : 'off' ?>
+        </button>
+      </form>
+    <?php endforeach; ?>
+  </div>
+</div>
+<?php endif; ?>
+
+
 <div class="card card-pad ed-card">
   <h3>Listings <span class="mute" style="font-weight:400">(<?= count($listings) ?>)</span></h3>
   <p class="mute ed-note">Plan and tokens are set on a listing's own page — open one below.

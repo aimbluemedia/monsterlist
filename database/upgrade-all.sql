@@ -984,3 +984,18 @@ SET @ddl = IF((SELECT COUNT(*) FROM information_schema.STATISTICS
               'DO 0',
               'CREATE INDEX idx_biz_featured_manual ON businesses (featured_manual, status)');
 PREPARE s FROM @ddl; EXECUTE s; DEALLOCATE PREPARE s;
+
+-- ---------------------------------------------------------------------------
+-- MonsterList — which Toutify tools a member has active (v160).
+-- Safe to run more than once.
+--
+-- A JSON object keyed by product: {"searchmonster":1,"promomonster":0,...}.
+-- A column rather than a table because it is a handful of flags that are
+-- always read together with the user row and never queried on their own.
+-- ---------------------------------------------------------------------------
+SET @ddl = IF((SELECT COUNT(*) FROM information_schema.COLUMNS
+               WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'
+                 AND COLUMN_NAME = 'toutify_tools') > 0,
+              'DO 0',
+              'ALTER TABLE users ADD COLUMN toutify_tools TEXT NULL');
+PREPARE s FROM @ddl; EXECUTE s; DEALLOCATE PREPARE s;

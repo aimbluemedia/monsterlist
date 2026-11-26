@@ -856,6 +856,29 @@ if ($sub === 'dashboard') {
     $meta['title'] = $m['email'] . " — $site";
     view_raw('admin/member-edit', compact('meta', 'u', 'm', 'listings', 'mPlan', 'history'));
 
+} elseif ($sub === 'member-tool') {
+    // Flip one Toutify tool flag for one member. Its own tiny branch rather
+    // than a field on the member form: it is a thing staff do on its own, and
+    // it will stop being a thing at all once Toutify reports these itself.
+    csrf_check();
+    $mtId  = (int)post('id');
+    $mtKey = (string)post('tool');
+    if (!toutify_tools_ready()) {
+        flash_set('error', 'The database is missing users.toutify_tools. Run database/upgrade-toutify-tools.sql.');
+    } elseif ($mtId && in_array($mtKey, toutify_tool_keys(), true)) {
+        $mtU = row('SELECT * FROM users WHERE id = ?', [$mtId]);
+        if ($mtU) {
+            $was = toutify_tools_for($mtU)[$mtKey];
+            toutify_tool_set($mtId, $mtKey, !$was);
+            // The product's own name, not ucfirst() of its key — that gave
+            // "Contentvendor", which is not what the product is called.
+            $mtName = $mtKey;
+            foreach (toutify_products() as $mtP) if ($mtP['key'] === $mtKey) $mtName = $mtP['name'];
+            flash_set('success', $mtName . ($was ? ' switched off.' : ' switched on.'));
+        }
+    }
+    redirect('/superadmin/members/edit?id=' . $mtId);
+
 } elseif ($sub === 'members') {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         csrf_check();
