@@ -173,18 +173,23 @@
       // is NOT the Featured section wearing a different hat — these listings
       // are not featured and the heading does not say they are. ?>
 <?php if ($newest): ?>
-<?php // The same card grid as every other listing section. ?>
-<section class="sky sky-alt">
+<?php // The leaderboard rows, on the dark band. No rank numbers: this list
+      // is ordered by join date, and a 1-to-6 down its edge would read as a
+      // ranking it does not have — the New flag takes that column instead.
+      // Standout profiles above uses the card grid; these two are the only
+      // listing sections that differ, which is what keeps the page from
+      // being four identical rows of cards. ?>
+<section class="sky sr-section">
   <div class="wrap">
     <div class="sky-head">
       <h2>Just joined</h2>
       <span>Welcome our newest members</span>
     </div>
-    <div class="mc-grid">
+    <ol class="sr-board sr-board-plain">
       <?php foreach ($newest as $b): ?>
-        <?php $mcBadge = 'New'; require __DIR__ . '/_member-card.php'; ?>
+        <li><?php $srRank = null; $srFlag = 'New'; require __DIR__ . '/_score-row.php'; ?></li>
       <?php endforeach; ?>
-    </div>
+    </ol>
   </div>
 </section>
 <?php endif; ?>
