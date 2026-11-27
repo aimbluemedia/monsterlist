@@ -24,12 +24,17 @@
             // does not yet do is tell us — no claim and no webhook event
             // carries it — so until that changes the flags are set by staff,
             // and a card that is off links out to go and activate it.
+            //
+            // Shown whether or not users.toutify_tools exists. Without the
+            // column every card reads Not active, which is true and still
+            // useful — the member sees what the account covers and can click
+            // through. toutify_tools_for() returns all-false for a row with no
+            // such field, so nothing below needs to know either way.
             $dtTools = toutify_tools_for($u);
             $dtAll   = [];
             foreach (toutify_products() as $dtP) $dtAll[$dtP['key']] = $dtP;
             $dtBy    = trim(setting('site_byline', 'Toutify')) ?: 'Toutify';
       ?>
-      <?php if (toutify_tools_ready()): ?>
       <div class="card card-pad dt-card">
         <div class="dt-head">
           <h3>Your <?= e($dtBy) ?> tools</h3>
@@ -56,7 +61,6 @@
           <?php endforeach; ?>
         </div>
       </div>
-      <?php endif; ?>
 
     <div class="card card-pad">
       <h3>Recent listings</h3>
