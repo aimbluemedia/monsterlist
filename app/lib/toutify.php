@@ -9,11 +9,13 @@
 // ADDRESSES. A product with no url still gets its card — it just is not a
 // link yet, because a wrong link looks right until somebody clicks it.
 //
-// ContentVendor, PromoMonster and LeadCrazy were filled in on the owner's
-// instruction. They have NOT been reached from here: contentvendor.com did
-// not resolve from this container, which proves nothing either way about the
-// live site, but does mean nobody has clicked these. Worth one click each
-// after a deploy. SearchMonster and Official Directories stay empty.
+// Filled in on the owner's instruction. SearchMonster is .org, which the
+// owner gave directly; the other three are .com and were guessed, so the
+// pattern is demonstrably not uniform and a guessed one may well be wrong.
+// None has been reached from here — contentvendor.com did not resolve from
+// this container, which proves nothing either way about the live site but
+// does mean nobody has clicked them. Worth one click each after a deploy.
+// Official Directories stays empty.
 // ===========================================================================
 //
 // 'key' is matched against TOUTIFY_HERE to decide which card says "you are
@@ -41,7 +43,7 @@ function toutify_products(): array
          'blurb' => 'Show up when customers ask AI who to hire.',
          'short' => 'AI search & free listing',
          'icon' => 'search',
-         'url'  => ''],
+         'url'  => 'https://searchmonster.org'],
 
         ['key'  => 'monsterlist',
          'name' => 'MonsterList',
