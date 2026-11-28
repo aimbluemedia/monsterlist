@@ -151,6 +151,11 @@ function toutify_apply_website(array $user, array $w): void
     $phone = trim((string)($w['phone_number'] ?? ''));
     $tier  = trim((string)($w['tier'] ?? ''));
 
+    // The Toutify sites this website is on. Null means the payload said
+    // nothing — website.removed and website.deleted never carry it — and must
+    // leave whatever is stored alone rather than emptying it.
+    $sites = toutify_sites_ready() ? toutify_sites_from_website($w) : null;
+
     if (!$listings) {
         if ($url === '') return;                      // nothing to build a listing from
         $cityId = toutify_city_id($w['city'] ?? null, $w['state'] ?? null, $w['country'] ?? null);
@@ -176,6 +181,14 @@ function toutify_apply_website(array $user, array $w): void
            trim((string)($w['street'] ?? '')) !== '' ? mb_substr(trim((string)$w['street']), 0, 255) : null,
            trim((string)($w['zip'] ?? '')) !== '' ? mb_substr(trim((string)$w['zip']), 0, 20) : null,
            $wid, $tier !== '' ? mb_substr($tier, 0, 20) : null, $when ?: null]);
+        // Written straight after rather than as a twelfth column in the INSERT
+        // above: the column may not exist yet on a site that has deployed the
+        // code and not run the SQL, and one conditional UPDATE is cheaper to
+        // read than a dynamically built column list.
+        if ($sites !== null) {
+            q('UPDATE businesses SET toutify_sites = ? WHERE id = ?',
+              [toutify_sites_encode($sites), (int)db()->lastInsertId()]);
+        }
         refresh_city_count($cityId);
         return;
     }
@@ -193,8 +206,9 @@ function toutify_apply_website(array $user, array $w): void
             $sets[] = "$col = ?";
             $args[] = $v !== '' ? mb_substr($v, 0, $len) : null;
         }
-        if ($tier !== '') { $sets[] = 'toutify_tier = ?'; $args[] = mb_substr($tier, 0, 20); }
-        if ($when > 0)    { $sets[] = 'toutify_updated_at = ?'; $args[] = $when; }
+        if ($tier !== '')   { $sets[] = 'toutify_tier = ?';  $args[] = mb_substr($tier, 0, 20); }
+        if ($sites !== null){ $sets[] = 'toutify_sites = ?'; $args[] = toutify_sites_encode($sites); }
+        if ($when > 0)      { $sets[] = 'toutify_updated_at = ?'; $args[] = $when; }
         $args[] = (int)$b['id'];
         q('UPDATE businesses SET ' . implode(', ', $sets) . ' WHERE id = ?', $args);
     }

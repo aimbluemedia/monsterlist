@@ -806,6 +806,11 @@ SET @ddl = IF((SELECT COUNT(*) FROM information_schema.COLUMNS
 PREPARE s FROM @ddl; EXECUTE s; DEALLOCATE PREPARE s;
 SET @ddl = IF((SELECT COUNT(*) FROM information_schema.COLUMNS
                 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses'
+                  AND COLUMN_NAME = 'toutify_sites') > 0,
+  'DO 0', 'ALTER TABLE businesses ADD COLUMN toutify_sites TEXT NULL');
+PREPARE s FROM @ddl; EXECUTE s; DEALLOCATE PREPARE s;
+SET @ddl = IF((SELECT COUNT(*) FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses'
                   AND COLUMN_NAME = 'toutify_tier') > 0,
   'DO 0', 'ALTER TABLE businesses ADD COLUMN toutify_tier VARCHAR(20) DEFAULT NULL');
 PREPARE s FROM @ddl; EXECUTE s; DEALLOCATE PREPARE s;
@@ -955,6 +960,7 @@ UNION ALL SELECT 'cities uq_city_place key', IF(COUNT(*) > 0, 'OK', 'MISSING —
 UNION ALL SELECT 'users.toutify_sub',         IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'      AND COLUMN_NAME = 'toutify_sub'
 UNION ALL SELECT 'users.business_name',       IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'      AND COLUMN_NAME = 'business_name'
 UNION ALL SELECT 'businesses.toutify_website_id', IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'toutify_website_id'
+UNION ALL SELECT 'businesses.toutify_sites', IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'businesses' AND COLUMN_NAME = 'toutify_sites'
 UNION ALL SELECT 'toutify_sessions table',    IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'toutify_sessions'
 UNION ALL SELECT 'toutify_events table',      IF(COUNT(*) > 0, 'OK', 'MISSING') FROM information_schema.TABLES  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'toutify_events';
 

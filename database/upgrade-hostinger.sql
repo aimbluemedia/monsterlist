@@ -1,5 +1,5 @@
 -- ---------------------------------------------------------------------------
--- MonsterList — every outstanding schema change, for Hostinger (v167).
+-- MonsterList — every outstanding schema change, for Hostinger (v169).
 --
 -- SAFE TO RUN AS MANY TIMES AS YOU LIKE. Anything already applied is skipped
 -- silently. If the whole thing has already run, running it again does nothing
@@ -56,6 +56,7 @@ CALL ml_try('ALTER TABLE businesses ADD COLUMN toutify_updated_at INT UNSIGNED D
 CALL ml_try('ALTER TABLE businesses ADD COLUMN toutify_tier VARCHAR(20) DEFAULT NULL');   -- businesses.toutify_tier
 CALL ml_try('ALTER TABLE businesses ADD COLUMN toutify_removed TINYINT(1) NOT NULL DEFAULT 0');   -- businesses.toutify_removed
 CALL ml_try('ALTER TABLE businesses ADD COLUMN featured_manual TINYINT(1) NOT NULL DEFAULT 0');   -- businesses.featured_manual
+CALL ml_try('ALTER TABLE businesses ADD COLUMN toutify_sites TEXT NULL');   -- businesses.toutify_sites
 CALL ml_try('ALTER TABLE users ADD UNIQUE KEY uq_users_toutify_sub (toutify_sub)');   -- key uq_users_toutify_sub
 CALL ml_try('ALTER TABLE businesses ADD KEY idx_biz_toutify_website (toutify_website_id)');   -- key idx_biz_toutify_website
 CALL ml_try('ALTER TABLE businesses ADD KEY idx_biz_featured_manual (featured_manual, status)');   -- key idx_biz_featured_manual
@@ -95,5 +96,6 @@ UNION ALL SELECT 'users.phone',                'OK', COUNT(phone)               
 UNION ALL SELECT 'businesses.toutify_website_id','OK', COUNT(toutify_website_id) FROM businesses
 UNION ALL SELECT 'businesses.toutify_tier',    'OK', COUNT(toutify_tier)         FROM businesses
 UNION ALL SELECT 'businesses.featured_manual', 'OK', COUNT(featured_manual)      FROM businesses
+UNION ALL SELECT 'businesses.toutify_sites',   'OK', COUNT(toutify_sites)        FROM businesses
 UNION ALL SELECT 'toutify_sessions',           'OK', COUNT(*)                    FROM toutify_sessions
 UNION ALL SELECT 'toutify_events',             'OK', COUNT(*)                    FROM toutify_events;

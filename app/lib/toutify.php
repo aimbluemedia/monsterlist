@@ -99,19 +99,25 @@ function toutify_icon(string $name): string
 }
 
 // ---------------------------------------------------------------------------
-// Which Toutify tools a member has active.
+// Which Toutify tools are active.
 //
-// IMPORTANT, and the reason the toggles start off: Toutify does not currently
-// tell us. Its discovery document lists every claim it publishes — sub, name,
-// email, phone_number, business_name, website, tier, account_status, websites
-// — and not one of them says which products a member has turned on. The
-// webhook sends member.* and website.* events, and nothing about products
-// either.
+// THERE ARE TWO ANSWERS, and they are not the same question.
 //
-// So the state is stored here, and two readers are wired to pick it up the
-// moment Toutify starts sending it: toutify_tools_from_claims() below, called
-// on every sign-in and member webhook, and the product.* webhook types. Until
-// then both are inert and staff set the flags by hand on the member page.
+//   businesses.toutify_sites  — the sites ONE WEBSITE is on, which is what
+//                               Toutify now reports in website.sites on
+//                               website.joined, website.updated, the
+//                               "websites" claim and GET /api/v1/sites/
+//                               websites. Per listing. Authoritative.
+//
+//   users.toutify_tools       — flags against the MEMBER, set by staff by
+//                               hand. The older, coarser answer, kept because
+//                               it is the only thing a listing that is not
+//                               linked to a Toutify website has.
+//
+// A member can have one website on SearchMonster and another on nothing, so
+// the per-listing answer is the true one and the storefront prefers it. The
+// member-level flags are the fallback, and stay the whole story for a listing
+// with no toutify_website_id.
 // ---------------------------------------------------------------------------
 
 /** The four sister tools a member can have active, in display order. */
@@ -125,6 +131,63 @@ function toutify_tools_ready(): bool
     static $ok = null;
     if ($ok === null) $ok = column_exists('users', 'toutify_tools');
     return $ok;
+}
+
+/** Does businesses.toutify_sites exist yet? Code deploys before the SQL runs. */
+function toutify_sites_ready(): bool
+{
+    static $ok = null;
+    if ($ok === null) $ok = column_exists('businesses', 'toutify_sites');
+    return $ok;
+}
+
+/**
+ * The service keys out of one website payload's "sites".
+ *
+ * Toutify sends [{"service": "searchmonster", "name": "SearchMonster"}, ...].
+ * A bare list of strings is accepted too, because that is the other shape this
+ * would plausibly be given and reading both costs one line.
+ *
+ * Returns NULL when the payload carries no "sites" at all — which is the case
+ * on website.removed and website.deleted — and that null is the difference
+ * between "on no sites" and "nobody said", so it must not be flattened to [].
+ */
+function toutify_sites_from_website(array $w): ?array
+{
+    if (!array_key_exists('sites', $w) || !is_array($w['sites'])) return null;
+    $keys = [];
+    foreach ($w['sites'] as $s) {
+        $k = strtolower(trim(is_array($s) ? (string)($s['service'] ?? '') : (string)$s));
+        if ($k !== '' && !in_array($k, $keys, true)) $keys[] = $k;
+    }
+    return $keys;
+}
+
+/**
+ * The service keys stored on a listing, or null when none ever were.
+ *
+ * Null and [] mean different things here as well: null is a listing nothing
+ * has been saved for yet (the column is new, or the backfill has not run),
+ * and [] is a website Toutify says is on no sites at all.
+ */
+function toutify_sites_for(array $b): ?array
+{
+    $raw = $b['toutify_sites'] ?? null;
+    if ($raw === null || trim((string)$raw) === '') return null;
+    $v = json_decode((string)$raw, true);
+    if (!is_array($v)) return null;
+    $keys = [];
+    foreach ($v as $k) {
+        $k = strtolower(trim((string)$k));
+        if ($k !== '' && !in_array($k, $keys, true)) $keys[] = $k;
+    }
+    return $keys;
+}
+
+/** The stored form: a JSON array of service keys. */
+function toutify_sites_encode(array $keys): string
+{
+    return json_encode(array_values($keys));
 }
 
 /** Decoded flags for a user row: ['searchmonster' => true, ...]. */
@@ -176,16 +239,35 @@ function toutify_tools_from_claims(array $claims): ?array
 }
 
 /**
- * The tool flags of whoever owns a listing, for the public storefront.
+ * Which tools to show active on one listing's storefront.
  *
- * The storefront is about the business on it, not the person reading it, so
- * the status shown there is the owner's. Returns null for an unclaimed
- * listing — there is nobody to report on, and a column of "Not active"
- * against a business with no account at all reads as a judgement of the
- * business rather than a statement about software.
+ * A listing linked to a Toutify website reports THAT WEBSITE's sites: the
+ * storefront is a page about one business, and a member with two websites can
+ * easily have one of them on SearchMonster and the other on nothing. Anything
+ * read off the member would put the same four answers on both pages.
+ *
+ * Everything else falls back to the member-level flags, which is what this
+ * did before and remains the only answer available for a listing that has no
+ * Toutify website behind it.
+ *
+ * Returns null for an unclaimed listing — there is nobody to report on, and a
+ * column of "Not active" against a business with no account at all reads as a
+ * judgement of the business rather than a statement about software.
  */
 function toutify_tools_for_business(array $b): ?array
 {
+    if (trim((string)($b['toutify_website_id'] ?? '')) !== '') {
+        $sites = toutify_sites_for($b);
+        // null, not []: a linked listing we have never been told about keeps
+        // the old behaviour rather than flipping four cards off on the
+        // strength of a column that has simply not been filled in yet.
+        if ($sites !== null) {
+            $out = [];
+            foreach (toutify_tool_keys() as $k) $out[$k] = in_array($k, $sites, true);
+            return $out;
+        }
+    }
+
     $ownerId = (int)($b['owner_id'] ?? 0);
     if ($ownerId <= 0) return null;
     $owner = row('SELECT toutify_tools FROM users WHERE id = ?', [$ownerId]);

@@ -16,7 +16,7 @@ SHOW COLUMNS FROM users LIKE '%toutify%';
 SHOW COLUMNS FROM users WHERE Field IN ('business_name', 'phone');
 
 -- 3. Columns on businesses (expect toutify_website_id, toutify_updated_at,
---    toutify_tier, toutify_removed, featured_manual)
+--    toutify_tier, toutify_removed, toutify_sites, featured_manual)
 SHOW COLUMNS FROM businesses WHERE Field LIKE '%toutify%' OR Field = 'featured_manual';
 
 -- 4. The tables (expect toutify_sessions and toutify_events)

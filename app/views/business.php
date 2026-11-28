@@ -283,10 +283,16 @@ $hours    = $enhanced ? hours_parse($b['hours'] ?? null) : [];
       foreach (toutify_products() as $sfP) $sfAll[$sfP['key']] = $sfP;
       $sfShow  = ['searchmonster', 'contentvendor', 'promomonster', 'leadcrazy'];
 
-      // Whose status is this? The owner's — the storefront is about the
-      // business on it, not whoever is reading. null means the listing is
-      // unclaimed, and then no status is shown at all rather than four
-      // negatives against a business that has no account to be active on.
+      // Whose status is this? THIS LISTING's — not the reader's, and not the
+      // owner's either where the listing is linked to a Toutify website: the
+      // sites that website is on are stored per listing, so a member with two
+      // websites gets a true answer on each page rather than the same four on
+      // both. A listing with no Toutify website behind it falls back to the
+      // member-level flags, which is all there has ever been for one.
+      //
+      // null means the listing is unclaimed, and then no status is shown at
+      // all rather than four negatives against a business that has no account
+      // to be active on.
       $sfTools = toutify_tools_for_business($b);
       ?>
       <div class="card card-pad sf-tools">

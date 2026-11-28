@@ -92,6 +92,9 @@ function toutify_migrate(): array
         ['businesses', 'toutify_updated_at', 'INT UNSIGNED DEFAULT NULL'],
         ['businesses', 'toutify_tier',       'VARCHAR(20) DEFAULT NULL'],
         ['businesses', 'toutify_removed',    'TINYINT(1) NOT NULL DEFAULT 0'],
+        // The Toutify sites this listing's website is on, as a JSON array of
+        // service keys: ["searchmonster","monsterlist"].
+        ['businesses', 'toutify_sites',      'TEXT NULL'],
     ];
     foreach ($cols as [$t, $c, $type]) {
         if (column_exists($t, $c)) continue;
