@@ -2047,3 +2047,11 @@ a.sf-tool:hover{background:var(--accent-soft);border-color:#bcd3fb}
 .sf-tool-txt em{font-style:normal;color:var(--mute);font-size:.78rem;line-height:1.35}
 .sf-tool-all{display:inline-block;margin-top:4px;color:var(--accent);font-weight:700;font-size:.85rem}
 @media(prefers-reduced-motion:reduce){.sf-tool{transition:none}}
+/* status on the storefront tool cards — the listing owner's, not the reader's */
+.sf-tool-state{font-style:normal;display:inline-flex;align-items:center;gap:6px;margin-top:4px;
+  font-size:.7rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--faint)}
+.sf-tool-state::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--border)}
+.sf-tool-state.on{color:var(--green)}
+.sf-tool-state.on::before{background:var(--green);box-shadow:0 0 0 3px rgba(12,166,120,.18)}
+.sf-tool-on{background:var(--green-soft);border-color:#9fd9c4}
+a.sf-tool-on:hover{background:#d8f1e7;border-color:#7fcbb0}

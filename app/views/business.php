@@ -281,7 +281,13 @@ $hours    = $enhanced ? hours_parse($b['hours'] ?? null) : [];
       $sfBy    = trim(setting('site_byline', 'Toutify')) ?: 'Toutify';
       $sfAll   = [];
       foreach (toutify_products() as $sfP) $sfAll[$sfP['key']] = $sfP;
-      $sfShow  = ['contentvendor', 'promomonster', 'leadcrazy'];
+      $sfShow  = ['searchmonster', 'contentvendor', 'promomonster', 'leadcrazy'];
+
+      // Whose status is this? The owner's — the storefront is about the
+      // business on it, not whoever is reading. null means the listing is
+      // unclaimed, and then no status is shown at all rather than four
+      // negatives against a business that has no account to be active on.
+      $sfTools = toutify_tools_for_business($b);
       ?>
       <div class="card card-pad sf-tools">
         <h3>Free with your <?= e($sfBy) ?> account</h3>
@@ -291,11 +297,15 @@ $hours    = $enhanced ? hours_parse($b['hours'] ?? null) : [];
             if (!$sfD) continue;
             $sfTag = $sfD['url'] !== '' ? 'a' : 'div';
           ?>
-          <<?= $sfTag ?> class="sf-tool"<?= $sfTag === 'a' ? ' href="' . e($sfD['url']) . '" rel="noopener"' : '' ?>>
+          <<?= $sfTag ?> class="sf-tool<?= ($sfTools !== null && !empty($sfTools[$sfKey])) ? ' sf-tool-on' : '' ?>"<?= $sfTag === 'a' ? ' href="' . e($sfD['url']) . '" rel="noopener"' : '' ?>>
             <span class="sf-tool-ico"><?= toutify_icon($sfD['icon']) ?></span>
             <span class="sf-tool-txt">
               <b><?= e($sfD['name']) ?></b>
               <em><?= e($sfD['short'] ?? '') ?></em>
+              <?php if ($sfTools !== null): ?>
+                <?php $sfOn = !empty($sfTools[$sfKey]); ?>
+                <i class="sf-tool-state<?= $sfOn ? ' on' : '' ?>"><?= $sfOn ? 'Active' : 'Not active' ?></i>
+              <?php endif; ?>
             </span>
           </<?= $sfTag ?>>
         <?php endforeach; ?>

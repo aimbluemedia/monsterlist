@@ -174,3 +174,20 @@ function toutify_tools_from_claims(array $claims): ?array
     }
     return null;
 }
+
+/**
+ * The tool flags of whoever owns a listing, for the public storefront.
+ *
+ * The storefront is about the business on it, not the person reading it, so
+ * the status shown there is the owner's. Returns null for an unclaimed
+ * listing — there is nobody to report on, and a column of "Not active"
+ * against a business with no account at all reads as a judgement of the
+ * business rather than a statement about software.
+ */
+function toutify_tools_for_business(array $b): ?array
+{
+    $ownerId = (int)($b['owner_id'] ?? 0);
+    if ($ownerId <= 0) return null;
+    $owner = row('SELECT toutify_tools FROM users WHERE id = ?', [$ownerId]);
+    return $owner ? toutify_tools_for($owner) : null;
+}
