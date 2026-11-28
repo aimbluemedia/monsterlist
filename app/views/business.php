@@ -266,6 +266,42 @@ $hours    = $enhanced ? hours_parse($b['hours'] ?? null) : [];
         </div>
       <?php endif; ?>
 
+      <?php // The sister tools, in the slot the claim card used to hold.
+            //
+            // Display only, as asked — no active/inactive state here. That
+            // state belongs to a signed-in member and this page is public:
+            // whoever is reading may be a customer, the owner, or nobody with
+            // an account at all, and a tick that means "active" would be
+            // answering a question about a person the page cannot identify.
+            //
+            // Names, icons, blurbs and addresses come from toutify_products(),
+            // the same list behind the dashboard cards, the How it Works
+            // blocks and the band above the footer. A product with no address
+            // is a plain card rather than a dead link.
+      $sfBy    = trim(setting('site_byline', 'Toutify')) ?: 'Toutify';
+      $sfAll   = [];
+      foreach (toutify_products() as $sfP) $sfAll[$sfP['key']] = $sfP;
+      $sfShow  = ['contentvendor', 'promomonster', 'leadcrazy'];
+      ?>
+      <div class="card card-pad sf-tools">
+        <h3>Free with your <?= e($sfBy) ?> account</h3>
+        <?php foreach ($sfShow as $sfKey): ?>
+          <?php
+            $sfD = $sfAll[$sfKey] ?? null;
+            if (!$sfD) continue;
+            $sfTag = $sfD['url'] !== '' ? 'a' : 'div';
+          ?>
+          <<?= $sfTag ?> class="sf-tool"<?= $sfTag === 'a' ? ' href="' . e($sfD['url']) . '" rel="noopener"' : '' ?>>
+            <span class="sf-tool-ico"><?= toutify_icon($sfD['icon']) ?></span>
+            <span class="sf-tool-txt">
+              <b><?= e($sfD['name']) ?></b>
+              <em><?= e($sfD['short'] ?? '') ?></em>
+            </span>
+          </<?= $sfTag ?>>
+        <?php endforeach; ?>
+        <a class="sf-tool-all" href="/how-it-works">See what they do &rarr;</a>
+      </div>
+
     </aside>
   </div>
 </div>

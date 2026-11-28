@@ -2031,3 +2031,19 @@ a.hiw-tool:hover{border-color:#bcd3fb;box-shadow:0 18px 40px -22px rgba(37,99,23
 .mt-on{background:var(--green-soft);border-color:#9fd9c4;color:#0a6b4c}
 .mt-off{background:var(--card);border-color:var(--border);color:var(--mute)}
 .mt-off:hover{border-color:#9fd9c4;color:#0a6b4c}
+
+/* ===== storefront sidebar — the free tools ===== */
+.sf-tools{margin-bottom:14px}
+.sf-tools h3{margin-bottom:12px}
+.sf-tool{display:flex;align-items:center;gap:11px;padding:11px;border-radius:11px;margin-bottom:8px;
+  background:var(--bg);border:1px solid var(--border2);color:inherit;
+  transition:border-color .18s,background .18s}
+a.sf-tool:hover{background:var(--accent-soft);border-color:#bcd3fb}
+.sf-tool-ico{display:grid;place-items:center;width:34px;height:34px;flex:none;border-radius:10px;
+  background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff}
+.sf-tool-ico svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.sf-tool-txt{min-width:0;display:flex;flex-direction:column;gap:1px}
+.sf-tool-txt b{font-size:.92rem;line-height:1.25}
+.sf-tool-txt em{font-style:normal;color:var(--mute);font-size:.78rem;line-height:1.35}
+.sf-tool-all{display:inline-block;margin-top:4px;color:var(--accent);font-weight:700;font-size:.85rem}
+@media(prefers-reduced-motion:reduce){.sf-tool{transition:none}}
