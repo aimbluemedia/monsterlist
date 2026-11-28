@@ -266,66 +266,55 @@ $hours    = $enhanced ? hours_parse($b['hours'] ?? null) : [];
         </div>
       <?php endif; ?>
 
-      <?php // The sister tools, in the slot the claim card used to hold.
+      <?php // The sister sites, in the slot the claim card used to hold.
             //
-            // Display only, as asked — no active/inactive state here. That
-            // state belongs to a signed-in member and this page is public:
-            // whoever is reading may be a customer, the owner, or nobody with
-            // an account at all, and a tick that means "active" would be
-            // answering a question about a person the page cannot identify.
+            // WHICH CARDS comes from Toutify: GET /api/v1/sites, public and
+            // cached for an hour, in the order it gives. So a site Toutify
+            // adds appears here with nothing to deploy, and the icon falls
+            // back to a globe for a key this build has never heard of.
             //
-            // Names, icons, blurbs and addresses come from toutify_products(),
-            // the same list behind the dashboard cards, the How it Works
-            // blocks and the band above the footer. A product with no address
-            // is a plain card rather than a dead link.
+            // WHETHER EACH IS ON comes from this listing's own
+            // businesses.toutify_sites — the sites the website behind it is
+            // on. Not the member's: one member can have a website on
+            // SearchMonster and another on nothing.
+            //
+            // An empty list means Toutify has never been reached and nothing
+            // was cached, and then there is no box at all. A storefront is
+            // somewhere a customer reads about a plumber; it is not the place
+            // to report that another company's API is down.
       $sfBy    = trim(setting('site_byline', 'Toutify')) ?: 'Toutify';
-      $sfAll   = [];
-      foreach (toutify_products() as $sfP) $sfAll[$sfP['key']] = $sfP;
-      $sfShow  = ['searchmonster', 'contentvendor', 'promomonster', 'leadcrazy'];
-
-      // Whose status is this? THIS LISTING's — not the reader's, and not the
-      // owner's either where the listing is linked to a Toutify website: the
-      // sites that website is on are stored per listing, so a member with two
-      // websites gets a true answer on each page rather than the same four on
-      // both. A listing with no Toutify website behind it falls back to the
-      // member-level flags, which is all there has ever been for one.
-      //
-      // null means the listing is unclaimed, and then no status is shown at
-      // all rather than four negatives against a business that has no account
-      // to be active on.
-      $sfTools = toutify_tools_for_business($b);
+      $sfCards = toutify_site_cards();
       ?>
+      <?php if ($sfCards): ?>
       <div class="card card-pad sf-tools">
         <h3>Powered by <?= e($sfBy) ?></h3>
-        <?php foreach ($sfShow as $sfKey): ?>
+        <?php foreach ($sfCards as $sfD): ?>
           <?php
-            $sfD = $sfAll[$sfKey] ?? null;
-            if (!$sfD) continue;
             $sfTag = $sfD['url'] !== '' ? 'a' : 'div';
-            $sfOn  = $sfTools !== null && !empty($sfTools[$sfKey]);
+            $sfOn  = toutify_listing_on_site($b, $sfD['key']);
           ?>
           <<?= $sfTag ?> class="sf-tool<?= $sfOn ? ' sf-tool-on' : '' ?>"<?= $sfTag === 'a' ? ' href="' . e($sfD['url']) . '" rel="noopener"' : '' ?>>
-            <span class="sf-tool-ico"><?= toutify_icon($sfD['icon']) ?></span>
+            <span class="sf-tool-ico"><?= toutify_service_icon($sfD['key']) ?></span>
             <span class="sf-tool-txt">
               <b><?= e($sfD['name']) ?></b>
-              <em><?= e($sfD['short'] ?? '') ?></em>
-              <?php if ($sfTools !== null): ?>
-                <i class="sf-tool-state<?= $sfOn ? ' on' : '' ?>"><?= $sfOn ? 'Active' : 'Not active' ?></i>
-              <?php endif; ?>
+              <em><?= e($sfD['summary']) ?></em>
+              <i class="sf-tool-state<?= $sfOn ? ' on' : '' ?>"><?= $sfOn ? 'Active' : 'Not active' ?></i>
             </span>
             <?php // A switch, drawn rather than interactive. This page is
-                  // public and the state belongs to the listing's owner, so
-                  // there is nothing here for a reader to switch. It is
-                  // aria-hidden because the words beside it already say
+                  // public and the state belongs to the listing, set on
+                  // Toutify, so there is nothing here for a reader to switch.
+                  // It is aria-hidden because the words beside it already say
                   // Active or Not active — a screen reader should hear that
                   // once, not twice. ?>
-            <?php if ($sfTools !== null): ?>
-              <span class="sf-sw<?= $sfOn ? ' on' : '' ?>" aria-hidden="true"></span>
-            <?php endif; ?>
+            <span class="sf-sw<?= $sfOn ? ' on' : '' ?>" aria-hidden="true"></span>
           </<?= $sfTag ?>>
         <?php endforeach; ?>
-        <a class="sf-tool-all" href="/how-it-works">See what they do &rarr;</a>
+        <?php // Toutify's own front page, not ours: these are its sites, and
+              // the issuer is where the rest of the integration already
+              // points, so there is one address to change if it ever moves. ?>
+        <a class="sf-tool-all" href="<?= e(toutify_issuer() . '/') ?>" rel="noopener">See what they do &rarr;</a>
       </div>
+      <?php endif; ?>
 
     </aside>
   </div>

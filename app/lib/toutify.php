@@ -75,6 +75,76 @@ function toutify_products(): array
     ];
 }
 
+// ---------------------------------------------------------------------------
+// The storefront cards, as Toutify publishes them.
+//
+// GET /api/v1/sites?group=main,promo is public — no sign-in, no secret — and
+// returns the sites in the order to show them. Driving the cards off it means
+// a site Toutify adds appears here without a deploy, which is the whole point
+// of reading it rather than keeping a second copy of the list in PHP.
+//
+// toutify_products() above still feeds the other four places that show the
+// family — the hero strip, the band above the footer, How it Works and the
+// member dashboard. Those are marketing copy written for this site, not a
+// live status panel, and they are deliberately left alone here.
+// ---------------------------------------------------------------------------
+
+/**
+ * The sites to draw cards for, in Toutify's order. [] means draw no box.
+ *
+ * Cached for an hour. A fetch that fails falls back to the last good copy, so
+ * Toutify being briefly down cannot take a storefront down with it; with no
+ * copy at all this returns [] and the caller hides the box rather than
+ * showing an error to somebody who came here to read about a plumber.
+ */
+function toutify_site_cards(): array
+{
+    static $memo = null;
+    if ($memo !== null) return $memo;
+
+    // No retries and a short timeout: this is on a public page. The version
+    // sign-in uses retries twice with a backoff against 30 seconds, which is
+    // right for a login that is already stuck and wrong for a storefront.
+    $d = toutify_cached_json('toutify_site_cards',
+                             toutify_issuer() . '/api/v1/sites?group=main,promo', 3600, 0, 6);
+
+    $out = [];
+    foreach ((array)($d['sites'] ?? []) as $s) {
+        if (!is_array($s)) continue;
+        $key = strtolower(trim((string)($s['service'] ?? '')));
+        // This site is not a card on its own storefront.
+        if ($key === '' || $key === TOUTIFY_HERE) continue;
+        $out[] = [
+            'key'     => $key,
+            'name'    => trim((string)($s['name'] ?? '')) ?: ucfirst($key),
+            'summary' => trim((string)($s['summary'] ?? '')),
+            'url'     => trim((string)($s['url'] ?? '')),   // null in the JSON becomes ''
+        ];
+    }
+    return $memo = $out;
+}
+
+/**
+ * The icon for a Toutify service key.
+ *
+ * Known keys get the drawing they have always had; anything else gets a
+ * globe, so a site Toutify adds tomorrow shows up with a sensible mark and no
+ * code change — which is the condition for the list above being worth
+ * fetching at all.
+ */
+function toutify_service_icon(string $key): string
+{
+    $map = [
+        'searchmonster' => 'search',
+        'contentvendor' => 'megaphone',
+        'promomonster'  => 'star',
+        'leadcrazy'     => 'form',
+        'monsterlist'   => 'list',
+        'directories'   => 'shield',
+    ];
+    return toutify_icon($map[strtolower($key)] ?? 'globe');
+}
+
 /**
  * The little line icon on a product card.
  *
@@ -92,6 +162,9 @@ function toutify_icon(string $name): string
         'star'      => '<path d="M12 3l2.6 5.6 6.4.8-4.7 4.3 1.2 6.3L12 17l-5.5 3 1.2-6.3L3 9.4l6.4-.8z"/>',
         'megaphone' => '<path d="M3 11v2a1 1 0 001 1h3l6 4V6L7 10H4a1 1 0 00-1 1z"/><path d="M17 9a4 4 0 010 6"/>',
         'shield'    => '<path d="M12 3l8 3v6c0 4.4-3.2 7.9-8 9-4.8-1.1-8-4.6-8-9V6z"/>',
+        // The stand-in for a Toutify site this build has never heard of.
+        'globe'     => '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/>'
+                     . '<path d="M12 3a15 15 0 010 18a15 15 0 010-18z"/>',
     ];
     if (!isset($paths[$name])) return '';
     return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" '
@@ -338,37 +411,20 @@ function toutify_tools_from_claims(array $claims): ?array
 }
 
 /**
- * Which tools to show active on one listing's storefront.
+ * Is this listing's website on that Toutify site?
  *
- * A listing linked to a Toutify website reports THAT WEBSITE's sites: the
- * storefront is a page about one business, and a member with two websites can
- * easily have one of them on SearchMonster and the other on nothing. Anything
- * read off the member would put the same four answers on both pages.
+ * Read off the LISTING, never the member. A member can have one website on
+ * SearchMonster and another on nothing, and the storefront is a page about
+ * one business — anything read off the member would put the same answers on
+ * both pages.
  *
- * Everything else falls back to the member-level flags, which is what this
- * did before and remains the only answer available for a listing that has no
- * Toutify website behind it.
- *
- * Returns null for an unclaimed listing — there is nobody to report on, and a
- * column of "Not active" against a business with no account at all reads as a
- * judgement of the business rather than a statement about software.
+ * A listing with no Toutify website behind it, which includes every
+ * unclaimed one, has no sites and so reads Not active throughout. That is a
+ * statement about what Toutify knows, not a verdict on the business, and the
+ * card says "Not active" rather than anything stronger.
  */
-function toutify_tools_for_business(array $b): ?array
+function toutify_listing_on_site(array $b, string $serviceKey): bool
 {
-    if (trim((string)($b['toutify_website_id'] ?? '')) !== '') {
-        $sites = toutify_sites_for($b);
-        // null, not []: a linked listing we have never been told about keeps
-        // the old behaviour rather than flipping four cards off on the
-        // strength of a column that has simply not been filled in yet.
-        if ($sites !== null) {
-            $out = [];
-            foreach (toutify_tool_keys() as $k) $out[$k] = in_array($k, $sites, true);
-            return $out;
-        }
-    }
-
-    $ownerId = (int)($b['owner_id'] ?? 0);
-    if ($ownerId <= 0) return null;
-    $owner = row('SELECT toutify_tools FROM users WHERE id = ?', [$ownerId]);
-    return $owner ? toutify_tools_for($owner) : null;
+    $sites = toutify_sites_for($b);
+    return $sites !== null && in_array(strtolower($serviceKey), $sites, true);
 }

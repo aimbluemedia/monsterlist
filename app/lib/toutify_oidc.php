@@ -212,7 +212,8 @@ function toutify_basic_header(): string
  * $retries applies to transport failures and 5xx only. A 4xx is an answer —
  * retrying a rejected request just asks to be rejected again, more slowly.
  */
-function toutify_http(string $method, string $url, ?array $json = null, array $headers = [], int $retries = 0): array
+function toutify_http(string $method, string $url, ?array $json = null, array $headers = [],
+                      int $retries = 0, int $timeout = 30): array
 {
     $attempt = 0;
     while (true) {
@@ -223,8 +224,8 @@ function toutify_http(string $method, string $url, ?array $json = null, array $h
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_CUSTOMREQUEST  => $method,
             CURLOPT_HTTPHEADER     => $h,
-            CURLOPT_TIMEOUT        => 30,
-            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_TIMEOUT        => max(1, $timeout),
+            CURLOPT_CONNECTTIMEOUT => max(1, min(10, $timeout)),
             CURLOPT_FOLLOWLOCATION => false,
         ]);
         if ($json !== null) curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($json));
@@ -291,7 +292,14 @@ function toutify_jwks(): array
     return toutify_cached_json('toutify_jwks', $uri, 3600);
 }
 
-function toutify_cached_json(string $settingKey, string $url, int $ttl): array
+/**
+ * $retries and $timeout default to what sign-in has always used. A PUBLIC
+ * page passes them down: retrying twice with a backoff, against a 30-second
+ * timeout, is right for a login that is already blocked and very wrong for a
+ * storefront a stranger is waiting on.
+ */
+function toutify_cached_json(string $settingKey, string $url, int $ttl,
+                             int $retries = 2, int $timeout = 30): array
 {
     $raw = setting($settingKey);
     if ($raw !== '') {
@@ -300,7 +308,7 @@ function toutify_cached_json(string $settingKey, string $url, int $ttl): array
             return $c['body'];
         }
     }
-    [$code, $body] = toutify_http('GET', $url, null, [], 2);
+    [$code, $body] = toutify_http('GET', $url, null, [], $retries, $timeout);
     if ($code === 200 && is_array($body)) {
         setting_save($settingKey, json_encode(['at' => time(), 'body' => $body]));
         return $body;
