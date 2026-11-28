@@ -166,14 +166,18 @@ function toutify_site_cards_for(?string $websiteUrl, bool $fresh = false): array
     foreach ((array)($body['sites'] ?? []) as $s) {
         if (!is_array($s)) continue;
         $k = strtolower(trim((string)($s['service'] ?? '')));
-        // This site is not a card on its own storefront.
-        if ($k === '' || $k === TOUTIFY_HERE) continue;
+        if ($k === '') continue;
+        // MonsterList gets a card like the rest. It is the one site whose
+        // answer the reader can already see — they are standing on it — so
+        // it carries 'here', and the storefront draws it without a link
+        // rather than offering to take somebody to the page they are on.
         $out[] = [
             'key'     => $k,
             'name'    => trim((string)($s['name'] ?? '')) ?: ucfirst($k),
             'summary' => trim((string)($s['summary'] ?? '')),
             'url'     => trim((string)($s['url'] ?? '')),      // null in the JSON becomes ''
             'active'  => !$forceOff && !empty($s['active']),
+            'here'    => $k === TOUTIFY_HERE,
         ];
     }
     return $memo[$key] = $out;

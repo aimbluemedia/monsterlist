@@ -300,7 +300,10 @@ $hours    = $enhanced ? hours_parse($b['hours'] ?? null) : [];
         <h3>Powered by <?= e($sfBy) ?></h3>
         <?php foreach ($sfCards as $sfD): ?>
           <?php
-            $sfTag = $sfD['url'] !== '' ? 'a' : 'div';
+            // A link everywhere there is one, except the card for this site:
+            // a link from a MonsterList page to monsterlist.org goes nowhere
+            // the reader is not already standing.
+            $sfTag = ($sfD['url'] !== '' && !$sfD['here']) ? 'a' : 'div';
             $sfOn  = $sfD['active'];
           ?>
           <<?= $sfTag ?> class="sf-tool<?= $sfOn ? ' sf-tool-on' : '' ?>"<?= $sfTag === 'a' ? ' href="' . e($sfD['url']) . '" rel="noopener"' : '' ?>>
