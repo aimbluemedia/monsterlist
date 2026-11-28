@@ -595,6 +595,43 @@ if ($sub === 'dashboard') {
         redirect('/superadmin/diagnostics');
     }
 
+    // The backfill, from the browser. It is also a command-line script, which
+    // is no use at all on a host reached through git pull and phpMyAdmin — and
+    // a one-off job that can only be run a way the owner cannot reach is a
+    // feature that never switches on. Same function either way.
+    if ($_SERVER['REQUEST_METHOD'] === 'POST'
+        && in_array(post('action'), ['toutify_sites_refresh', 'toutify_sites_dry'], true)) {
+        csrf_check();
+        require_superadmin();
+        $tsDry = post('action') === 'toutify_sites_dry';
+        // A page request, not a terminal: stop before the host's own timeout
+        // does, and say so, rather than dying mid-page with half the work done
+        // and no report of which half.
+        $ts = toutify_sites_refresh($tsDry, 1000, 20);
+
+        if ($ts['error'] !== '') {
+            flash_set('error', 'Could not fetch from Toutify: ' . $ts['error']);
+        } else {
+            $msg = ($tsDry ? 'Dry run: ' : '')
+                 . $ts['seen'] . ' website' . ($ts['seen'] === 1 ? '' : 's') . ' from Toutify, '
+                 . $ts['matched'] . ' matched a listing here, '
+                 . $ts['updated'] . ' listing' . ($ts['updated'] === 1 ? '' : 's')
+                 . ($tsDry ? ' would be updated' : ' updated') . '.';
+            if ($ts['matched'] === 0) {
+                $linked = (int)scalar("SELECT COUNT(*) FROM businesses
+                                        WHERE toutify_website_id IS NOT NULL AND TRIM(toutify_website_id) <> ''");
+                $msg .= $linked === 0
+                    ? ' No listing here carries a Toutify website id, so there was nothing to match on.'
+                    : " $linked listing(s) here are linked, but Toutify returned none of those ids —"
+                      . ' check the client id and secret point at the same Toutify account.';
+            }
+            if ($ts['unknown'])        $msg .= ' Unknown service keys: ' . implode(', ', $ts['unknown']) . '.';
+            if ($ts['stopped'] !== '') $msg .= ' ' . ucfirst($ts['stopped']) . '.';
+            flash_set($ts['matched'] === 0 ? 'error' : 'success', $msg);
+        }
+        redirect('/superadmin/diagnostics');
+    }
+
     // Answers the two questions that follow every upload: is this build live,
     // and has the database caught up with it? Plus a count of what listings
     // actually hold, so "the storefront isn't showing X" can be traced to

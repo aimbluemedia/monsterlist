@@ -72,6 +72,41 @@
         Touches no passwords, deletes nothing, and does nothing the second time.</span>
     </form>
   <?php endif; ?>
+
+  <?php // Which Toutify sites each listing's website is on. The storefront
+        // tool cards read this, and nothing fills it for listings that were
+        // linked before Toutify began reporting it — so the three numbers and
+        // the button that fixes them belong together, where somebody looking
+        // at an all-off box will find them.
+        $tsCol    = column_exists('businesses', 'toutify_sites');
+        $tsLinked = (int)scalar("SELECT COUNT(*) FROM businesses
+                                  WHERE toutify_website_id IS NOT NULL AND TRIM(toutify_website_id) <> ''");
+        $tsSaved  = $tsCol ? (int)scalar('SELECT COUNT(toutify_sites) FROM businesses') : 0;
+  ?>
+  <div class="card card-pad" style="margin:0 0 14px">
+    <h3 style="margin-top:0">Toutify sites on listings</h3>
+    <p class="mute" style="font-size:.9rem;margin:.2rem 0 .8rem">
+      <?= $tsCol ? '✅' : '❌' ?> businesses.toutify_sites &nbsp;·&nbsp;
+      <b><?= number_format($tsLinked) ?></b> listing<?= $tsLinked === 1 ? '' : 's' ?> linked to a Toutify website
+      &nbsp;·&nbsp; <b><?= number_format($tsSaved) ?></b> with sites saved
+    </p>
+    <?php if (!$tsCol): ?>
+      <p class="mute" style="font-size:.9rem">Add the column first — the button above, or
+        <code>database/upgrade-hostinger.sql</code>.</p>
+    <?php elseif ($tsLinked === 0): ?>
+      <p class="mute" style="font-size:.9rem">No listing carries a Toutify website id yet, so there is
+        nothing to match on. <code>scripts/toutify-listings.php</code> is what sets them.</p>
+    <?php else: ?>
+      <form method="post" style="margin:0">
+        <?= csrf_field() ?>
+        <button class="btn btn-primary" name="action" value="toutify_sites_refresh">Fetch sites from Toutify</button>
+        <button class="btn btn-ghost" name="action" value="toutify_sites_dry">Dry run</button>
+        <span class="mute" style="margin-left:10px;font-size:.88rem">Reads Toutify and writes one column.
+          Changes nothing on Toutify, and does the same thing every time it is run.</span>
+      </form>
+    <?php endif; ?>
+  </div>
+
   <?php if (toutify_mode() !== 'off'): ?>
     <div class="table-wrap table-narrow">
       <table class="table">

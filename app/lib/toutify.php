@@ -190,6 +190,105 @@ function toutify_sites_encode(array $keys): string
     return json_encode(array_values($keys));
 }
 
+/**
+ * Fill in toutify_sites for every listing already linked to a Toutify website.
+ *
+ * Pages GET /api/v1/sites/websites until next_cursor comes back empty and
+ * saves each website's sites onto the listings carrying that website id. A
+ * catch-up for listings linked before Toutify started reporting sites;
+ * website.joined and website.updated keep it current from then on.
+ *
+ * Lives here rather than in the script because it is run from two places —
+ * the command line and the Diagnostics page — and a backfill that behaves
+ * differently depending on which one you reached it from is a trap.
+ *
+ * Returns counts plus 'error' (empty when it finished) and 'stopped' (set
+ * when a budget ran out rather than the cursor ending).
+ */
+function toutify_sites_refresh(bool $dry = false, int $maxPages = 1000, int $maxSeconds = 0): array
+{
+    $r = ['pages' => 0, 'seen' => 0, 'with_sites' => 0, 'matched' => 0, 'updated' => 0,
+          'unknown' => [], 'error' => '', 'stopped' => ''];
+
+    if (toutify_client_secret() === '') {
+        $r['error'] = 'No Toutify client secret is set.';
+        return $r;
+    }
+    if (!column_exists('businesses', 'toutify_sites')) {
+        $r['error'] = 'The database has no businesses.toutify_sites column yet.';
+        return $r;
+    }
+
+    $started = time();
+    $cursor  = '';
+
+    while (true) {
+        $url = toutify_issuer() . '/api/v1/sites/websites?limit=500'
+             . ($cursor !== '' ? '&cursor=' . rawurlencode($cursor) : '');
+
+        [$code, $body, $err] = toutify_http('GET', $url, null, [toutify_basic_header()], 3);
+        if ($code !== 200 || !is_array($body)) {
+            $r['error'] = "Toutify returned HTTP $code"
+                        . ($err ? ' — ' . $err : (is_string($body) ? ' — ' . substr($body, 0, 200) : ''));
+            return $r;
+        }
+
+        // The array's key is not documented, so the four plausible spellings
+        // are all accepted. Guessing wrong would report a clean run of zero,
+        // which is the one failure that looks like success.
+        $list = null;
+        foreach (['websites', 'data', 'results', 'items'] as $k) {
+            if (isset($body[$k]) && is_array($body[$k])) { $list = $body[$k]; break; }
+        }
+        if ($list === null) {
+            $r['error'] = 'No websites array in the response. Keys: ' . implode(', ', array_keys($body));
+            return $r;
+        }
+
+        foreach ($list as $w) {
+            if (!is_array($w)) continue;
+            $r['seen']++;
+            $wid = trim((string)($w['id'] ?? ''));
+            if ($wid === '') continue;
+
+            // Null is "this website came back without a sites array at all",
+            // which must not blank what is stored.
+            $sites = toutify_sites_from_website($w);
+            if ($sites === null) continue;
+            $r['with_sites']++;
+
+            foreach ($sites as $k) {
+                if (!in_array($k, toutify_tool_keys(), true) && $k !== TOUTIFY_HERE) $r['unknown'][$k] = true;
+            }
+
+            $n = (int)scalar('SELECT COUNT(*) FROM businesses WHERE toutify_website_id = ?', [$wid]);
+            if ($n === 0) continue;
+            $r['matched']++;
+            if (!$dry) {
+                q('UPDATE businesses SET toutify_sites = ? WHERE toutify_website_id = ?',
+                  [toutify_sites_encode($sites), $wid]);
+            }
+            $r['updated'] += $n;
+        }
+
+        $r['pages']++;
+        $next = trim((string)($body['next_cursor'] ?? ''));
+        if ($next === '' || $next === $cursor) break;      // === guards a cursor that never moves
+        if ($r['pages'] >= $maxPages) {
+            $r['stopped'] = 'stopped after ' . $maxPages . ' pages';
+            break;
+        }
+        if ($maxSeconds > 0 && time() - $started >= $maxSeconds) {
+            $r['stopped'] = 'stopped after ' . $maxSeconds . 's — run it again to carry on';
+            break;
+        }
+        $cursor = $next;
+    }
+
+    $r['unknown'] = array_keys($r['unknown']);
+    return $r;
+}
+
 /** Decoded flags for a user row: ['searchmonster' => true, ...]. */
 function toutify_tools_for(array $u): array
 {
