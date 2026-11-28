@@ -106,18 +106,23 @@ const TOUTIFY_SITES_TTL = 300;
  *
  * [] means draw no box at all.
  */
-function toutify_site_cards_for(?string $websiteUrl): array
+function toutify_site_cards_for(?string $websiteUrl, bool $fresh = false): array
 {
     static $memo = [];
 
     $url = trim((string)$websiteUrl);
     $key = 'toutify-sites|' . toutify_issuer() . '|' . strtolower($url);
-    if (isset($memo[$key])) return $memo[$key];
+    if (!$fresh && isset($memo[$key])) return $memo[$key];
 
     $q = toutify_issuer() . '/api/v1/sites?group=main,promo'
        . ($url !== '' ? '&url=' . rawurlencode($url) : '');
 
-    $body     = cache_get($key, TOUTIFY_SITES_TTL);
+    // $fresh skips the five-minute window and asks Toutify now. It is what
+    // makes "switch it on over there, check it here" a two-second loop
+    // instead of a five-minute one, and it is for staff only — otherwise it
+    // is a button any passer-by can hold down to make this site call
+    // Toutify once per page load.
+    $body     = $fresh ? null : cache_get($key, TOUTIFY_SITES_TTL);
     $forceOff = false;
 
     if ($body === null) {

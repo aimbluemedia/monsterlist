@@ -284,9 +284,17 @@ $hours    = $enhanced ? hours_parse($b['hours'] ?? null) : [];
             // then there is no box at all. A storefront is where a customer
             // reads about a plumber; it is not the place to report that
             // another company's API is down.
+            // ?toutify=refresh asks Toutify again right now instead of
+            // waiting out the five minutes. Staff only: for anybody else it
+            // would be a way to make this site call Toutify once per page
+            // load, which is a free lever on somebody else's servers.
       $sfBy    = trim(setting('site_byline', 'Toutify')) ?: 'Toutify';
-      $sfCards = toutify_site_cards_for($b['website'] ?? null);
+      $sfFresh = is_admin() && ($_GET['toutify'] ?? '') === 'refresh';
+      $sfCards = toutify_site_cards_for($b['website'] ?? null, $sfFresh);
       ?>
+      <?php if ($sfFresh): ?>
+        <p class="mute" style="font-size:.8rem;margin:0 0 6px">Asked <?= e($sfBy) ?> just now (staff view).</p>
+      <?php endif; ?>
       <?php if ($sfCards): ?>
       <div class="card card-pad sf-tools">
         <h3>Powered by <?= e($sfBy) ?></h3>
