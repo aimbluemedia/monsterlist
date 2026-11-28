@@ -268,22 +268,24 @@ $hours    = $enhanced ? hours_parse($b['hours'] ?? null) : [];
 
       <?php // The sister sites, in the slot the claim card used to hold.
             //
-            // WHICH CARDS comes from Toutify: GET /api/v1/sites, public and
-            // cached for an hour, in the order it gives. So a site Toutify
-            // adds appears here with nothing to deploy, and the icon falls
-            // back to a globe for a key this build has never heard of.
+            // ONE CALL answers both halves: GET /api/v1/sites with this
+            // listing's own web address returns every site in the main and
+            // promo groups, in display order, each saying whether THIS
+            // website is on it. Which cards and which are lit come from the
+            // same answer, so the two cannot drift apart — and a site Toutify
+            // adds appears here with nothing to deploy, the icon falling back
+            // to a globe for a service key this build has never heard of.
             //
-            // WHETHER EACH IS ON comes from this listing's own
-            // businesses.toutify_sites — the sites the website behind it is
-            // on. Not the member's: one member can have a website on
-            // SearchMonster and another on nothing.
+            // Public, no sign-in, cached five minutes per address. A listing
+            // with no website is asked about without one and comes back with
+            // every switch off.
             //
-            // An empty list means Toutify has never been reached and nothing
-            // was cached, and then there is no box at all. A storefront is
-            // somewhere a customer reads about a plumber; it is not the place
-            // to report that another company's API is down.
+            // An empty list means Toutify has never once been reached, and
+            // then there is no box at all. A storefront is where a customer
+            // reads about a plumber; it is not the place to report that
+            // another company's API is down.
       $sfBy    = trim(setting('site_byline', 'Toutify')) ?: 'Toutify';
-      $sfCards = toutify_site_cards();
+      $sfCards = toutify_site_cards_for($b['website'] ?? null);
       ?>
       <?php if ($sfCards): ?>
       <div class="card card-pad sf-tools">
@@ -291,7 +293,7 @@ $hours    = $enhanced ? hours_parse($b['hours'] ?? null) : [];
         <?php foreach ($sfCards as $sfD): ?>
           <?php
             $sfTag = $sfD['url'] !== '' ? 'a' : 'div';
-            $sfOn  = toutify_listing_on_site($b, $sfD['key']);
+            $sfOn  = $sfD['active'];
           ?>
           <<?= $sfTag ?> class="sf-tool<?= $sfOn ? ' sf-tool-on' : '' ?>"<?= $sfTag === 'a' ? ' href="' . e($sfD['url']) . '" rel="noopener"' : '' ?>>
             <span class="sf-tool-ico"><?= toutify_service_icon($sfD['key']) ?></span>

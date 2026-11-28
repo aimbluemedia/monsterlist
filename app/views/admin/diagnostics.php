@@ -73,18 +73,25 @@
     </form>
   <?php endif; ?>
 
-  <?php // Which Toutify sites each listing's website is on. The storefront
-        // tool cards read this, and nothing fills it for listings that were
-        // linked before Toutify began reporting it — so the three numbers and
-        // the button that fixes them belong together, where somebody looking
-        // at an all-off box will find them.
+  <?php // Which Toutify sites each listing's website is on.
+        //
+        // NOT what the storefront cards read any more: those ask Toutify
+        // about the listing's own web address when the page is built, and get
+        // the cards and their state in one answer. This column is a local
+        // record of the same fact, kept current by the website webhooks. No
+        // page depends on it — which is said out loud below, because a button
+        // whose effect you cannot see anywhere is worse than no button.
         $tsCol    = column_exists('businesses', 'toutify_sites');
         $tsLinked = (int)scalar("SELECT COUNT(*) FROM businesses
                                   WHERE toutify_website_id IS NOT NULL AND TRIM(toutify_website_id) <> ''");
         $tsSaved  = $tsCol ? (int)scalar('SELECT COUNT(toutify_sites) FROM businesses') : 0;
   ?>
   <div class="card card-pad" style="margin:0 0 14px">
-    <h3 style="margin-top:0">Toutify sites on listings</h3>
+    <h3 style="margin-top:0">Toutify sites on listings <span class="mute" style="font-weight:400;font-size:.8rem">(record only)</span></h3>
+    <p class="mute" style="font-size:.9rem;margin:.2rem 0 .6rem">
+      Storefront cards do not read this — they ask Toutify about each listing's web address
+      as the page is built. This is a local copy of the same fact.
+    </p>
     <p class="mute" style="font-size:.9rem;margin:.2rem 0 .8rem">
       <?= $tsCol ? '✅' : '❌' ?> businesses.toutify_sites &nbsp;·&nbsp;
       <b><?= number_format($tsLinked) ?></b> listing<?= $tsLinked === 1 ? '' : 's' ?> linked to a Toutify website

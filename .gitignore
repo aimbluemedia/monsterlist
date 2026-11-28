@@ -15,3 +15,9 @@ admin-reset.allow
 # Output from the Toutify import scripts — a run log, not source.
 toutify-link-problems.csv
 toutify-listing-problems.csv
+
+# Cached answers from Toutify's public endpoints. Regenerated on demand;
+# never source, and never the same between two deployments.
+storage/cache/*
+!storage/cache/.htaccess
+!storage/cache/.gitkeep

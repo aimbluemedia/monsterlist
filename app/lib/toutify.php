@@ -89,39 +89,89 @@ function toutify_products(): array
 // live status panel, and they are deliberately left alone here.
 // ---------------------------------------------------------------------------
 
-/**
- * The sites to draw cards for, in Toutify's order. [] means draw no box.
- *
- * Cached for an hour. A fetch that fails falls back to the last good copy, so
- * Toutify being briefly down cannot take a storefront down with it; with no
- * copy at all this returns [] and the caller hides the box rather than
- * showing an error to somebody who came here to read about a plumber.
- */
-function toutify_site_cards(): array
-{
-    static $memo = null;
-    if ($memo !== null) return $memo;
+/** How long one website's answer is reused before Toutify is asked again. */
+const TOUTIFY_SITES_TTL = 300;
 
-    // No retries and a short timeout: this is on a public page. The version
-    // sign-in uses retries twice with a backoff against 30 seconds, which is
-    // right for a login that is already stuck and wrong for a storefront.
-    $d = toutify_cached_json('toutify_site_cards',
-                             toutify_issuer() . '/api/v1/sites?group=main,promo', 3600, 0, 6);
+/**
+ * The cards for ONE listing — which sites, in which order, and which are on.
+ *
+ * Both halves come from the same answer, so they cannot disagree: the list is
+ * every site in the main and promo groups, and "active" says whether this
+ * particular website is on each. Toutify matches the address however it is
+ * typed, so no normalising is done here; passing it through unchanged is what
+ * lets Toutify decide that http://WWW.x.com/ and https://x.com are one site.
+ *
+ * Pass null or '' for a listing with no website: the call is made without a
+ * url and every switch comes back off.
+ *
+ * [] means draw no box at all.
+ */
+function toutify_site_cards_for(?string $websiteUrl): array
+{
+    static $memo = [];
+
+    $url = trim((string)$websiteUrl);
+    $key = 'toutify-sites|' . toutify_issuer() . '|' . strtolower($url);
+    if (isset($memo[$key])) return $memo[$key];
+
+    $q = toutify_issuer() . '/api/v1/sites?group=main,promo'
+       . ($url !== '' ? '&url=' . rawurlencode($url) : '');
+
+    $body     = cache_get($key, TOUTIFY_SITES_TTL);
+    $forceOff = false;
+
+    if ($body === null) {
+        // No retries, six-second timeout: a storefront is being rendered and
+        // somebody is waiting on it. The retry-twice-against-thirty-seconds
+        // settings belong to sign-in, which is already stuck when it asks.
+        [$code, $fetched] = toutify_http('GET', $q, null, [], 0, 6);
+        if ($code === 200 && is_array($fetched) && isset($fetched['sites']) && is_array($fetched['sites'])) {
+            $body = $fetched;
+            cache_put($key, $body);
+            // The most recent good answer for ANY address, kept as the last
+            // resort below. Stored under its own key so one listing's answer
+            // cannot be mistaken for another's.
+            cache_put('toutify-sites-last|' . toutify_issuer(), $body);
+            // Roughly one write in fifty also tidies up. There is no cron
+            // here that this code can count on, and a cache nothing ever
+            // deletes from is a disk that fills up quietly.
+            if (random_int(1, 50) === 1) cache_sweep();
+        }
+    }
+
+    // Toutify could not be reached. Fall back, in the order that keeps the
+    // most truth: this address's own last answer, however old it is...
+    if ($body === null) $body = cache_get($key, 0);
+
+    // ...then the last answer for any address, which has the right cards in
+    // the right order but says nothing about THIS website, so every switch
+    // goes off rather than showing another business's state on this page.
+    if ($body === null) {
+        $body = cache_get('toutify-sites-last|' . toutify_issuer(), 0);
+        $forceOff = true;
+    }
+
+    if ($body === null) return $memo[$key] = [];
+
+    // found:false means Toutify does not know this website, and then every
+    // active is already false — this is belt and braces, not a second rule.
+    if (isset($body['website']['found']) && !$body['website']['found']) $forceOff = true;
 
     $out = [];
-    foreach ((array)($d['sites'] ?? []) as $s) {
+    foreach ((array)($body['sites'] ?? []) as $s) {
         if (!is_array($s)) continue;
-        $key = strtolower(trim((string)($s['service'] ?? '')));
+        $k = strtolower(trim((string)($s['service'] ?? '')));
         // This site is not a card on its own storefront.
-        if ($key === '' || $key === TOUTIFY_HERE) continue;
+        if ($k === '' || $k === TOUTIFY_HERE) continue;
         $out[] = [
-            'key'     => $key,
-            'name'    => trim((string)($s['name'] ?? '')) ?: ucfirst($key),
+            'key'     => $k,
+            'name'    => trim((string)($s['name'] ?? '')) ?: ucfirst($k),
             'summary' => trim((string)($s['summary'] ?? '')),
-            'url'     => trim((string)($s['url'] ?? '')),   // null in the JSON becomes ''
+            'url'     => trim((string)($s['url'] ?? '')),      // null in the JSON becomes ''
+            'active'  => !$forceOff && !empty($s['active']),
         ];
     }
-    return $memo = $out;
+    return $memo[$key] = $out;
 }
 
 /**
@@ -410,21 +460,9 @@ function toutify_tools_from_claims(array $claims): ?array
     return null;
 }
 
-/**
- * Is this listing's website on that Toutify site?
- *
- * Read off the LISTING, never the member. A member can have one website on
- * SearchMonster and another on nothing, and the storefront is a page about
- * one business — anything read off the member would put the same answers on
- * both pages.
- *
- * A listing with no Toutify website behind it, which includes every
- * unclaimed one, has no sites and so reads Not active throughout. That is a
- * statement about what Toutify knows, not a verdict on the business, and the
- * card says "Not active" rather than anything stronger.
- */
-function toutify_listing_on_site(array $b, string $serviceKey): bool
-{
-    $sites = toutify_sites_for($b);
-    return $sites !== null && in_array(strtolower($serviceKey), $sites, true);
-}
+// The storefront no longer reads businesses.toutify_sites — it asks Toutify
+// about the listing's web address directly, and gets the cards and their
+// state in one answer. The column, the webhook that fills it and the backfill
+// are all still here and still current, because they are a local record of
+// the same fact that costs nothing to keep and would be tedious to rebuild.
+// Nothing on a page depends on them today.
