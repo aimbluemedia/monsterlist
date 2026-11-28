@@ -93,6 +93,22 @@ function toutify_products(): array
 const TOUTIFY_SITES_TTL = 300;
 
 /**
+ * Where a SearchMonster listing lives, given its external_id.
+ *
+ * SearchMonster is the one site that returns an external_id, and with it the
+ * card can point at THIS business's page there instead of the site's front
+ * door — which is the difference between "this exists somewhere" and a link
+ * worth clicking.
+ *
+ * Written out rather than built from the site's own `url`, because that
+ * field is not a stable base for a deep link: within one hour of testing,
+ * Toutify changed it from members.searchmonster.org to searchmonster.org.
+ * Deriving from it would have produced a different, probably dead, address
+ * depending on the minute the cache was filled.
+ */
+const TOUTIFY_SEARCHMONSTER_STOREFRONT = 'https://searchmonster.org/storefront/';
+
+/**
  * The cards for ONE listing — which sites, in which order, and which are on.
  *
  * Both halves come from the same answer, so they cannot disagree: the list is
@@ -171,11 +187,22 @@ function toutify_site_cards_for(?string $websiteUrl, bool $fresh = false): array
         // answer the reader can already see — they are standing on it — so
         // it carries 'here', and the storefront draws it without a link
         // rather than offering to take somebody to the page they are on.
+        $u   = trim((string)($s['url'] ?? ''));      // null in the JSON becomes ''
+        $ext = trim((string)($s['external_id'] ?? ''));
+
+        // SearchMonster points at this business's own page there, not at
+        // SearchMonster's front door. rawurlencode because external_id is
+        // somebody else's identifier going into a path: it is digits today
+        // and nothing promises it stays that way.
+        if ($k === 'searchmonster' && $ext !== '') {
+            $u = TOUTIFY_SEARCHMONSTER_STOREFRONT . rawurlencode($ext);
+        }
+
         $out[] = [
             'key'     => $k,
             'name'    => trim((string)($s['name'] ?? '')) ?: ucfirst($k),
             'summary' => trim((string)($s['summary'] ?? '')),
-            'url'     => trim((string)($s['url'] ?? '')),      // null in the JSON becomes ''
+            'url'     => $u,
             'active'  => !$forceOff && !empty($s['active']),
             'here'    => $k === TOUTIFY_HERE,
         ];
