@@ -1,56 +1,68 @@
 -- ---------------------------------------------------------------------------
--- MonsterList — every outstanding schema change, for Hostinger (v166).
+-- MonsterList — every outstanding schema change, for Hostinger (v167).
 --
--- WHY THIS FILE
--- upgrade-toutify.sql, upgrade-all.sql and the rest guard themselves by
--- reading information_schema. Hostinger denies that to the database user:
+-- SAFE TO RUN AS MANY TIMES AS YOU LIKE. Anything already applied is skipped
+-- silently. If the whole thing has already run, running it again does nothing
+-- and reports the same.
 --
---     #1044 - Access denied for user '..._monster'@'127.0.0.1'
---             to database 'information_schema'
+-- WHY IT LOOKS LIKE THIS
+-- The repo's other migrations check themselves by reading information_schema,
+-- which Hostinger denies to the database user (#1044). The previous version
+-- of this file dropped that check and used plain ALTER statements, which then
+-- stopped dead on #1060 Duplicate column name the moment one column already
+-- existed. This version uses a tiny stored procedure that runs a statement
+-- and swallows exactly three errors:
 --
--- so on that host the guard is what fails and nothing after it runs. This
--- file does the same work as plain statements. It replaces, in one go:
+--     1060  duplicate column   - already added
+--     1061  duplicate key      - already added
+--     1091  can't drop         - nothing to drop
 --
---     upgrade-toutify.sql          (the whole Toutify integration)
---     upgrade-featured-manual.sql  (the manual Featured toggle)
---     upgrade-toutify-tools.sql    (which tools a member has active)
+-- Nothing else is swallowed, so a real problem still stops it.
 --
 -- HOW TO RUN IT
--- Paste the whole thing into phpMyAdmin -> SQL and press Go.
+-- phpMyAdmin -> SQL -> paste the whole file -> Go. Leave the Delimiter box
+-- alone; the DELIMITER lines below handle it.
 --
--- It is NOT self-checking. If part of it has already been applied you will
--- see one of these, and it is harmless:
+-- NOTHING HERE DELETES OR REWRITES DATA. Every statement only adds a column,
+-- a key or a table. The procedure is removed again at the end.
 --
---     #1060 - Duplicate column name '...'   -> that column is already there
---     #1061 - Duplicate key name '...'      -> that index is already there
---
--- phpMyAdmin stops at the first error. Delete the statements above it and
--- press Go again to run the rest. NOTHING HERE DELETES OR REWRITES DATA:
--- every statement only adds a column, an index or a table.
+-- IF 'CREATE PROCEDURE' IS DENIED on your host, use check-schema.sql instead
+-- to see what is missing, and tell me — I will send plain statements for just
+-- the missing pieces.
 -- ---------------------------------------------------------------------------
 
--- == 1. Toutify: columns on users ==========================================
-ALTER TABLE users ADD COLUMN toutify_sub CHAR(26) DEFAULT NULL;
-ALTER TABLE users ADD COLUMN toutify_status VARCHAR(20) DEFAULT NULL;
-ALTER TABLE users ADD COLUMN toutify_updated_at INT UNSIGNED DEFAULT NULL;
-ALTER TABLE users ADD COLUMN business_name VARCHAR(180) DEFAULT NULL;
-ALTER TABLE users ADD COLUMN phone VARCHAR(40) DEFAULT NULL;
+DROP PROCEDURE IF EXISTS ml_try;
 
--- == 2. Toutify: columns on businesses =====================================
-ALTER TABLE businesses ADD COLUMN toutify_website_id CHAR(26) DEFAULT NULL;
-ALTER TABLE businesses ADD COLUMN toutify_updated_at INT UNSIGNED DEFAULT NULL;
-ALTER TABLE businesses ADD COLUMN toutify_tier VARCHAR(20) DEFAULT NULL;
-ALTER TABLE businesses ADD COLUMN toutify_removed TINYINT(1) NOT NULL DEFAULT 0;
+DELIMITER //
+CREATE PROCEDURE ml_try(IN ddl TEXT)
+BEGIN
+  DECLARE CONTINUE HANDLER FOR 1060, 1061, 1091 BEGIN END;
+  SET @s = ddl;
+  PREPARE st FROM @s;
+  EXECUTE st;
+  DEALLOCATE PREPARE st;
+END //
+DELIMITER ;
 
--- == 3. Toutify: keys ======================================================
--- uq_users_toutify_sub is UNIQUE and matters for correctness, not speed: it
--- is what stops two accounts here claiming the same Toutify identity.
-ALTER TABLE users ADD UNIQUE KEY uq_users_toutify_sub (toutify_sub);
-ALTER TABLE businesses ADD KEY idx_biz_toutify_website (toutify_website_id);
+-- == columns and keys =====================================================
+CALL ml_try('ALTER TABLE users ADD COLUMN toutify_sub CHAR(26) DEFAULT NULL');   -- users.toutify_sub
+CALL ml_try('ALTER TABLE users ADD COLUMN toutify_status VARCHAR(20) DEFAULT NULL');   -- users.toutify_status
+CALL ml_try('ALTER TABLE users ADD COLUMN toutify_updated_at INT UNSIGNED DEFAULT NULL');   -- users.toutify_updated_at
+CALL ml_try('ALTER TABLE users ADD COLUMN business_name VARCHAR(180) DEFAULT NULL');   -- users.business_name
+CALL ml_try('ALTER TABLE users ADD COLUMN phone VARCHAR(40) DEFAULT NULL');   -- users.phone
+CALL ml_try('ALTER TABLE users ADD COLUMN toutify_tools TEXT NULL');   -- users.toutify_tools
+CALL ml_try('ALTER TABLE businesses ADD COLUMN toutify_website_id CHAR(26) DEFAULT NULL');   -- businesses.toutify_website_id
+CALL ml_try('ALTER TABLE businesses ADD COLUMN toutify_updated_at INT UNSIGNED DEFAULT NULL');   -- businesses.toutify_updated_at
+CALL ml_try('ALTER TABLE businesses ADD COLUMN toutify_tier VARCHAR(20) DEFAULT NULL');   -- businesses.toutify_tier
+CALL ml_try('ALTER TABLE businesses ADD COLUMN toutify_removed TINYINT(1) NOT NULL DEFAULT 0');   -- businesses.toutify_removed
+CALL ml_try('ALTER TABLE businesses ADD COLUMN featured_manual TINYINT(1) NOT NULL DEFAULT 0');   -- businesses.featured_manual
+CALL ml_try('ALTER TABLE users ADD UNIQUE KEY uq_users_toutify_sub (toutify_sub)');   -- key uq_users_toutify_sub
+CALL ml_try('ALTER TABLE businesses ADD KEY idx_biz_toutify_website (toutify_website_id)');   -- key idx_biz_toutify_website
+CALL ml_try('ALTER TABLE businesses ADD KEY idx_biz_featured_manual (featured_manual, status)');   -- key idx_biz_featured_manual
 
--- == 4. Toutify: tables ====================================================
--- These carry IF NOT EXISTS, which MySQL supports for CREATE TABLE, so
--- they are already safe to re-run on their own.
+-- == tables ===============================================================
+-- CREATE TABLE supports IF NOT EXISTS, so these need no wrapper. Lifted
+-- verbatim from upgrade-toutify.sql rather than retyped.
 CREATE TABLE IF NOT EXISTS toutify_sessions (
   session_id VARCHAR(128) NOT NULL,
   sid        CHAR(32) DEFAULT NULL,          -- Toutify's session id, from the `sid` claim
@@ -69,23 +81,19 @@ CREATE TABLE IF NOT EXISTS toutify_events (
   KEY idx_tfe_received (received_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- == 5. The manual Featured toggle =========================================
--- Its own column, never businesses.tier: the tier is a copy of users.plan and
--- the next plan change would wipe a mark written there.
-ALTER TABLE businesses ADD COLUMN featured_manual TINYINT(1) NOT NULL DEFAULT 0;
-CREATE INDEX idx_biz_featured_manual ON businesses (featured_manual, status);
-
--- == 6. Which Toutify tools a member has active ============================
-ALTER TABLE users ADD COLUMN toutify_tools TEXT NULL;
+DROP PROCEDURE ml_try;
 
 -- ---------------------------------------------------------------------------
--- Check it worked. These read your own tables, not information_schema, so
--- they run on Hostinger. COUNT(column) returns a row even when the table is
--- empty, and still fails loudly if the column is missing.
+-- Check. Reads your own tables, so it runs on Hostinger. Every row should say
+-- OK. COUNT(column) returns a row even on an empty table and still fails
+-- loudly if the column is genuinely missing.
 -- ---------------------------------------------------------------------------
-SELECT 'users.toutify_sub'          AS checked, COUNT(toutify_sub)        AS with_a_value FROM users;
-SELECT 'users.toutify_tools'        AS checked, COUNT(toutify_tools)      AS with_a_value FROM users;
-SELECT 'businesses.toutify_website_id' AS checked, COUNT(toutify_website_id) AS with_a_value FROM businesses;
-SELECT 'businesses.featured_manual' AS checked, COUNT(featured_manual)    AS with_a_value FROM businesses;
-SELECT 'toutify_sessions rows'      AS checked, COUNT(*)                  AS with_a_value FROM toutify_sessions;
-SELECT 'toutify_events rows'        AS checked, COUNT(*)                  AS with_a_value FROM toutify_events;
+SELECT 'users.toutify_sub'             AS piece, 'OK' AS state, COUNT(toutify_sub)        AS with_a_value FROM users
+UNION ALL SELECT 'users.toutify_tools',        'OK', COUNT(toutify_tools)        FROM users
+UNION ALL SELECT 'users.business_name',        'OK', COUNT(business_name)        FROM users
+UNION ALL SELECT 'users.phone',                'OK', COUNT(phone)                FROM users
+UNION ALL SELECT 'businesses.toutify_website_id','OK', COUNT(toutify_website_id) FROM businesses
+UNION ALL SELECT 'businesses.toutify_tier',    'OK', COUNT(toutify_tier)         FROM businesses
+UNION ALL SELECT 'businesses.featured_manual', 'OK', COUNT(featured_manual)      FROM businesses
+UNION ALL SELECT 'toutify_sessions',           'OK', COUNT(*)                    FROM toutify_sessions
+UNION ALL SELECT 'toutify_events',             'OK', COUNT(*)                    FROM toutify_events;
