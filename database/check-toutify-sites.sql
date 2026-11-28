@@ -8,9 +8,11 @@
 -- four things that have to be true are checked. The FIRST one that comes back
 -- wrong is the answer — stop there.
 --
--- IMPORTANT: query 5 reads the new column. If the whole thing stops with
---     #1054 Unknown column 'toutify_sites'
--- then query 1 already told you why: upgrade-hostinger.sql has not been run.
+-- NOTHING HERE TOUCHES toutify_sites, deliberately. A file that reads a
+-- column which may not exist yet stops with #1054 and phpMyAdmin then shows
+-- only that error — hiding the very answers you came for. Once the migration
+-- has run, its own check block at the end of upgrade-hostinger.sql reports
+-- the column and how many listings have a value in it.
 -- ---------------------------------------------------------------------------
 
 -- Which listing. Edit this if the name is spelt differently in the database.
@@ -57,16 +59,14 @@ JOIN businesses b ON b.owner_id = u.id
 WHERE b.name LIKE @like;
 
 
--- 5. THE PER-LISTING SITES (the column this all turns on) -------------------
+-- 5. AFTER THE MIGRATION ----------------------------------------------------
+-- Once upgrade-hostinger.sql has run, this one reads the new column. Run it
+-- on its own, not as part of the file above, so that a #1054 here cannot
+-- hide the four answers above it.
+--
+--   SELECT id, slug, toutify_website_id, toutify_sites
+--   FROM businesses WHERE name LIKE '%Top Hat%';
+--
 -- NULL   = nothing saved yet; run scripts/toutify-sites-refresh.php
 -- []     = Toutify says this website is on no sites
 -- ["searchmonster", ...] = these cards should be Active
-SELECT id, slug, toutify_website_id, toutify_sites
-FROM businesses
-WHERE name LIKE @like;
-
--- And the overall picture, to see whether the backfill did anything at all:
-SELECT COUNT(toutify_sites)                                      AS listings_with_sites_saved,
-       SUM(toutify_sites = '[]')                                 AS saved_but_on_no_sites,
-       SUM(toutify_sites IS NOT NULL AND toutify_sites <> '[]')  AS saved_and_on_something
-FROM businesses;
