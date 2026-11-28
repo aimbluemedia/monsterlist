@@ -290,23 +290,32 @@ $hours    = $enhanced ? hours_parse($b['hours'] ?? null) : [];
       $sfTools = toutify_tools_for_business($b);
       ?>
       <div class="card card-pad sf-tools">
-        <h3>Free with your <?= e($sfBy) ?> account</h3>
+        <h3>Powered by <?= e($sfBy) ?></h3>
         <?php foreach ($sfShow as $sfKey): ?>
           <?php
             $sfD = $sfAll[$sfKey] ?? null;
             if (!$sfD) continue;
             $sfTag = $sfD['url'] !== '' ? 'a' : 'div';
+            $sfOn  = $sfTools !== null && !empty($sfTools[$sfKey]);
           ?>
-          <<?= $sfTag ?> class="sf-tool<?= ($sfTools !== null && !empty($sfTools[$sfKey])) ? ' sf-tool-on' : '' ?>"<?= $sfTag === 'a' ? ' href="' . e($sfD['url']) . '" rel="noopener"' : '' ?>>
+          <<?= $sfTag ?> class="sf-tool<?= $sfOn ? ' sf-tool-on' : '' ?>"<?= $sfTag === 'a' ? ' href="' . e($sfD['url']) . '" rel="noopener"' : '' ?>>
             <span class="sf-tool-ico"><?= toutify_icon($sfD['icon']) ?></span>
             <span class="sf-tool-txt">
               <b><?= e($sfD['name']) ?></b>
               <em><?= e($sfD['short'] ?? '') ?></em>
               <?php if ($sfTools !== null): ?>
-                <?php $sfOn = !empty($sfTools[$sfKey]); ?>
                 <i class="sf-tool-state<?= $sfOn ? ' on' : '' ?>"><?= $sfOn ? 'Active' : 'Not active' ?></i>
               <?php endif; ?>
             </span>
+            <?php // A switch, drawn rather than interactive. This page is
+                  // public and the state belongs to the listing's owner, so
+                  // there is nothing here for a reader to switch. It is
+                  // aria-hidden because the words beside it already say
+                  // Active or Not active — a screen reader should hear that
+                  // once, not twice. ?>
+            <?php if ($sfTools !== null): ?>
+              <span class="sf-sw<?= $sfOn ? ' on' : '' ?>" aria-hidden="true"></span>
+            <?php endif; ?>
           </<?= $sfTag ?>>
         <?php endforeach; ?>
         <a class="sf-tool-all" href="/how-it-works">See what they do &rarr;</a>

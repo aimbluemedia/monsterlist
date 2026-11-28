@@ -2055,3 +2055,15 @@ a.sf-tool:hover{background:var(--accent-soft);border-color:#bcd3fb}
 .sf-tool-state.on::before{background:var(--green);box-shadow:0 0 0 3px rgba(12,166,120,.18)}
 .sf-tool-on{background:var(--green-soft);border-color:#9fd9c4}
 a.sf-tool-on:hover{background:#d8f1e7;border-color:#7fcbb0}
+/* The switch on a storefront tool card. Drawn, not operable: the state is
+   the listing owner's and the page is public, so there is nothing for a
+   reader to toggle. Sized and shaped like a real switch because that is what
+   reads as on/off at a glance. */
+.sf-tool{position:relative;padding-right:60px}
+.sf-sw{position:absolute;right:11px;bottom:11px;width:38px;height:21px;border-radius:999px;
+  background:var(--border);transition:background .2s}
+.sf-sw::after{content:"";position:absolute;top:3px;left:3px;width:15px;height:15px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 2px rgba(16,24,40,.3);transition:transform .2s}
+.sf-sw.on{background:var(--green)}
+.sf-sw.on::after{transform:translateX(17px)}
+@media(prefers-reduced-motion:reduce){.sf-sw,.sf-sw::after{transition:none}}
